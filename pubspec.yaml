@@ -1,0 +1,38 @@
+name: reson
+description: "Digital identity cards and networking by TheDarkingStudios."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.11.4 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: 0.20.2
+  flutter_riverpod: 3.3.2
+  go_router: 17.5.0
+  firebase_core: 4.14.0
+  firebase_auth: 6.6.1
+  cloud_firestore: 6.9.0
+  firebase_storage: 13.5.0
+  cloud_functions: 6.4.0
+  image_picker: 1.2.3
+  qr_flutter: 4.1.0
+  shared_preferences: 2.5.5
+
+# Temporary compatibility fix for Dart 3.11; remove after an upstream fix
+# or a Flutter upgrade. https://github.com/firebase/flutterfire/issues/18611
+dependency_overrides:
+  firebase_core_web: 3.10.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
