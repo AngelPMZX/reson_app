@@ -14,6 +14,11 @@ String authErrorMessage(Object error, AppLocalizations s) {
     'network-request-failed' => s.authNetwork,
     'too-many-requests' => s.authRate,
     'user-disabled' => s.authDisabled,
+    'popup-blocked' => s.googlePopup,
+    'google-native-setup' ||
+    'google-platform' ||
+    'unauthorized-domain' => s.googleSetup,
+    'account-exists-with-different-credential' => s.googleConflict,
     'operation-not-allowed' => s.authUnavailable,
     _ => s.authGeneric,
   };

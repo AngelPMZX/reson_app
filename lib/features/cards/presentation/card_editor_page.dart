@@ -1,3 +1,9 @@
+import '../../profile/personal_profile.dart';
+import '../../../core/theme/reson_motion.dart';
+import '../domain/professional_profile.dart';
+import 'professional_editor.dart';
+import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:image_picker/image_picker.dart';
@@ -24,19 +30,37 @@ class CardEditorPage extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (cardId == null) {
-      return _Editor(
-        initial: DigitalCard(
-          id: '',
-          label: '',
-          displayName: user.name ?? '',
-          role: '',
-          company: '',
-          email: user.email,
-          phone: '',
-          website: '',
-          primaryHex: '#7860E9',
-        ),
-      );
+      return ref
+          .watch(personalProfileProvider)
+          .when(
+            loading: () => const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+            error: (_, stack) => Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(s.cardLoadError),
+                    TextButton(
+                      onPressed: () => ref.invalidate(personalProfileProvider),
+                      child: Text(s.retry),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/home'),
+                      child: Text(s.backCards),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            data: (profile) => _Editor(
+              initial: (profile ?? PersonalProfile()).newCard(
+                fallbackName: user.name ?? '',
+                fallbackEmail: user.email,
+              ),
+            ),
+          );
     }
     return ref
         .watch(cardsProvider)
@@ -105,6 +129,10 @@ class _EditorState extends ConsumerState<_Editor> {
   Uint8List? _photo;
   String? _photoError;
   String? _uploadedPath;
+  late ProfessionalProfile _professional;
+  Future<void>? _pendingWrite;
+  String? _saveMessage;
+  bool _uploading = false;
   Future<void> _pickPhoto() async {
     setState(() {
       _busy = true;
@@ -152,6 +180,7 @@ class _EditorState extends ConsumerState<_Editor> {
   void initState() {
     super.initState();
     final c = widget.initial;
+    _professional = c.professional;
     _kind = c.kind;
     _layout = c.layout;
     _photoPath = c.photoPath;
@@ -200,6 +229,7 @@ class _EditorState extends ConsumerState<_Editor> {
     bio: _value('bio'),
     photoPath: _photoPath,
     visibleFields: _visible.toList(),
+    professional: _professional,
   );
 
   Future<void> _back() async {
@@ -229,41 +259,103 @@ class _EditorState extends ConsumerState<_Editor> {
   }
 
   Future<void> _save() async {
-    if (_busy || !_form.currentState!.validate()) return;
+    if (_busy || _pendingWrite != null || !_form.currentState!.validate()) {
+      return;
+    }
     setState(() {
       _busy = true;
       _error = false;
+      _saveMessage = null;
+      _photoError = null;
     });
     try {
-      final repo = await ref.read(cardsRepositoryProvider.future);
+      final repo = await ref
+          .read(cardsRepositoryProvider.future)
+          .timeout(const Duration(seconds: 10));
       if (repo == null) throw StateError('Verified session required');
       final c = _draft;
       _newId ??= c.id.isEmpty ? repo.newId() : c.id;
       if (_photo != null && _uploadedPath == null) {
+        if (mounted) setState(() => _uploading = true);
         try {
           _uploadedPath = await ref
               .read(cardMediaProvider)
               .upload(_newId!, _photo!);
-        } catch (_) {
+        } catch (error) {
           if (mounted) {
             setState(
-              () => _photoError = AppLocalizations.of(
-                context,
-              )!.designPhotoUploadFailedTryAgainOr,
+              () => _photoError = error is PhotoUploadsUnavailable
+                  ? AppLocalizations.of(context)!.photoUploadsUnavailable
+                  : AppLocalizations.of(context)!.photoUploadFailed,
             );
           }
           rethrow;
         }
       }
-      await repo.save(c.withIdAndPhoto(_newId!, _uploadedPath ?? _photoPath));
+      if (!mounted) return;
+      setState(() => _uploading = false);
+      final pending = repo.save(
+        c.withIdAndPhoto(_newId!, _uploadedPath ?? _photoPath),
+      );
+      _pendingWrite = pending;
+      // A UI timeout does not cancel a server write. Do not allow overlapping saves.
+      unawaited(
+        pending.then(
+          (_) {
+            if (mounted) {
+              final late = !_busy;
+              setState(() {
+                _pendingWrite = null;
+                if (late) _error = false;
+              });
+              if (late) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      AppLocalizations.of(context)!.lateSaveConfirmed,
+                    ),
+                  ),
+                );
+              }
+            }
+          },
+          onError: (Object error, StackTrace stack) {
+            if (mounted) {
+              setState(() {
+                _pendingWrite = null;
+                if (!_busy) {
+                  _error = true;
+                  _saveMessage = AppLocalizations.of(context)!.cardSaveError;
+                }
+              });
+            }
+          },
+        ),
+      );
+      await pending.timeout(const Duration(seconds: 30));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.savedCard)),
         );
         context.go('/home');
       }
-    } catch (_) {
-      if (mounted) setState(() => _error = true);
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _error = true;
+          final strings = AppLocalizations.of(context)!;
+          _saveMessage =
+              _photoError ??
+              (error is TimeoutException
+                  ? (_pendingWrite != null
+                        ? strings.saveUnconfirmed
+                        : strings.saveTimeout)
+                  : error is FirebaseException &&
+                        error.code == 'permission-denied'
+                  ? strings.savePermission
+                  : strings.cardSaveError);
+        });
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -298,19 +390,50 @@ class _EditorState extends ConsumerState<_Editor> {
                       label: Text(s.backCards),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      widget.initial.id.isEmpty ? s.newCard : s.editCard,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      s.cardEditorBody,
-                      style: const TextStyle(
-                        color: ResonTheme.muted,
-                        height: 1.6,
+                    ResonReveal(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.auto_awesome_outlined,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 24,
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              widget.initial.id.isEmpty
+                                  ? s.newCard
+                                  : s.editCard,
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -.8,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              s.cardEditorBody,
+                              style: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                height: 1.6,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -357,6 +480,21 @@ class _EditorState extends ConsumerState<_Editor> {
                                 type: TextInputType.url,
                                 hint: 'https://',
                               ),
+                              ProfessionalEditor(
+                                initial: _professional,
+                                enabled: !_busy,
+                                visible: _visible,
+                                onChanged: (value) => setState(() {
+                                  _professional = value;
+                                  _dirty = true;
+                                }),
+                                onVisibility: (key, show) => setState(() {
+                                  _dirty = true;
+                                  show
+                                      ? _visible.add(key)
+                                      : _visible.remove(key);
+                                }),
+                              ),
                               _field(
                                 'color',
                                 s.brandColor,
@@ -367,11 +505,23 @@ class _EditorState extends ConsumerState<_Editor> {
                                 spacing: 10,
                                 children:
                                     [
+                                          '#D32945',
                                           '#7860E9',
                                           '#A78BFA',
                                           '#5B21B6',
                                           '#C2415B',
                                           '#B45309',
+                                          '#2563EB',
+                                          '#0891B2',
+                                          '#0D9488',
+                                          '#15803D',
+                                          '#BE185D',
+                                          '#E11D48',
+                                          '#EA580C',
+                                          '#334155',
+                                          '#111827',
+                                          '#7C3AED',
+                                          '#D97706',
                                         ]
                                         .map(
                                           (hex) => Semantics(
@@ -398,18 +548,41 @@ class _EditorState extends ConsumerState<_Editor> {
                               const SizedBox(height: 24),
                               if (_error) ...[
                                 FeedbackMessage(
-                                  text: s.cardSaveError,
+                                  text: _saveMessage ?? s.cardSaveError,
                                   error: true,
                                 ),
                                 const SizedBox(height: 16),
                               ],
+                              if (_photoError != null && _photo != null)
+                                TextButton(
+                                  key: const Key('saveWithoutNewPhoto'),
+                                  onPressed: _busy || _pendingWrite != null
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            _photo = null;
+                                            _uploadedPath = null;
+                                            _photoError = null;
+                                          });
+                                          _save();
+                                        },
+                                  child: Text(s.saveWithoutNewPhoto),
+                                ),
                               SizedBox(
                                 width: double.infinity,
                                 child: FilledButton(
                                   key: const Key('saveCard'),
-                                  onPressed: _busy ? null : _save,
+                                  onPressed: _busy || _pendingWrite != null
+                                      ? null
+                                      : _save,
                                   child: Text(
-                                    _busy ? s.savingCard : s.saveCard,
+                                    _busy
+                                        ? (_uploading
+                                              ? s.uploadingPhoto
+                                              : s.savingCard)
+                                        : _pendingWrite != null
+                                        ? s.confirmingSave
+                                        : s.saveCard,
                                   ),
                                 ),
                               ),
@@ -534,6 +707,11 @@ class _EditorState extends ConsumerState<_Editor> {
               'signature': AppLocalizations.of(context)!.designSignature,
               'minimal': AppLocalizations.of(context)!.designMinimal,
               'bold': AppLocalizations.of(context)!.designBold,
+              'aurora': AppLocalizations.of(context)!.styleAurora,
+              'executive': AppLocalizations.of(context)!.styleExecutive,
+              'editorial': AppLocalizations.of(context)!.styleEditorial,
+              'noir': AppLocalizations.of(context)!.styleNoir,
+              'studio': AppLocalizations.of(context)!.styleStudio,
             }.entries)
               ChoiceChip(
                 label: Text(item.value),
@@ -557,7 +735,8 @@ class _EditorState extends ConsumerState<_Editor> {
           spacing: 8,
           children: [
             OutlinedButton.icon(
-              onPressed: _busy ? null : _pickPhoto,
+              key: const Key('choosePhoto'),
+              onPressed: _busy || !photoUploadsEnabled ? null : _pickPhoto,
               icon: const Icon(Icons.add_a_photo_outlined),
               label: Text(AppLocalizations.of(context)!.designChoosePhoto),
             ),
@@ -575,6 +754,11 @@ class _EditorState extends ConsumerState<_Editor> {
               ),
           ],
         ),
+        if (!photoUploadsEnabled)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(AppLocalizations.of(context)!.photoUploadsUnavailable),
+          ),
         SwitchListTile.adaptive(
           contentPadding: EdgeInsets.zero,
           title: Text(AppLocalizations.of(context)!.designShowPortrait),

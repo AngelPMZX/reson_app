@@ -1,3 +1,5 @@
+import 'professional_profile.dart';
+
 class DigitalCard {
   const DigitalCard({
     required this.id,
@@ -14,6 +16,7 @@ class DigitalCard {
     this.bio = '',
     this.photoPath = '',
     this.visibleFields = defaultFields,
+    this.professional = const ProfessionalProfile(),
   });
   static const defaultFields = [
     'photo',
@@ -23,8 +26,19 @@ class DigitalCard {
     'phone',
     'website',
     'bio',
+    'location',
+    'linkedin',
+    'skills',
+    'experience',
+    'education',
+    'sector',
+    'specialty',
+    'workMode',
+    'projects',
+    'certifications',
   ];
   final String kind, layout, bio, photoPath;
+  final ProfessionalProfile professional;
   final List<String> visibleFields;
   bool shows(String field) => visibleFields.contains(field);
   DigitalCard withIdAndPhoto(String id, String photoPath) => DigitalCard(
@@ -41,6 +55,7 @@ class DigitalCard {
     layout: layout,
     bio: bio,
     photoPath: photoPath,
+    professional: professional,
     visibleFields: List.unmodifiable(visibleFields),
   );
   final String id;

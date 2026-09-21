@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_palette.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,7 +117,7 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEAE3FA),
+                      color: ResonPalette.white,
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: const Icon(

@@ -64,3 +64,7 @@ config/firebase.*.local.json
 !.vscode/launch.json
 !.vscode/tasks.json
 !.vscode/extensions.json
+
+# Local test runtimes
+.tools/
+**/node_modules/

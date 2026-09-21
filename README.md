@@ -1,5 +1,8 @@
 # Reson · TheDarkingStudios
 
+**Para retomar el proyecto en otro chat o equipo, lee [MEMORIA.md](MEMORIA.md).**
+Incluye estado actual, arquitectura, Firebase, pruebas, despliegue y pendientes.
+
 Aplicación Flutter de tarjetas de identidad digitales, diseñada principalmente
 para Android e iOS y con soporte web para desarrollo.
 
@@ -7,7 +10,7 @@ para Android e iOS y con soporte web para desarrollo.
 
 1. Instala Git, Flutter **3.41.6** (incluye Dart 3.11.4) y VS Code con la extensión Flutter.
 2. Clona este repositorio privado usando tu cuenta autorizada de GitHub:
-   `git clone <URL-del-repositorio>`
+   `git clone https://github.com/AngelPMZX/reson_app.git`
 3. Entra en la carpeta clonada y ejecuta:
 
 ```sh
@@ -89,4 +92,7 @@ de servicio. La exportación de datos de Firebase no forma parte de Git.
 - [Firestore](docs/firestore-setup.md)
 - [Diseño y fotografías](docs/card-customization.md)
 
-QR, vCard y publicación de perfiles siguen pendientes.
+QR, enlaces públicos, vCard, tarjetas recibidas, conexiones y chat ya están
+disponibles. Consulta [la guía de compartir y conectar](docs/sharing-and-chat.md).
+
+Perfiles profesionales y Google: ver [guía de esta actualización](docs/professional-profiles-google.md).

@@ -1,95 +1,122 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function verifiedOwner(uid) {
-      return request.auth != null
-        && request.auth.uid == uid
-        && request.auth.token.email_verified == true;
+    function owner(uid) {
+      return request.auth != null && request.auth.uid == uid && request.auth.token.email_verified == true;
     }
-    function text(value, max) { return value is string && value.size() <= max; }
+    function text(v, max) { return v is string && v.size() <= max; }
+    function entry(e) {
+      return e.keys().hasOnly(['title','organization','period','details'])
+        && e.title.matches('(?s)^.{1,100}$')
+        && e.organization.matches('(?s)^.{1,100}$')
+        && e.period.matches('(?s)^.{0,60}$')
+        && e.details.matches('(?s)^.{0,300}$');
+    }
+    function entries(items) {
+      let count = items.size();
+      return items is list && count <= 8
+        && (count < 1 || entry(items[0]))
+        && (count < 2 || entry(items[1]))
+        && (count < 3 || entry(items[2]))
+        && (count < 4 || entry(items[3]))
+        && (count < 5 || entry(items[4]))
+        && (count < 6 || entry(items[5]))
+        && (count < 7 || entry(items[6]))
+        && (count < 8 || entry(items[7]));
+    }
+    function professional(p) {
+      let projects = p.get('projects',[]);
+      let certifications = p.get('certifications',[]);
+      let career = p.experience.concat(p.education).concat(projects).concat(certifications);
+      return p is map && p.keys().hasAll(['location','linkedin','skills','experience','education'])
+        && p.keys().hasOnly(['location','linkedin','skills','experience','education','sector','specialty','workMode','projects','certifications'])
+        && text(p.get('sector',''),100) && text(p.get('specialty',''),180) && text(p.get('workMode',''),100)
+        && projects.size() <= 4 && certifications.size() <= 4
+        && p.experience.size() <= 4 && p.education.size() <= 4
+        && text(p.location,100) && text(p.skills,180) && text(p.linkedin,500)
+        && (p.linkedin == '' || p.linkedin.matches('^https://(www[.])?linkedin[.]com(/[^ ]*)?$'))
+        && entries(career);
+    }
     function validProfile(uid) {
       let d = request.resource.data;
-      return d.keys().hasAll(['displayName', 'activeCardId', 'schemaVersion', 'createdAt', 'updatedAt'])
-        && d.keys().hasOnly(['displayName', 'activeCardId', 'schemaVersion', 'createdAt', 'updatedAt'])
-        && text(d.displayName, 80)
-        && d.schemaVersion == 1
+      return d.keys().hasAll(['displayName','activeCardId','schemaVersion','createdAt','updatedAt'])
+        && d.keys().hasOnly(['displayName','activeCardId','schemaVersion','createdAt','updatedAt'])
+        && text(d.displayName,80) && d.schemaVersion == 1
         && d.createdAt is timestamp && d.updatedAt == request.time
         && d.activeCardId is string && d.activeCardId.matches('^[a-zA-Z0-9]{20}$')
         && getAfter(/databases/$(database)/documents/users/$(uid)/cards/$(d.activeCardId)).data.ownerId == uid;
     }
     function validCard(uid, cardId) {
       let d = request.resource.data;
-      return d.keys().hasAll(['ownerId', 'label', 'identity', 'contact', 'theme', 'schemaVersion', 'createdAt', 'updatedAt'])
-        && d.keys().hasOnly(['ownerId', 'label', 'identity', 'contact', 'theme', 'schemaVersion', 'createdAt', 'updatedAt', 'kind', 'layout', 'bio', 'photoPath', 'visibleFields'])
-        && d.get('kind', 'work') in ['work', 'freelance', 'personal']
-        && d.get('layout', 'signature') in ['signature', 'minimal', 'bold']
-        && text(d.get('bio', ''), 240)
-        && text(d.get('photoPath', ''), 500)
-        && (d.get('photoPath', '') == '' || d.photoPath.matches('^users/' + uid + '/cards/' + cardId + '/[0-9]+
-        && text(d.label, 60) && d.label.size() > 0
-        && d.identity is map && d.identity.keys().hasAll(['displayName', 'jobTitle', 'company'])
-        && d.identity.keys().hasOnly(['displayName', 'jobTitle', 'company'])
-        && text(d.identity.displayName, 80) && d.identity.displayName.size() > 0
-        && text(d.identity.jobTitle, 100) && text(d.identity.company, 100)
-        && d.contact is map && d.contact.keys().hasAll(['email', 'phone', 'website'])
-        && d.contact.keys().hasOnly(['email', 'phone', 'website'])
-        && text(d.contact.email, 254) && text(d.contact.phone, 32) && text(d.contact.website, 500)
-        && (d.contact.website == '' || d.contact.website.matches('^https?://[^ /]+.*$'))
-        && d.theme is map && d.theme.keys().hasAll(['primaryHex']) && d.theme.keys().hasOnly(['primaryHex'])
-        && d.theme.primaryHex is string && d.theme.primaryHex.matches('^#[0-9A-F]{6}$')
-        && d.createdAt is timestamp && d.updatedAt == request.time;
-    }
-    match /users/{uid} {
-      allow get: if verifiedOwner(uid);
-      allow create: if verifiedOwner(uid) && validProfile(uid) && request.resource.data.createdAt == request.time;
-      allow update: if verifiedOwner(uid) && validProfile(uid)
-        && request.resource.data.createdAt == resource.data.createdAt;
-      match /cards/{cardId} {
-        allow read: if verifiedOwner(uid);
-        allow create: if verifiedOwner(uid) && cardId.matches('^[a-zA-Z0-9]{20}$')
-          && validCard(uid, cardId) && request.resource.data.createdAt == request.time;
-        allow update: if verifiedOwner(uid) && validCard(uid, cardId)
-          && request.resource.data.createdAt == resource.data.createdAt
-          && request.resource.data.ownerId == resource.data.ownerId;
-      }
-    }
-    // Public sharing and deletion have not been enabled in this phase.
-    match /{document=**} { allow read, write: if false; }
-  }
-}
-))
-        && d.get('visibleFields', []) is list
-        && d.get('visibleFields', []).size() <= 7
-        && d.get('visibleFields', []).hasOnly(['photo', 'role', 'company', 'email', 'phone', 'website', 'bio'])
+      return d.keys().hasAll(['ownerId','label','identity','contact','theme','schemaVersion','createdAt','updatedAt'])
+        && d.keys().hasOnly(['ownerId','label','identity','contact','theme','schemaVersion','createdAt','updatedAt','kind','layout','bio','photoPath','visibleFields','professional'])
         && d.ownerId == uid && d.schemaVersion == 1
-        && text(d.label, 60) && d.label.size() > 0
-        && d.identity is map && d.identity.keys().hasAll(['displayName', 'jobTitle', 'company'])
-        && d.identity.keys().hasOnly(['displayName', 'jobTitle', 'company'])
-        && text(d.identity.displayName, 80) && d.identity.displayName.size() > 0
-        && text(d.identity.jobTitle, 100) && text(d.identity.company, 100)
-        && d.contact is map && d.contact.keys().hasAll(['email', 'phone', 'website'])
-        && d.contact.keys().hasOnly(['email', 'phone', 'website'])
-        && text(d.contact.email, 254) && text(d.contact.phone, 32) && text(d.contact.website, 500)
+        && d.get('kind','work') in ['work','freelance','personal']
+        && d.get('layout','signature') in ['signature','minimal','bold','aurora','executive','editorial','noir','studio']
+        && text(d.get('bio',''),240) && text(d.get('photoPath',''),500)
+        && (d.get('photoPath','') == '' || (d.photoPath.matches('^users/' + uid + '/cards/' + cardId + '/[0-9]+$') || d.photoPath.matches('^users/' + uid + '/profile/[0-9]+$')))
+        && d.get('visibleFields',[]) is list && d.get('visibleFields',[]).size() <= 17
+        && d.get('visibleFields',[]).hasOnly(['photo','role','company','email','phone','website','bio','location','linkedin','skills','experience','education','sector','specialty','workMode','projects','certifications'])
+        && (!('professional' in d) || professional(d.professional))
+        && text(d.label,60) && d.label.size() > 0
+        && d.identity is map && d.identity.keys().hasAll(['displayName','jobTitle','company'])
+        && d.identity.keys().hasOnly(['displayName','jobTitle','company'])
+        && text(d.identity.displayName,80) && d.identity.displayName.size() > 0
+        && text(d.identity.jobTitle,100) && text(d.identity.company,100)
+        && d.contact is map && d.contact.keys().hasAll(['email','phone','website'])
+        && d.contact.keys().hasOnly(['email','phone','website'])
+        && text(d.contact.email,254) && text(d.contact.phone,32) && text(d.contact.website,500)
         && (d.contact.website == '' || d.contact.website.matches('^https?://[^ /]+.*$'))
         && d.theme is map && d.theme.keys().hasAll(['primaryHex']) && d.theme.keys().hasOnly(['primaryHex'])
         && d.theme.primaryHex is string && d.theme.primaryHex.matches('^#[0-9A-F]{6}$')
         && d.createdAt is timestamp && d.updatedAt == request.time;
     }
-    match /users/{uid} {
-      allow get: if verifiedOwner(uid);
-      allow create: if verifiedOwner(uid) && validProfile(uid) && request.resource.data.createdAt == request.time;
-      allow update: if verifiedOwner(uid) && validProfile(uid)
-        && request.resource.data.createdAt == resource.data.createdAt;
-      match /cards/{cardId} {
-        allow read: if verifiedOwner(uid);
-        allow create: if verifiedOwner(uid) && cardId.matches('^[a-zA-Z0-9]{20}$')
-          && validCard(uid, cardId) && request.resource.data.createdAt == request.time;
-        allow update: if verifiedOwner(uid) && validCard(uid, cardId)
-          && request.resource.data.createdAt == resource.data.createdAt
-          && request.resource.data.ownerId == resource.data.ownerId;
+    function validIdentity(uid) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['name','role','company','bio','email','phone','website','professional','updatedAt'])
+        && d.keys().hasOnly(['name','role','company','bio','email','phone','website','professional','updatedAt','languages','services','photoPath','photoSource','availability'])
+        && text(d.name,80) && text(d.role,100) && text(d.company,100) && text(d.bio,240)
+        && text(d.email,254) && text(d.phone,32) && text(d.website,500)
+        && (d.website == '' || d.website.matches('^https?://[^ /]+.*$'))
+        && text(d.get('languages',''),180) && text(d.get('services',''),240)
+        && d.get('availability','private') in ['private','projects','employment','unavailable']
+        && d.get('photoSource','google') in ['google','upload','none']
+        && text(d.get('photoPath',''),500)
+        && (d.get('photoSource','google') == 'upload'
+          ? d.get('photoPath','').matches('^users/' + uid + '/profile/[0-9]+$')
+          : d.get('photoPath','') == '')
+        && professional(d.professional) && d.updatedAt == request.time;
+    }
+    match /connections/{connectionId} {
+      allow get, list: if request.auth != null && request.auth.token.email_verified == true && request.auth.uid in resource.data.members;
+      allow write: if false;
+      match /messages/{messageId} {
+        allow read: if request.auth != null && request.auth.token.email_verified == true
+          && request.auth.uid in get(/databases/$(database)/documents/connections/$(connectionId)).data.members
+          && get(/databases/$(database)/documents/connections/$(connectionId)).data.status == 'accepted';
+        allow write: if false;
       }
     }
-    // Public sharing and deletion have not been enabled in this phase.
+    match /users/{uid} {
+      match /publications/{cardId} { allow read: if owner(uid); allow write: if false; }
+      match /received/{publicId} { allow read: if owner(uid); allow write: if false; }
+      match /blocks/{otherId} { allow read: if owner(uid); allow write: if false; }
+
+      match /settings/identity {
+        allow read: if owner(uid);
+        allow create, update: if owner(uid) && validIdentity(uid);
+      }
+      allow get: if owner(uid);
+      allow create: if owner(uid) && validProfile(uid) && request.resource.data.createdAt == request.time;
+      allow update: if owner(uid) && validProfile(uid) && request.resource.data.createdAt == resource.data.createdAt;
+      match /cards/{cardId} {
+        allow read: if owner(uid);
+        allow create: if owner(uid) && cardId.matches('^[a-zA-Z0-9]{20}$')
+          && request.resource.data.createdAt == request.time && validCard(uid,cardId);
+        allow update: if owner(uid) && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.ownerId == resource.data.ownerId && validCard(uid,cardId);
+      }
+    }
     match /{document=**} { allow read, write: if false; }
   }
 }

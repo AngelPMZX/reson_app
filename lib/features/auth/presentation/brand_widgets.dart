@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_palette.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/reson_theme.dart';
@@ -14,7 +15,7 @@ class ResonLogo extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: ResonTheme.violet,
+          color: ResonTheme.brand,
           borderRadius: BorderRadius.circular(11),
         ),
         child: const Icon(
@@ -46,7 +47,7 @@ class BrandBackground extends StatelessWidget {
       gradient: RadialGradient(
         center: Alignment(0.8, -0.3),
         radius: 1.4,
-        colors: [Color(0xFF302345), ResonTheme.night],
+        colors: [ResonPalette.wine, ResonTheme.night],
       ),
     ),
     child: child,
@@ -79,9 +80,9 @@ class IdentityPreview extends StatelessWidget {
                         width: width,
                         height: 204,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF443653),
+                          color: ResonPalette.wine,
                           borderRadius: BorderRadius.circular(23),
-                          border: Border.all(color: const Color(0xFF776086)),
+                          border: Border.all(color: ResonPalette.darkBorder),
                         ),
                       ),
                     ),
@@ -91,7 +92,7 @@ class IdentityPreview extends StatelessWidget {
                         width: width,
                         height: 204,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF9983E7),
+                          color: ResonPalette.carmine,
                           borderRadius: BorderRadius.circular(23),
                         ),
                       ),
@@ -103,7 +104,7 @@ class IdentityPreview extends StatelessWidget {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFFEDE5FF), Color(0xFFCCBCEB)],
+                          colors: [ResonPalette.ivory, ResonPalette.ivory],
                         ),
                         borderRadius: BorderRadius.circular(23),
                         boxShadow: const [
@@ -122,7 +123,7 @@ class IdentityPreview extends StatelessWidget {
                             children: [
                               const Icon(
                                 Icons.blur_on_rounded,
-                                color: Color(0xFF43325F),
+                                color: ResonPalette.grey,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -148,11 +149,11 @@ class IdentityPreview extends StatelessWidget {
                                   children: [
                                     const CircleAvatar(
                                       radius: 21,
-                                      backgroundColor: Color(0xFFB6A1D4),
+                                      backgroundColor: ResonPalette.carmine,
                                       child: Text(
                                         'AM',
                                         style: TextStyle(
-                                          color: Color(0xFF3B2856),
+                                          color: ResonPalette.white,
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -162,7 +163,7 @@ class IdentityPreview extends StatelessWidget {
                                     Text(
                                       s.sampleName,
                                       style: const TextStyle(
-                                        color: Color(0xFF2E2243),
+                                        color: ResonPalette.coal,
                                         fontSize: 23,
                                         fontWeight: FontWeight.w600,
                                         letterSpacing: -0.8,
@@ -171,7 +172,7 @@ class IdentityPreview extends StatelessWidget {
                                     Text(
                                       s.sampleRole,
                                       style: const TextStyle(
-                                        color: Color(0xFF5A476E),
+                                        color: ResonPalette.grey,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -182,7 +183,7 @@ class IdentityPreview extends StatelessWidget {
                                 child: Icon(
                                   Icons.qr_code_2_rounded,
                                   size: 49,
-                                  color: Color(0xFF3B2856),
+                                  color: ResonPalette.grey,
                                 ),
                               ),
                             ],
@@ -199,7 +200,7 @@ class IdentityPreview extends StatelessWidget {
             s.sampleLabel,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFFB8ACCD),
+              color: ResonPalette.paleGrey,
               fontSize: 9,
               letterSpacing: 1.6,
             ),
@@ -219,17 +220,17 @@ class IdentityPreview extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: entry.$1 == 0
-                          ? const Color(0xFF443456)
-                          : const Color(0xFF24202E),
+                          ? ResonPalette.wine
+                          : ResonPalette.coal,
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: const Color(0xFF554462)),
+                      border: Border.all(color: ResonPalette.darkBorder),
                     ),
                     child: Text(
                       entry.$2,
                       style: TextStyle(
                         color: entry.$1 == 0
-                            ? const Color(0xFFE7D7FF)
-                            : const Color(0xFFBAB2C8),
+                            ? ResonPalette.white
+                            : ResonPalette.paleGrey,
                         fontSize: 11,
                       ),
                     ),
@@ -254,7 +255,7 @@ class FeedbackMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: error ? const Color(0xFFFFEEEE) : const Color(0xFFEEEAF9),
+        color: error ? const Color(0xFFFFEEEE) : ResonPalette.blush,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -263,16 +264,14 @@ class FeedbackMessage extends StatelessWidget {
           Icon(
             error ? Icons.error_outline : Icons.info_outline,
             size: 19,
-            color: error ? const Color(0xFFA52A38) : ResonTheme.violet,
+            color: error ? const Color(0xFFA52A38) : ResonTheme.brand,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                color: error
-                    ? const Color(0xFFA52A38)
-                    : const Color(0xFF574B72),
+                color: error ? const Color(0xFFA52A38) : ResonPalette.grey,
                 height: 1.5,
                 fontSize: 13,
               ),

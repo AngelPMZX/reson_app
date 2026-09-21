@@ -1,9 +1,12 @@
+import '../../../core/theme/reson_palette.dart';
+import 'auth_welcome.dart';
+import '../../../core/theme/reson_motion.dart';
+import '../../auth/domain/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
-import '../../../core/theme/reson_theme.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'auth_errors.dart';
 import 'brand_widgets.dart';
@@ -64,10 +67,34 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         setState(() => _sent = true);
       } else {
         TextInput.finishAutofillContext();
-        context.go('/home');
+        // Session routing restores an incoming shared-card destination.
       }
     } catch (error) {
       if (mounted) setState(() => _error = error);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _google() async {
+    if (_busy) return;
+    final repository = ref.read(authRepositoryProvider).asData?.value;
+    if (repository == null) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await repository.signInGoogle();
+    } catch (error) {
+      if (mounted &&
+          !(error is AuthFailure &&
+              [
+                'popup-closed-by-user',
+                'cancelled-popup-request',
+              ].contains(error.code))) {
+        setState(() => _error = error);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -98,6 +125,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                 Theme.of(context).brightness == Brightness.dark,
                           ),
                           const SizedBox(height: 30),
+                          if (!_reset) ...[
+                            const AuthWelcome(compact: true),
+                            const SizedBox(height: 20),
+                          ],
                         ],
                         TextButton.icon(
                           onPressed: _busy
@@ -106,7 +137,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                           icon: const Icon(Icons.arrow_back, size: 16),
                           label: Text(s.back),
                           style: TextButton.styleFrom(
-                            foregroundColor: ResonTheme.muted,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             padding: EdgeInsets.zero,
                           ),
                         ),
@@ -117,7 +150,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               : _register
                               ? s.registerTitle
                               : s.loginTitle,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 37,
                             fontWeight: FontWeight.w600,
                             height: 1.12,
@@ -131,8 +164,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               : _register
                               ? s.registerBody
                               : s.loginBody,
-                          style: const TextStyle(
-                            color: ResonTheme.muted,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 14,
                             height: 1.7,
                           ),
@@ -151,6 +186,47 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                   ref.invalidate(authRepositoryProvider),
                               child: Text(s.retry),
                             ),
+                          const SizedBox(height: 20),
+                        ],
+                        if (!_reset) ...[
+                          ResonPress(
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                key: const Key('googleSignIn'),
+                                onPressed: ready && !_busy ? _google : null,
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(0, 54),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerLowest,
+                                ),
+                                icon: const Icon(Icons.login_rounded, size: 20),
+                                label: Text(s.continueGoogle),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              const Expanded(child: Divider()),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                child: Text(
+                                  s.orEmail,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              const Expanded(child: Divider()),
+                            ],
+                          ),
                           const SizedBox(height: 20),
                         ],
                         if (_register) ...[
@@ -285,7 +361,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                     : () => context.go('/reset-password'),
                                 child: Text(
                                   s.forgot,
-                                  style: const TextStyle(fontSize: 12),
+                                  style: TextStyle(fontSize: 12),
                                 ),
                               ),
                             ),
@@ -356,8 +432,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                       _register
                                           ? s.alreadyAccount
                                           : s.noAccount,
-                                      style: const TextStyle(
-                                        color: ResonTheme.muted,
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                         fontSize: 12,
                                       ),
                                     ),
@@ -371,7 +449,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                             ),
                                       child: Text(
                                         _register ? s.login : s.register,
-                                        style: const TextStyle(fontSize: 12),
+                                        style: TextStyle(fontSize: 12),
                                       ),
                                     ),
                                   ],
@@ -381,18 +459,22 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.lock_outline_rounded,
                               size: 12,
-                              color: ResonTheme.muted,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 6),
                             Flexible(
                               child: Text(
                                 s.secureNote,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: ResonTheme.muted,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                   fontSize: 10,
                                   height: 1.5,
                                 ),
@@ -421,8 +503,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               const ResonLogo(),
                               const SizedBox(height: 56),
                               Text(
-                                s.authSideTitle,
-                                style: const TextStyle(
+                                s.authPromise,
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 38,
                                   fontWeight: FontWeight.w500,
@@ -432,22 +514,20 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                s.authSideBody,
-                                style: const TextStyle(
-                                  color: Color(0xFFB9B0C7),
+                                s.authPromiseBody,
+                                style: TextStyle(
+                                  color: ResonPalette.paleGrey,
                                   fontSize: 14,
                                   height: 1.7,
                                 ),
                               ),
                               const SizedBox(height: 26),
-                              const Center(
-                                child: IdentityPreview(compact: true),
-                              ),
+                              const Center(child: AuthWelcome()),
                               const SizedBox(height: 40),
                               Text(
                                 s.publisher,
-                                style: const TextStyle(
-                                  color: Color(0xFFA69BB5),
+                                style: TextStyle(
+                                  color: ResonPalette.paleGrey,
                                   fontSize: 11,
                                 ),
                               ),
@@ -463,7 +543,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                       horizontal: wide ? 48 : 24,
                       vertical: 32,
                     ),
-                    child: form,
+                    child: ResonReveal(child: form),
                   ),
                 ),
               ],
@@ -478,7 +558,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       text,
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
     ),
   );
 }

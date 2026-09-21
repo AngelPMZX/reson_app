@@ -3,11 +3,13 @@ class AuthIdentity {
     required this.uid,
     required this.email,
     this.name,
+    this.googlePhotoUrl,
     required this.emailVerified,
   });
   final String uid;
   final String email;
   final String? name;
+  final String? googlePhotoUrl;
   final bool emailVerified;
 }
 
@@ -24,4 +26,5 @@ abstract interface class AuthRepository {
   Future<void> sendVerification(String language);
   Future<void> refreshUser();
   Future<void> signOut();
+  Future<void> signInGoogle();
 }

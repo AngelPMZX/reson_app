@@ -1,6 +1,13 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    match /users/{uid}/profile/{assetId} {
+      allow get: if request.auth != null && request.auth.uid == uid && request.auth.token.email_verified == true;
+      allow create: if request.auth != null && request.auth.uid == uid && request.auth.token.email_verified == true
+        && assetId.matches('^[0-9]+$') && request.resource.size > 0 && request.resource.size <= 3 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      allow update, delete, list: if false;
+    }
     match /users/{uid}/cards/{cardId}/{assetId} {
       function owner() {
         return request.auth != null && request.auth.uid == uid

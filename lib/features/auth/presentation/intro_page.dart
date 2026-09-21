@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -56,7 +57,7 @@ class IntroPage extends StatelessWidget {
                             ],
                           ),
                           SizedBox(height: wide ? 72 : 44),
-                          const Divider(color: Color(0xFF37303F)),
+                          const Divider(color: ResonPalette.darkBorder),
                           const SizedBox(height: 28),
                           Wrap(
                             spacing: 26,
@@ -92,7 +93,7 @@ class IntroPage extends StatelessWidget {
                                           children: [
                                             Icon(
                                               item.$1,
-                                              color: const Color(0xFFB6A1ED),
+                                              color: ResonPalette.white,
                                               size: 23,
                                             ),
                                             const SizedBox(width: 13),
@@ -114,7 +115,8 @@ class IntroPage extends StatelessWidget {
                                                   Text(
                                                     item.$3,
                                                     style: const TextStyle(
-                                                      color: Color(0xFFB0A8BD),
+                                                      color:
+                                                          ResonPalette.paleGrey,
                                                       fontSize: 12,
                                                       height: 1.6,
                                                     ),
@@ -132,7 +134,7 @@ class IntroPage extends StatelessWidget {
                           Text(
                             s.publisher,
                             style: const TextStyle(
-                              color: Color(0xFFA69BB5),
+                              color: ResonPalette.paleGrey,
                               fontSize: 11,
                             ),
                           ),
@@ -162,7 +164,7 @@ class _IntroCopy extends StatelessWidget {
         Text(
           s.introEyebrow,
           style: const TextStyle(
-            color: Color(0xFFC1AAF8),
+            color: ResonPalette.white,
             fontSize: 10,
             fontWeight: FontWeight.w600,
             letterSpacing: 2.5,
@@ -185,7 +187,7 @@ class _IntroCopy extends StatelessWidget {
           child: Text(
             s.introBody,
             style: const TextStyle(
-              color: Color(0xFFB9B0C7),
+              color: ResonPalette.paleGrey,
               height: 1.8,
               fontSize: 15,
             ),
@@ -209,7 +211,7 @@ class _IntroCopy extends StatelessWidget {
         const SizedBox(height: 8),
         TextButton(
           onPressed: () => context.go('/login'),
-          style: TextButton.styleFrom(foregroundColor: const Color(0xFFE0D3F4)),
+          style: TextButton.styleFrom(foregroundColor: ResonPalette.white),
           child: Text(s.haveAccount),
         ),
       ],

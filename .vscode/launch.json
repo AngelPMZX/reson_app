@@ -6,7 +6,10 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "deviceId": "chrome"
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--web-port=5211"
+      ]
     },
     {
       "name": "Reson · Chrome + Firebase",
@@ -14,7 +17,9 @@
       "type": "dart",
       "program": "lib/main.dart",
       "deviceId": "chrome",
-      "toolArgs": []
+      "toolArgs": [
+        "--web-port=5211"
+      ]
     },
     {
       "name": "Reson · Dispositivo móvil",
@@ -28,7 +33,10 @@
       "type": "dart",
       "program": "lib/main.dart",
       "deviceId": "chrome",
-      "toolArgs": ["--dart-define=RESON_PREVIEW_ONLY=true"]
+      "toolArgs": [
+        "--dart-define=RESON_PREVIEW_ONLY=true",
+        "--web-port=5211"
+      ]
     }
   ]
 }

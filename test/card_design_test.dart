@@ -1,3 +1,6 @@
+import 'package:reson/features/profile/personal_profile.dart';
+import 'personal_profile_test.dart' show TestProfiles;
+import 'package:reson/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -130,6 +133,184 @@ void main() {
       'Borrador',
     );
   });
+
+  if (const bool.fromEnvironment('RESON_SCREENSHOTS')) {
+    for (final page in ['profile', 'wallet']) {
+      testWidgets('$page visual preview', (tester) async {
+        final auth = verified.session();
+        addTearDown(auth.dispose);
+        final profiles = TestProfiles()
+          ..current = PersonalProfile(
+            fields: {
+              'name': 'Alex Rivera',
+              'role': 'Diseñador de producto',
+              'email': 'alex@example.com',
+            },
+          );
+        addTearDown(profiles.events.close);
+        final cards = support.TestCardsRepository();
+        for (var i = 0; i < 3; i++) {
+          cards.cards.add(card.withIdAndPhoto('card$i', ''));
+        }
+        final container = await support.launch(
+          tester,
+          repository: auth,
+          cardsRepository: cards,
+          personalRepository: profiles,
+          size: const Size(390, 1000),
+        );
+        if (page == 'profile') container.read(routerProvider).go('/profile');
+        final boundary = GlobalKey();
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: RepaintBoundary(key: boundary, child: const ResonApp()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (page == 'wallet') {
+          await tester.ensureVisible(find.byKey(const Key('walletDeck')));
+          await tester.pumpAndSettle();
+        }
+        expect(tester.takeException(), isNull);
+        await tester.runAsync(() async {
+          final image =
+              await (boundary.currentContext!.findRenderObject()!
+                      as RenderRepaintBoundary)
+                  .toImage();
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          await Directory('build/design-preview').create(recursive: true);
+          await File(
+            'build/design-preview/$page.png',
+          ).writeAsBytes(bytes!.buffer.asUint8List());
+          image.dispose();
+        });
+      });
+    }
+
+    for (final authRoute in ['register', 'login', 'reset-password']) {
+      testWidgets('$authRoute visual preview', (tester) async {
+        final auth = support.TestAuthRepository();
+        addTearDown(auth.dispose);
+        final container = await support.launch(
+          tester,
+          repository: auth,
+          size: const Size(390, 1100),
+        );
+        container.read(routerProvider).go('/$authRoute');
+        await tester.pumpAndSettle();
+        final boundary = GlobalKey();
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: RepaintBoundary(key: boundary, child: const ResonApp()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await tester.runAsync(() async {
+          final image =
+              await (boundary.currentContext!.findRenderObject()!
+                      as RenderRepaintBoundary)
+                  .toImage();
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          await Directory('build/design-preview').create(recursive: true);
+          await File(
+            'build/design-preview/$authRoute.png',
+          ).writeAsBytes(bytes!.buffer.asUint8List());
+          image.dispose();
+        });
+      });
+    }
+    testWidgets('New styles visual sheet', (tester) async {
+      final auth = verified.session();
+      addTearDown(auth.dispose);
+      final container = await support.launch(
+        tester,
+        repository: auth,
+        size: const Size(1200, 1000),
+      );
+      final boundary = GlobalKey();
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: RepaintBoundary(
+            key: boundary,
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('es'),
+              theme: ResonTheme.forSeed(
+                ResonTheme.violet,
+                brightness: Brightness.dark,
+              ),
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(28),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final style in ['noir', 'studio', 'editorial'])
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    style.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      letterSpacing: 3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  CardPreview(
+                                    card: DigitalCard(
+                                      id: '',
+                                      label: 'Estudio Norte',
+                                      displayName: 'Alex Rivera',
+                                      role: 'Diseño de producto',
+                                      company: 'Ideas que conectan',
+                                      email: 'alex@example.com',
+                                      phone: '+52 555 010 0200',
+                                      website: 'https://example.com',
+                                      primaryHex: '#7C3AED',
+                                      bio:
+                                          'Transformo ideas en experiencias memorables.',
+                                      layout: style,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.runAsync(() async {
+        final image =
+            await (boundary.currentContext!.findRenderObject()!
+                    as RenderRepaintBoundary)
+                .toImage();
+        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        await Directory('build/design-preview').create(recursive: true);
+        await File(
+          'build/design-preview/new-styles.png',
+        ).writeAsBytes(bytes!.buffer.asUint8List());
+        image.dispose();
+      });
+    });
+  }
+
   for (final dark in [true, false]) {
     testWidgets(
       'Styled mobile collection fits in ${dark ? 'dark' : 'light'} mode',

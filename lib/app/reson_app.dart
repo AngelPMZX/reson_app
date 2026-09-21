@@ -1,3 +1,8 @@
+import '../features/network/share_card_page.dart';
+import '../features/network/receive_card_page.dart';
+import '../features/network/network_page.dart';
+import '../features/network/chat_page.dart';
+import '../features/profile/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +11,6 @@ import '../core/firebase/firebase_bootstrap.dart';
 import '../core/theme/reson_theme.dart';
 import '../features/cards/presentation/cards_page.dart';
 import '../features/cards/presentation/card_editor_page.dart';
-import '../features/cards/application/cards_providers.dart';
-import '../features/cards/presentation/card_preview.dart';
 import '../features/auth/presentation/auth_page.dart';
 import '../features/auth/presentation/intro_page.dart';
 import '../features/auth/presentation/verification_page.dart';
@@ -28,12 +31,16 @@ class _RouterRefresh extends ChangeNotifier {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  String? pendingReceive;
   final refresh = _RouterRefresh();
   ref.listen(authSessionProvider, (_, next) => refresh.refresh());
   final router = GoRouter(
     initialLocation: '/',
     refreshListenable: refresh,
     redirect: (context, state) {
+      if (state.uri.path.startsWith('/receive/')) {
+        pendingReceive = state.uri.path;
+      }
       final session = ref.read(authSessionProvider);
       final path = state.uri.path;
       if (session.isLoading || session.hasError) {
@@ -49,10 +56,37 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!user.emailVerified) {
         return path == '/verify-email' ? null : '/verify-email';
       }
-      if (path != '/home' && !path.startsWith('/cards/')) return '/home';
+      if (pendingReceive != null && path != pendingReceive) {
+        final target = pendingReceive!;
+        pendingReceive = null;
+        return target;
+      }
+      if (path.startsWith('/receive/')) pendingReceive = null;
+      if (path != '/network' &&
+          !path.startsWith('/receive/') &&
+          !path.startsWith('/chat/') &&
+          path != '/home' &&
+          path != '/profile' &&
+          !path.startsWith('/cards/')) {
+        return '/home';
+      }
       return null;
     },
     routes: [
+      GoRoute(path: '/network', builder: (_, s) => const NetworkPage()),
+      GoRoute(
+        path: '/receive/:id',
+        builder: (_, s) => ReceiveCardPage(publicId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/chat/:id',
+        builder: (_, s) => ChatPage(connectionId: s.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/cards/:id/share',
+        builder: (_, s) => ShareCardPage(cardId: s.pathParameters['id']!),
+      ),
+      GoRoute(path: '/profile', builder: (_, state) => const ProfilePage()),
       GoRoute(path: '/session', builder: (_, state) => const _SessionPage()),
       GoRoute(
         path: '/verify-email',
@@ -104,11 +138,9 @@ class ResonApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: ref.watch(localeProvider),
-      theme: ResonTheme.forSeed(
-        cardColor(ref.watch(activeCardProvider)?.primaryHex ?? '#7860E9'),
-      ),
+      theme: ResonTheme.forSeed(ResonTheme.brand),
       darkTheme: ResonTheme.forSeed(
-        cardColor(ref.watch(activeCardProvider)?.primaryHex ?? '#7860E9'),
+        ResonTheme.brand,
         brightness: Brightness.dark,
       ),
       themeMode: ref.watch(appearanceProvider),
@@ -128,8 +160,10 @@ class ResonApp extends ConsumerWidget {
                 child: IconButton(
                   key: const Key('themeToggle'),
                   style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFFEDE8F6),
-                    foregroundColor: const Color(0xFF514267),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
                   ),
                   onPressed: () =>
                       ref.read(appearanceProvider.notifier).toggle(),
@@ -151,8 +185,10 @@ class ResonApp extends ConsumerWidget {
                 color: Colors.transparent,
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFFEDE8F6),
-                    foregroundColor: const Color(0xFF514267),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
                     minimumSize: const Size(48, 40),
                   ),
                   onPressed: () {

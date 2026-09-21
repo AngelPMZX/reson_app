@@ -20,8 +20,11 @@ dependencies:
   firebase_storage: 13.5.0
   cloud_functions: 6.4.0
   image_picker: 1.2.3
+  audioplayers: 6.5.1
   qr_flutter: 4.1.0
   shared_preferences: 2.5.5
+  google_sign_in: 7.2.0
+  url_launcher: 6.3.2
 
 # Temporary compatibility fix for Dart 3.11; remove after an upstream fix
 # or a Flutter upgrade. https://github.com/firebase/flutterfire/issues/18611
@@ -34,5 +37,7 @@ dev_dependencies:
   flutter_lints: 6.0.0
 
 flutter:
+  assets:
+    - assets/sounds/connected.wav
   uses-material-design: true
   generate: true

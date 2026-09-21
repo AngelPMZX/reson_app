@@ -408,7 +408,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get designWork => 'Trabajo';
 
   @override
-  String get designSignature => 'Firma';
+  String get designSignature => 'Credencial';
 
   @override
   String get designMinimal => 'Minimalista';
@@ -440,4 +440,309 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get designShowOnCard => 'Mostrar en la tarjeta';
+
+  @override
+  String get saveUnconfirmed =>
+      'Aún no podemos confirmar el guardado. Puedes seguir editando o volver; esperaremos la respuesta antes de permitir otro envío para evitar duplicados.';
+
+  @override
+  String get saveTimeout =>
+      'La conexión tardó demasiado. Tus datos siguen aquí; vuelve a intentarlo.';
+
+  @override
+  String get savePermission =>
+      'No tienes permiso para guardar esta tarjeta. Comprueba que tu correo esté verificado y contacta con soporte si continúa.';
+
+  @override
+  String get uploadingPhoto => 'Subiendo fotografía…';
+
+  @override
+  String get confirmingSave => 'Esperando confirmación…';
+
+  @override
+  String get styleAurora => 'Aurora';
+
+  @override
+  String get styleExecutive => 'Ejecutiva';
+
+  @override
+  String get styleEditorial => 'Editorial';
+
+  @override
+  String get lateSaveConfirmed =>
+      'Se confirmó la versión que enviaste. Si editaste después, guarda de nuevo esos cambios.';
+
+  @override
+  String get professionalTitle => '04 / Tu trayectoria';
+
+  @override
+  String get professionalHint =>
+      'Elige qué mostrar. Puedes añadir hasta 8 entradas en total y 4 por sección.';
+
+  @override
+  String get location => 'Ubicación';
+
+  @override
+  String get skills => 'Habilidades (separadas por comas)';
+
+  @override
+  String get experience => 'Experiencia laboral';
+
+  @override
+  String get education => 'Educación';
+
+  @override
+  String get careerRole => 'Puesto';
+
+  @override
+  String get careerDegree => 'Título o formación';
+
+  @override
+  String get careerSchool => 'Institución';
+
+  @override
+  String get careerPeriod => 'Periodo (ej. 2022 – actualidad)';
+
+  @override
+  String get careerDetails => 'Logros o descripción';
+
+  @override
+  String get removeEntry => 'Eliminar entrada';
+
+  @override
+  String get addExperience => 'Añadir experiencia';
+
+  @override
+  String get addEducation => 'Añadir educación';
+
+  @override
+  String get professionalProfile => 'Perfil profesional';
+
+  @override
+  String get exploreProfile => 'Explora mi trayectoria';
+
+  @override
+  String get openLinkedin => 'Abrir LinkedIn';
+
+  @override
+  String get invalidLinkedin => 'Usa un enlace https://www.linkedin.com/...';
+
+  @override
+  String get continueGoogle => 'Continuar con Google';
+
+  @override
+  String get orEmail => 'o con tu correo';
+
+  @override
+  String get googlePopup =>
+      'Permite las ventanas emergentes para entrar con Google.';
+
+  @override
+  String get googleSetup =>
+      'Google aún no está configurado para este dispositivo.';
+
+  @override
+  String get googleConflict =>
+      'Entra con tu método habitual para conservar el acceso a tu cuenta.';
+
+  @override
+  String get authEyebrow => 'CONEXIONES CON PROPÓSITO';
+
+  @override
+  String get authPromise => 'Tu siguiente oportunidad empieza contigo.';
+
+  @override
+  String get authPromiseBody =>
+      'Una identidad que cuenta tu historia. Comparte lo que haces, lo que sabes y hacia dónde vas.';
+
+  @override
+  String get authBenefit1 => 'Diseñada para tu marca';
+
+  @override
+  String get authBenefit2 => 'Tu trayectoria, a tu manera';
+
+  @override
+  String get authBenefit3 => 'Tú decides qué compartir';
+
+  @override
+  String get styleNoir => 'Noir';
+
+  @override
+  String get styleStudio => 'Estudio';
+
+  @override
+  String get replayAnimation => 'Repetir animación';
+
+  @override
+  String get authVisualTitle => 'Menos ruido.\nMás identidad.';
+
+  @override
+  String get photoUploadsUnavailable =>
+      'Las fotografías todavía no están disponibles. Puedes guardar tu tarjeta y añadir una foto más adelante.';
+
+  @override
+  String get photoUploadFailed =>
+      'No pudimos subir la fotografía. Tu tarjeta aún no se ha guardado. Reintenta o guarda sin la foto nueva.';
+
+  @override
+  String get saveWithoutNewPhoto => 'Guardar sin la foto nueva';
+
+  @override
+  String get homeWelcome => 'Hola';
+
+  @override
+  String get homeWorkspace => 'Tu espacio de identidad';
+
+  @override
+  String get homeEyebrow => 'HECHO PARA CONECTAR';
+
+  @override
+  String get homeHeadline => 'Tu esencia.\nUna gran impresión.';
+
+  @override
+  String get homeAll => 'Todas';
+
+  @override
+  String get homeWork => 'Trabajo';
+
+  @override
+  String get homeFreelance => 'Freelance';
+
+  @override
+  String get homePersonal => 'Personal';
+
+  @override
+  String get homeFilterEmpty => 'Una nueva faceta por descubrir';
+
+  @override
+  String get homeFilterHint =>
+      'No tienes tarjetas de este tipo todavía. Explora tu colección o crea una nueva.';
+
+  @override
+  String get homeProfileDetails => 'Detalles profesionales completados';
+
+  @override
+  String get homeReady => 'Una identidad con más contexto';
+
+  @override
+  String get homeImprove => 'Dale más fuerza a tu presentación';
+
+  @override
+  String get homeNudgeBody =>
+      'Puesto, biografía, habilidades y LinkedIn: tú eliges qué contar.';
+
+  @override
+  String get profileTitle => 'Mi perfil';
+
+  @override
+  String get profileIntro =>
+      'Tu información, en un solo lugar. Úsala como punto de partida para tus tarjetas. Todos los datos de este perfil son opcionales.';
+
+  @override
+  String get profileSave => 'Guardar perfil';
+
+  @override
+  String get profileSaved =>
+      'Perfil guardado. Tus nuevas tarjetas usarán estos datos.';
+
+  @override
+  String get profileVerified => 'Correo de acceso verificado';
+
+  @override
+  String get profileEmailNote =>
+      'El correo de contacto de tus tarjetas puede ser diferente. Editarlo aquí no cambia tu cuenta de acceso.';
+
+  @override
+  String get profileUrlError =>
+      'Escribe una dirección http:// o https:// válida.';
+
+  @override
+  String get profileEmailError => 'Escribe un correo válido.';
+
+  @override
+  String get profileDiscard => '¿Salir sin guardar los cambios?';
+
+  @override
+  String get profileStay => 'Seguir editando';
+
+  @override
+  String get profileLeave => 'Salir sin guardar';
+
+  @override
+  String get walletPrevious => 'Tarjeta anterior';
+
+  @override
+  String get walletNext => 'Siguiente tarjeta';
+
+  @override
+  String get profileCareerTitle => 'Tu trayectoria';
+
+  @override
+  String get profileCareerHint =>
+      'Elige qué mostrar. Puedes añadir hasta 8 entradas en total y 4 por sección.';
+
+  @override
+  String get profileStudio => 'TU IDENTIDAD PERSONAL';
+
+  @override
+  String get profileTagline => 'Una presentación que habla de ti';
+
+  @override
+  String get profileUseGoogle => 'Usar foto de Google';
+
+  @override
+  String get profilePhotoHint =>
+      'Foto privada de perfil. Puedes cambiarla o quitarla cuando quieras. Guarda el perfil para aplicar los cambios.';
+
+  @override
+  String get profileAvailability => 'Tu disponibilidad';
+
+  @override
+  String get profileStatusPrivate => 'Sin indicar';
+
+  @override
+  String get profileStatusProjects => 'Abierto a proyectos';
+
+  @override
+  String get profileStatusEmployment => 'Busco oportunidades';
+
+  @override
+  String get profileStatusUnavailable => 'No disponible';
+
+  @override
+  String get profileDetails => 'Datos personales';
+
+  @override
+  String get profileLanguages => 'Idiomas';
+
+  @override
+  String get profileServices => 'Servicios o especialidades';
+
+  @override
+  String get careerSector => 'Sector o área de trabajo';
+
+  @override
+  String get careerSectorHint =>
+      'Tecnología, salud, educación, construcción, gastronomía, arte, oficios… Escribe tu área.';
+
+  @override
+  String get careerSpecialty => 'Especialidades y servicios';
+
+  @override
+  String get careerWorkMode => 'Modalidad · presencial, híbrida o remota';
+
+  @override
+  String get careerProjects => 'Proyectos destacados';
+
+  @override
+  String get careerCertifications => 'Certificaciones y licencias';
+
+  @override
+  String get careerItemTitle => 'Nombre del proyecto o certificación';
+
+  @override
+  String get careerOrganization => 'Empresa, cliente o entidad';
+
+  @override
+  String get addCareerItem => 'Añadir entrada';
 }

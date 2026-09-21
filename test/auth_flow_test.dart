@@ -1,3 +1,4 @@
+import 'package:reson/features/profile/personal_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -10,6 +11,13 @@ import 'package:reson/features/cards/domain/digital_card.dart';
 import 'package:reson/features/cards/application/cards_providers.dart';
 
 class TestAuthRepository implements AuthRepository {
+  int googleCalls = 0;
+  @override
+  Future<void> signInGoogle() async {
+    googleCalls++;
+    await signIn('google@example.com', '');
+  }
+
   final _events = StreamController<AuthIdentity?>.broadcast();
   AuthIdentity? current;
   String? errorCode;
@@ -130,6 +138,7 @@ Future<ProviderContainer> launch(
   String locale = 'es',
   double textScale = 1,
   TestCardsRepository? cardsRepository,
+  PersonalProfileRepository? personalRepository,
 }) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = size;
@@ -140,6 +149,7 @@ Future<ProviderContainer> launch(
   addTearDown(cards.dispose);
   final container = ProviderContainer(
     overrides: [
+      personalProfileRepositoryProvider.overrideWithValue(personalRepository),
       authRepositoryProvider.overrideWith((ref) async => repository),
       cardsRepositoryProvider.overrideWith((ref) async => cards),
     ],
@@ -261,6 +271,9 @@ void main() {
       repo.errorCode = null;
       await submit(tester);
       expect(find.text('Mis tarjetas'), findsOneWidget);
+      container.read(routerProvider).go('/profile');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Cerrar sesión'));
       await tester.tap(find.text('Cerrar sesión'));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('email')), findsOneWidget);

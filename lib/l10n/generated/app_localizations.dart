@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// No description provided for @designSignature.
   ///
   /// In en, this message translates to:
-  /// **'Signature'**
+  /// **'ID card'**
   String get designSignature;
 
   /// No description provided for @designMinimal.
@@ -895,6 +895,576 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show on card'**
   String get designShowOnCard;
+
+  /// No description provided for @saveUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'We cannot confirm the save yet. You can keep editing or go back; another save will be available when this request finishes to avoid duplicates.'**
+  String get saveUnconfirmed;
+
+  /// No description provided for @saveTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The connection took too long. Your draft is still here; please try again.'**
+  String get saveTimeout;
+
+  /// No description provided for @savePermission.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission to save this card. Check that your email is verified and contact support if it persists.'**
+  String get savePermission;
+
+  /// No description provided for @uploadingPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading photo…'**
+  String get uploadingPhoto;
+
+  /// No description provided for @confirmingSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for confirmation…'**
+  String get confirmingSave;
+
+  /// No description provided for @styleAurora.
+  ///
+  /// In en, this message translates to:
+  /// **'Aurora'**
+  String get styleAurora;
+
+  /// No description provided for @styleExecutive.
+  ///
+  /// In en, this message translates to:
+  /// **'Executive'**
+  String get styleExecutive;
+
+  /// No description provided for @styleEditorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Editorial'**
+  String get styleEditorial;
+
+  /// No description provided for @lateSaveConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your submitted version was saved. If you edited it afterwards, save those changes again.'**
+  String get lateSaveConfirmed;
+
+  /// No description provided for @professionalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'04 / Your journey'**
+  String get professionalTitle;
+
+  /// No description provided for @professionalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what to show. Add up to 8 entries in total and 4 per section.'**
+  String get professionalHint;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @skills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills (comma-separated)'**
+  String get skills;
+
+  /// No description provided for @experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Work experience'**
+  String get experience;
+
+  /// No description provided for @education.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get education;
+
+  /// No description provided for @careerRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get careerRole;
+
+  /// No description provided for @careerDegree.
+  ///
+  /// In en, this message translates to:
+  /// **'Degree or course'**
+  String get careerDegree;
+
+  /// No description provided for @careerSchool.
+  ///
+  /// In en, this message translates to:
+  /// **'Institution'**
+  String get careerSchool;
+
+  /// No description provided for @careerPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Period (e.g. 2022 – present)'**
+  String get careerPeriod;
+
+  /// No description provided for @careerDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements or description'**
+  String get careerDetails;
+
+  /// No description provided for @removeEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove entry'**
+  String get removeEntry;
+
+  /// No description provided for @addExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Add experience'**
+  String get addExperience;
+
+  /// No description provided for @addEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Add education'**
+  String get addEducation;
+
+  /// No description provided for @professionalProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Professional profile'**
+  String get professionalProfile;
+
+  /// No description provided for @exploreProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore my background'**
+  String get exploreProfile;
+
+  /// No description provided for @openLinkedin.
+  ///
+  /// In en, this message translates to:
+  /// **'Open LinkedIn'**
+  String get openLinkedin;
+
+  /// No description provided for @invalidLinkedin.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an https://www.linkedin.com/... link'**
+  String get invalidLinkedin;
+
+  /// No description provided for @continueGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueGoogle;
+
+  /// No description provided for @orEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'or with your email'**
+  String get orEmail;
+
+  /// No description provided for @googlePopup.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow pop-ups to sign in with Google.'**
+  String get googlePopup;
+
+  /// No description provided for @googleSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Google is not configured for this device yet.'**
+  String get googleSetup;
+
+  /// No description provided for @googleConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your existing sign-in method to keep access to your account.'**
+  String get googleConflict;
+
+  /// No description provided for @authEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'MEANINGFUL CONNECTIONS'**
+  String get authEyebrow;
+
+  /// No description provided for @authPromise.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next opportunity starts with you.'**
+  String get authPromise;
+
+  /// No description provided for @authPromiseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An identity that tells your story. Share what you do, what you know and where you are going.'**
+  String get authPromiseBody;
+
+  /// No description provided for @authBenefit1.
+  ///
+  /// In en, this message translates to:
+  /// **'Designed for your brand'**
+  String get authBenefit1;
+
+  /// No description provided for @authBenefit2.
+  ///
+  /// In en, this message translates to:
+  /// **'Your story, your way'**
+  String get authBenefit2;
+
+  /// No description provided for @authBenefit3.
+  ///
+  /// In en, this message translates to:
+  /// **'You choose what to share'**
+  String get authBenefit3;
+
+  /// No description provided for @styleNoir.
+  ///
+  /// In en, this message translates to:
+  /// **'Noir'**
+  String get styleNoir;
+
+  /// No description provided for @styleStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio'**
+  String get styleStudio;
+
+  /// No description provided for @replayAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay animation'**
+  String get replayAnimation;
+
+  /// No description provided for @authVisualTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Less noise.\nMore identity.'**
+  String get authVisualTitle;
+
+  /// No description provided for @photoUploadsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo uploads are not available yet. You can save your card and add a photo later.'**
+  String get photoUploadsUnavailable;
+
+  /// No description provided for @photoUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not upload the photo. Your card has not been saved yet. Retry or save without the new photo.'**
+  String get photoUploadFailed;
+
+  /// No description provided for @saveWithoutNewPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Save without the new photo'**
+  String get saveWithoutNewPhoto;
+
+  /// No description provided for @homeWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello'**
+  String get homeWelcome;
+
+  /// No description provided for @homeWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity workspace'**
+  String get homeWorkspace;
+
+  /// No description provided for @homeEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'MADE FOR CONNECTION'**
+  String get homeEyebrow;
+
+  /// No description provided for @homeHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity.\nA lasting impression.'**
+  String get homeHeadline;
+
+  /// No description provided for @homeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get homeAll;
+
+  /// No description provided for @homeWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get homeWork;
+
+  /// No description provided for @homeFreelance.
+  ///
+  /// In en, this message translates to:
+  /// **'Freelance'**
+  String get homeFreelance;
+
+  /// No description provided for @homePersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get homePersonal;
+
+  /// No description provided for @homeFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'A new side of you to discover'**
+  String get homeFilterEmpty;
+
+  /// No description provided for @homeFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards of this type yet. Explore your collection or create a new one.'**
+  String get homeFilterHint;
+
+  /// No description provided for @homeProfileDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed professional details'**
+  String get homeProfileDetails;
+
+  /// No description provided for @homeReady.
+  ///
+  /// In en, this message translates to:
+  /// **'An identity with more context'**
+  String get homeReady;
+
+  /// No description provided for @homeImprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Make your introduction count'**
+  String get homeImprove;
+
+  /// No description provided for @homeNudgeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Role, bio, skills and LinkedIn: you choose what to share.'**
+  String get homeNudgeBody;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My profile'**
+  String get profileTitle;
+
+  /// No description provided for @profileIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Your information, in one place. Use it as a starting point for your cards. Every field in this profile is optional.'**
+  String get profileIntro;
+
+  /// No description provided for @profileSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save profile'**
+  String get profileSave;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile saved. New cards will use these details.'**
+  String get profileSaved;
+
+  /// No description provided for @profileVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign-in email verified'**
+  String get profileVerified;
+
+  /// No description provided for @profileEmailNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your card contact email can be different. Changing it here does not change your sign-in account.'**
+  String get profileEmailNote;
+
+  /// No description provided for @profileUrlError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid http:// or https:// address.'**
+  String get profileUrlError;
+
+  /// No description provided for @profileEmailError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email.'**
+  String get profileEmailError;
+
+  /// No description provided for @profileDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave without saving changes?'**
+  String get profileDiscard;
+
+  /// No description provided for @profileStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get profileStay;
+
+  /// No description provided for @profileLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave without saving'**
+  String get profileLeave;
+
+  /// No description provided for @walletPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous card'**
+  String get walletPrevious;
+
+  /// No description provided for @walletNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next card'**
+  String get walletNext;
+
+  /// No description provided for @profileCareerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your background'**
+  String get profileCareerTitle;
+
+  /// No description provided for @profileCareerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what to show. Add up to 8 entries in total and 4 per section.'**
+  String get profileCareerHint;
+
+  /// No description provided for @profileStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR PERSONAL IDENTITY'**
+  String get profileStudio;
+
+  /// No description provided for @profileTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'An introduction that feels like you'**
+  String get profileTagline;
+
+  /// No description provided for @profileUseGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Google photo'**
+  String get profileUseGoogle;
+
+  /// No description provided for @profilePhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Private profile photo. Change or remove it whenever you want. Save your profile to apply changes.'**
+  String get profilePhotoHint;
+
+  /// No description provided for @profileAvailability.
+  ///
+  /// In en, this message translates to:
+  /// **'Your availability'**
+  String get profileAvailability;
+
+  /// No description provided for @profileStatusPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Not specified'**
+  String get profileStatusPrivate;
+
+  /// No description provided for @profileStatusProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to projects'**
+  String get profileStatusProjects;
+
+  /// No description provided for @profileStatusEmployment.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to opportunities'**
+  String get profileStatusEmployment;
+
+  /// No description provided for @profileStatusUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get profileStatusUnavailable;
+
+  /// No description provided for @profileDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal details'**
+  String get profileDetails;
+
+  /// No description provided for @profileLanguages.
+  ///
+  /// In en, this message translates to:
+  /// **'Languages'**
+  String get profileLanguages;
+
+  /// No description provided for @profileServices.
+  ///
+  /// In en, this message translates to:
+  /// **'Services or specialties'**
+  String get profileServices;
+
+  /// No description provided for @careerSector.
+  ///
+  /// In en, this message translates to:
+  /// **'Industry or field'**
+  String get careerSector;
+
+  /// No description provided for @careerSectorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Technology, healthcare, education, construction, hospitality, arts, trades… Enter your field.'**
+  String get careerSectorHint;
+
+  /// No description provided for @careerSpecialty.
+  ///
+  /// In en, this message translates to:
+  /// **'Specialties and services'**
+  String get careerSpecialty;
+
+  /// No description provided for @careerWorkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Work mode · on-site, hybrid or remote'**
+  String get careerWorkMode;
+
+  /// No description provided for @careerProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured projects'**
+  String get careerProjects;
+
+  /// No description provided for @careerCertifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Certifications and licenses'**
+  String get careerCertifications;
+
+  /// No description provided for @careerItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Project or certification name'**
+  String get careerItemTitle;
+
+  /// No description provided for @careerOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Company, client or issuer'**
+  String get careerOrganization;
+
+  /// No description provided for @addCareerItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add entry'**
+  String get addCareerItem;
 }
 
 class _AppLocalizationsDelegate

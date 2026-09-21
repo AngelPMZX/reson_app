@@ -1,3 +1,4 @@
+import 'reson_palette.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,26 +37,51 @@ final appearanceProvider = NotifierProvider<Appearance, ThemeMode>(
 );
 
 abstract final class ResonTheme {
-  static const ink = Color(0xFF211735);
-  static const muted = Color(0xFF9386AB);
-  static const violet = Color(0xFF956DFF);
-  static const canvas = Color(0xFFF6F2FC);
-  static const night = Color(0xFF151027);
-  static ThemeData get light => forSeed(violet);
+  static const ink = ResonPalette.coal;
+  static const muted = ResonPalette.grey;
+  static const brand = ResonPalette.carmine;
+  static const violet = brand;
+  static const canvas = ResonPalette.ivory;
+  static const night = ResonPalette.coal;
+  static ThemeData get light => forSeed(brand);
   static ThemeData forSeed(
     Color seed, {
     Brightness brightness = Brightness.light,
   }) {
     final dark = brightness == Brightness.dark;
-    final scheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: brightness,
-      surface: dark ? night : canvas,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: brightness,
+          surface: dark ? night : canvas,
+        ).copyWith(
+          primary: dark ? ResonPalette.brightRed : ResonPalette.carmine,
+          onPrimary: ResonPalette.white,
+          primaryContainer: dark ? ResonPalette.wine : ResonPalette.blush,
+          onPrimaryContainer: dark ? ResonPalette.white : ResonPalette.wine,
+          secondary: dark ? ResonPalette.paleGrey : ResonPalette.grey,
+          onSecondary: dark ? ResonPalette.coal : ResonPalette.white,
+          secondaryContainer: dark ? ResonPalette.slate : ResonPalette.mist,
+          onSecondaryContainer: dark ? ResonPalette.white : ResonPalette.coal,
+          tertiary: dark ? ResonPalette.brightRed : ResonPalette.wine,
+          surfaceContainerLowest: dark ? ResonPalette.coal : ResonPalette.white,
+          surfaceContainerLow: dark
+              ? ResonPalette.graphite
+              : ResonPalette.white,
+          surfaceContainer: dark ? ResonPalette.graphite : ResonPalette.mist,
+          surfaceContainerHigh: dark ? ResonPalette.slate : ResonPalette.mist,
+          surfaceContainerHighest: dark
+              ? ResonPalette.slate
+              : ResonPalette.silver,
+          onSurface: dark ? ResonPalette.ivory : ResonPalette.coal,
+          onSurfaceVariant: dark ? ResonPalette.paleGrey : ResonPalette.grey,
+          outline: dark ? ResonPalette.paleGrey : ResonPalette.grey,
+          outlineVariant: dark ? ResonPalette.darkBorder : ResonPalette.silver,
+        );
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(18),
       borderSide: BorderSide(
-        color: dark ? const Color(0xFF3D3056) : const Color(0xFFE2D8EF),
+        color: dark ? ResonPalette.darkBorder : ResonPalette.silver,
       ),
     );
     return ThemeData(
@@ -63,9 +89,24 @@ abstract final class ResonTheme {
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
+      dividerTheme: DividerThemeData(
+        color: scheme.outlineVariant.withValues(alpha: .45),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: dark ? ResonPalette.graphite : ResonPalette.mist,
+        selectedColor: scheme.primaryContainer,
+        side: BorderSide.none,
+        shape: const StadiumBorder(),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        labelStyle: TextStyle(
+          color: scheme.onSurface,
+          fontSize: 13,
+          fontFamily: 'Roboto',
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: dark ? const Color(0xFF231B38) : Colors.white,
+        fillColor: dark ? ResonPalette.graphite : ResonPalette.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 19,
@@ -79,6 +120,8 @@ abstract final class ResonTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 54),
+          backgroundColor: ResonPalette.carmine,
+          foregroundColor: ResonPalette.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
