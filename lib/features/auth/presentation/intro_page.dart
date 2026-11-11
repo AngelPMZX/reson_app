@@ -1,5 +1,6 @@
 import '../../../core/theme/reson_palette.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'brand_widgets.dart';
@@ -58,7 +59,7 @@ class IntroPage extends StatelessWidget {
                           ),
                           SizedBox(height: wide ? 72 : 44),
                           const Divider(color: ResonPalette.darkBorder),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: ResonSpace.xxl),
                           Wrap(
                             spacing: 26,
                             runSpacing: 26,
@@ -104,22 +105,28 @@ class IntroPage extends StatelessWidget {
                                                 children: [
                                                   Text(
                                                     item.$2,
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 14,
-                                                    ),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .labelLarge
+                                                        ?.copyWith(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
                                                   ),
-                                                  const SizedBox(height: 7),
+                                                  const SizedBox(
+                                                    height: ResonSpace.sm,
+                                                  ),
                                                   Text(
                                                     item.$3,
-                                                    style: const TextStyle(
-                                                      color:
-                                                          ResonPalette.paleGrey,
-                                                      fontSize: 12,
-                                                      height: 1.6,
-                                                    ),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.copyWith(
+                                                          color: ResonPalette
+                                                              .paleGrey,
+                                                          height: 1.6,
+                                                        ),
                                                   ),
                                                 ],
                                               ),
@@ -130,13 +137,11 @@ class IntroPage extends StatelessWidget {
                                     )
                                     .toList(),
                           ),
-                          const SizedBox(height: 48),
+                          const SizedBox(height: ResonSpace.huge),
                           Text(
                             s.publisher,
-                            style: const TextStyle(
-                              color: ResonPalette.paleGrey,
-                              fontSize: 11,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(color: ResonPalette.paleGrey),
                           ),
                         ],
                       ),
@@ -163,14 +168,13 @@ class _IntroCopy extends StatelessWidget {
       children: [
         Text(
           s.introEyebrow,
-          style: const TextStyle(
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: ResonPalette.white,
-            fontSize: 10,
             fontWeight: FontWeight.w600,
             letterSpacing: 2.5,
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: ResonSpace.xl),
         Text(
           s.introTitle,
           style: TextStyle(
@@ -181,19 +185,18 @@ class _IntroCopy extends StatelessWidget {
             letterSpacing: -2,
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: ResonSpace.xl),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 415),
           child: Text(
             s.introBody,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: ResonPalette.paleGrey,
               height: 1.8,
-              fontSize: 15,
             ),
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: ResonSpace.xxl),
         FilledButton(
           onPressed: () => context.go('/register'),
           child: Padding(
@@ -202,13 +205,13 @@ class _IntroCopy extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Flexible(child: Text(s.start)),
-                const SizedBox(width: 24),
+                const SizedBox(width: ResonSpace.xl),
                 const Icon(Icons.arrow_forward_rounded, size: 18),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: ResonSpace.sm),
         TextButton(
           onPressed: () => context.go('/login'),
           style: TextButton.styleFrom(foregroundColor: ResonPalette.white),

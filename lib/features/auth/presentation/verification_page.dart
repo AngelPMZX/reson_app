@@ -1,6 +1,7 @@
 import '../../../core/theme/reson_palette.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/theme/reson_theme.dart';
@@ -113,7 +114,7 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                   ResonLogo(
                     dark: Theme.of(context).brightness == Brightness.dark,
                   ),
-                  const SizedBox(height: 64),
+                  const SizedBox(height: ResonSpace.hero),
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
@@ -126,17 +127,16 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                       color: ResonTheme.violet,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: ResonSpace.xxl),
                   Text(
                     s.verifyTitle,
-                    style: const TextStyle(
-                      fontSize: 34,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       height: 1.15,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -1,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: ResonSpace.lg),
                   Text(
                     s.verifyBody,
                     style: const TextStyle(
@@ -144,12 +144,12 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                       height: 1.7,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: ResonSpace.md),
                   SelectableText(
                     user?.email ?? '',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: ResonSpace.xl),
                   if (_sent) FeedbackMessage(text: s.verificationSent),
                   if (_stillPending)
                     Padding(
@@ -164,7 +164,7 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                         error: true,
                       ),
                     ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: ResonSpace.xl),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
@@ -173,7 +173,7 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                       child: Text(s.refreshVerification),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: ResonSpace.sm),
                   Center(
                     child: TextButton(
                       key: const Key('resendVerification'),
@@ -185,16 +185,15 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: ResonSpace.xl),
                   Text(
                     s.verifySpam,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: ResonTheme.muted,
-                      fontSize: 12,
                       height: 1.6,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: ResonSpace.xl),
                   TextButton.icon(
                     onPressed: _busy ? null : () => _check(logout: true),
                     icon: const Icon(Icons.logout, size: 18),

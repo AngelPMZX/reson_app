@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/reson_motion.dart';
+import '../../core/theme/reson_surfaces.dart';
 import '../auth/presentation/brand_widgets.dart';
 
 String tr(BuildContext context, String es, String en) =>
@@ -30,20 +31,18 @@ class NetworkShell extends StatelessWidget {
                 ResonLogo(
                   dark: Theme.of(context).brightness == Brightness.dark,
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: ResonSpace.xxl),
                 TextButton.icon(
                   onPressed: () => context.go('/home'),
                   icon: const Icon(Icons.arrow_back),
                   label: Text(tr(context, 'Mis tarjetas', 'My cards')),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: ResonSpace.md),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -1,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineMedium?.copyWith(letterSpacing: -1),
                 ),
                 if (subtitle != null)
                   Padding(
@@ -56,7 +55,7 @@ class NetworkShell extends StatelessWidget {
                       ),
                     ),
                   ),
-                const SizedBox(height: 12),
+                const SizedBox(height: ResonSpace.md),
                 ResonReveal(child: child),
               ],
             ),
@@ -71,15 +70,14 @@ class NetworkPanel extends StatelessWidget {
   const NetworkPanel({super.key, required this.child});
   final Widget child;
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    margin: const EdgeInsets.only(bottom: 16),
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: ResonSpace.lg),
+    child: SizedBox(
+      width: double.infinity,
+      child: ResonPanel(
+        padding: const EdgeInsets.all(ResonSpace.xl - 4),
+        child: child,
+      ),
     ),
-    child: child,
   );
 }

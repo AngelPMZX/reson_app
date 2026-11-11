@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -123,8 +124,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                         '1 · Elige los campos públicos',
                         '1 · Choose public fields',
                       ),
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -135,7 +135,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                         'Name and label always appear. Fields hidden on your card are not published.',
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: ResonSpace.md),
                     Wrap(
                       spacing: 7,
                       runSpacing: 5,
@@ -184,14 +184,13 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                   '2 · Vista previa de los datos',
                   '2 · Data preview',
                 ),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: ResonSpace.md),
               CardPreview(card: preview, heroTag: cardHeroTag(widget.cardId)),
-              const SizedBox(height: 18),
+              const SizedBox(height: ResonSpace.lg),
               Text(
                 tr(
                   context,
@@ -199,7 +198,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                   'The public page adapts these details to the browser. Changes only reach your link when you publish again.',
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: ResonSpace.lg),
               if (error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -232,7 +231,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                 ),
               ),
               if (url != null) ...[
-                const SizedBox(height: 20),
+                const SizedBox(height: ResonSpace.xl),
                 NetworkPanel(
                   child: Column(
                     children: [
@@ -242,12 +241,9 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                           'Tu enlace está activo',
                           'Your link is live',
                         ),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: ResonSpace.lg),
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -265,7 +261,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: ResonSpace.lg),
                       SelectableText(url, textAlign: TextAlign.center),
                       Wrap(
                         spacing: 8,
@@ -314,7 +310,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                           'Despublicar desactiva el enlace y el QR. No borra contactos descargados previamente.',
                           'Unpublishing disables the link and QR. Previously downloaded contacts cannot be revoked.',
                         ),
-                        style: const TextStyle(fontSize: 12),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../cards/domain/digital_card.dart';
@@ -131,7 +132,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                   ),
                 ),
               CardPreview(card: card),
-              const SizedBox(height: 20),
+              const SizedBox(height: ResonSpace.xl),
               FilledButton.icon(
                 onPressed: busy ? null : () => act('save'),
                 icon: const Icon(Icons.bookmark_add_outlined),
@@ -139,7 +140,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                   tr(context, 'Guardar en mi red', 'Save to my network'),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: ResonSpace.md),
               OutlinedButton.icon(
                 onPressed: () => launchUrl(
                   Uri.parse('https://reson-app.web.app/c/${widget.publicId}'),
@@ -154,19 +155,16 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: ResonSpace.xl),
               NetworkPanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
                       tr(context, 'Intercambiar tarjetas', 'Exchange cards'),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: ResonSpace.md),
                     Text(
                       tr(
                         context,
@@ -174,7 +172,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                         'Choose which published card to send. Your private profile is not shared.',
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: ResonSpace.lg),
                     if (ownCards.isEmpty)
                       Text(
                         tr(
@@ -203,7 +201,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                         ],
                         onChanged: busy ? null : (v) => setState(() => own = v),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: ResonSpace.lg),
                       FilledButton.icon(
                         onPressed: busy || own == null
                             ? null

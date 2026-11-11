@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/theme/reson_motion.dart';
+import '../../../core/theme/reson_skeleton.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/presentation/brand_widgets.dart';
@@ -69,7 +71,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ResonLogo(dark: dark),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: ResonSpace.xl),
                   Row(
                     children: [
                       ProfileAvatar(
@@ -79,7 +81,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                         source: profile?.photoSource ?? 'google',
                         googleUrl: user.googlePhotoUrl,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: ResonSpace.md),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,17 +90,12 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                               name.isEmpty
                                   ? s.homeWelcome
                                   : '${s.homeWelcome}, $name',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium,
                             ),
                             Text(
                               s.homeWorkspace,
-                              style: TextStyle(
-                                color: scheme.onSurfaceVariant,
-                                fontSize: 12,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -113,7 +110,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: ResonSpace.md),
                   OutlinedButton.icon(
                     onPressed: () => context.go('/network'),
                     icon: const Icon(Icons.hub_outlined),
@@ -123,23 +120,16 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                           : 'My network · Connections and chats',
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: ResonSpace.xl),
                   ResonReveal(
-                    child: Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: const [
-                            ResonPalette.wine,
-                            ResonPalette.deepWine,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: scheme.outlineVariant.withValues(alpha: .35),
-                        ),
+                    child: ResonPanel(
+                      padding: EdgeInsets.zero,
+                      raised: true,
+                      clip: true,
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [ResonPalette.wine, ResonPalette.deepWine],
                       ),
                       child: LayoutBuilder(
                         builder: (context, box) {
@@ -159,39 +149,38 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                         shape: BoxShape.circle,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: ResonSpace.sm),
                                     Expanded(
                                       child: Text(
                                         s.homeEyebrow,
-                                        style: TextStyle(
-                                          color: ResonPalette.white,
-                                          fontSize: 10,
-                                          letterSpacing: 2,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall
+                                            ?.copyWith(
+                                              color: ResonPalette.white,
+                                            ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 22),
+                                const SizedBox(height: ResonSpace.xl),
                                 Text(
                                   s.homeHeadline,
-                                  style: TextStyle(
-                                    fontSize: wide ? 38 : 28,
-                                    height: 1.08,
-                                    letterSpacing: -1.4,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .displaySmall
+                                      ?.copyWith(
+                                        fontSize: wide ? 40 : null,
+                                        color: ResonPalette.white,
+                                      ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: ResonSpace.lg),
                                 Text(
                                   s.cardsIntro,
-                                  style: TextStyle(
-                                    color: ResonPalette.paleGrey,
-                                    height: 1.6,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                      ?.copyWith(color: ResonPalette.paleGrey),
                                 ),
-                                const SizedBox(height: 24),
+                                const SizedBox(height: ResonSpace.xl),
                                 ResonPress(
                                   child: FilledButton.icon(
                                     style: FilledButton.styleFrom(
@@ -237,42 +226,25 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: ResonSpace.xl),
                   if (active != null) _ProfileNudge(card: active),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: ResonSpace.xxl),
                   Row(
                     children: [
                       Expanded(
                         child: Text(
                           s.myCards,
-                          style: const TextStyle(
-                            fontSize: 27,
-                            letterSpacing: -.8,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium,
                         ),
                       ),
                       if (state.asData != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Text(
-                            '${state.asData!.value.length}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
+                        _CountBadge(count: state.asData!.value.length),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: ResonSpace.lg),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
+                    spacing: ResonSpace.sm,
+                    runSpacing: ResonSpace.sm,
                     children: [
                       for (final item in {
                         'all': s.homeAll,
@@ -290,14 +262,14 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: ResonSpace.xl),
                   if (_error)
                     FeedbackMessage(text: s.cardSaveError, error: true),
                   if (_busy) const LinearProgressIndicator(),
                   state.when(
                     loading: () => const Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(child: CircularProgressIndicator()),
+                      padding: EdgeInsets.symmetric(vertical: ResonSpace.sm),
+                      child: ResonCardSkeleton(),
                     ),
                     error: (_, stack) => Column(
                       children: [
@@ -336,18 +308,16 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                 color: scheme.primary,
                                 size: 42,
                               ),
-                              const SizedBox(height: 18),
+                              const SizedBox(height: ResonSpace.lg),
                               Text(
                                 cards.isEmpty
                                     ? s.cardEmptyTitle
                                     : s.homeFilterEmpty,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: ResonSpace.md),
                               Text(
                                 cards.isEmpty
                                     ? s.cardEmptyBody
@@ -385,19 +355,27 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                     child: AnimatedContainer(
                                       duration: context.motion.expand,
                                       curve: context.motion.standard,
-                                      padding: const EdgeInsets.all(12),
+                                      padding: const EdgeInsets.all(
+                                        ResonSpace.md,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: scheme.surfaceContainerLow,
                                         borderRadius: BorderRadius.circular(
-                                          context.credentials.panelRadius,
+                                          context.surfaces.panelRadius,
                                         ),
-                                        border: Border.all(
-                                          color: active?.id == card.id
-                                              ? scheme.primary.withValues(
-                                                  alpha: .5,
-                                                )
-                                              : scheme.outlineVariant,
-                                        ),
+                                        // The active card is the only panel
+                                        // that still draws an edge: it is a
+                                        // state, not a container.
+                                        border: active?.id == card.id
+                                            ? Border.all(
+                                                color: scheme.primary
+                                                    .withValues(alpha: .55),
+                                                width: 1.5,
+                                              )
+                                            : null,
+                                        boxShadow: active?.id == card.id
+                                            ? context.surfaces.raised
+                                            : context.surfaces.resting,
                                       ),
                                       child: Column(
                                         crossAxisAlignment:
@@ -418,15 +396,19 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                                   color:
                                                       scheme.onSurfaceVariant,
                                                 ),
-                                                const SizedBox(width: 6),
+                                                const SizedBox(
+                                                  width: ResonSpace.sm,
+                                                ),
                                                 Expanded(
                                                   child: Text(
                                                     s.privateCard,
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      color: scheme
-                                                          .onSurfaceVariant,
-                                                    ),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .labelSmall
+                                                        ?.copyWith(
+                                                          color: scheme
+                                                              .onSurfaceVariant,
+                                                        ),
                                                   ),
                                                 ),
                                               ],
@@ -436,7 +418,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                             card: card,
                                             heroTag: cardHeroTag(card.id),
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: ResonSpace.sm),
                                           Wrap(
                                             spacing: 4,
                                             crossAxisAlignment:
@@ -510,13 +492,12 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                       );
                     },
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: ResonSpace.xxl),
                   Center(
                     child: Text(
                       'RESON  /  THEDARKINGSTUDIOS',
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: scheme.onSurfaceVariant,
-                        fontSize: 9,
                         letterSpacing: 2,
                       ),
                     ),
@@ -546,71 +527,105 @@ class _ProfileNudge extends StatelessWidget {
     ];
     final count = fields.where((v) => v.trim().isNotEmpty).length;
     return ResonPress(
-      child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(context.credentials.passRadius),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(context.credentials.passRadius),
-          onTap: () => context.push('/cards/${card.id}/edit'),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 38,
-                  height: 38,
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: count / fields.length),
-                    duration: context.motion.meter,
-                    builder: (_, value, child) => CircularProgressIndicator(
-                      value: value,
-                      backgroundColor: scheme.outlineVariant,
-                      strokeWidth: 3,
-                      semanticsLabel: s.homeProfileDetails,
+      child: ResonPanel(
+        padding: EdgeInsets.zero,
+        clip: true,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => context.push('/cards/${card.id}/edit'),
+            child: Padding(
+              padding: const EdgeInsets.all(ResonSpace.lg + 2),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0, end: count / fields.length),
+                      duration: context.motion.meter,
+                      builder: (_, value, child) => CircularProgressIndicator(
+                        value: value,
+                        backgroundColor: scheme.outlineVariant,
+                        strokeWidth: 3,
+                        semanticsLabel: s.homeProfileDetails,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        card.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: scheme.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                  const SizedBox(width: ResonSpace.lg),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          card.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: scheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        count == fields.length ? s.homeReady : s.homeImprove,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        s.homeNudgeBody,
-                        style: TextStyle(
-                          color: scheme.onSurfaceVariant,
-                          fontSize: 12,
-                          height: 1.4,
+                        const SizedBox(height: ResonSpace.xs),
+                        Text(
+                          count == fields.length ? s.homeReady : s.homeImprove,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: ResonSpace.xs),
+                        Text(
+                          s.homeNudgeBody,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 19,
-                  color: scheme.primary,
-                ),
-              ],
+                  const SizedBox(width: ResonSpace.sm),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 19,
+                    color: scheme.primary,
+                  ),
+                ],
+              ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Card count. Animates to its new value so adding a card is felt, not just
+/// displayed.
+class _CountBadge extends StatelessWidget {
+  const _CountBadge({required this.count});
+  final int count;
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ResonSpace.md,
+        vertical: ResonSpace.xs + 2,
+      ),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(end: count.toDouble()),
+        duration: context.motion.expand,
+        curve: context.motion.standard,
+        builder: (context, value, _) => Text(
+          '${value.round()}',
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
     );

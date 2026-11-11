@@ -6,6 +6,7 @@ import '../cards/data/card_media_repository.dart';
 import 'profile_avatar.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
@@ -297,14 +298,10 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                       label: Text(s.backCards),
                     ),
                     ResonReveal(
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(28),
-                          color: scheme.surfaceContainerLow,
-                          border: Border.all(color: scheme.outlineVariant),
-                        ),
-                        clipBehavior: Clip.antiAlias,
+                      child: ResonPanel(
+                        padding: EdgeInsets.zero,
+                        raised: true,
+                        clip: true,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -322,12 +319,12 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                               padding: const EdgeInsets.all(20),
                               child: Text(
                                 s.profileStudio,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  letterSpacing: 2,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      letterSpacing: 2,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                             ),
                             Padding(
@@ -344,7 +341,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                         googleUrl: user?.googlePhotoUrl,
                                         bytes: _photoBytes,
                                       ),
-                                      const SizedBox(width: 18),
+                                      const SizedBox(width: ResonSpace.lg),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -356,13 +353,16 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                                       .isEmpty
                                                   ? s.profileTitle
                                                   : _fields['name']!.text,
-                                              style: const TextStyle(
-                                                fontSize: 25,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: -.7,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineMedium
+                                                  ?.copyWith(
+                                                    letterSpacing: -.7,
+                                                  ),
                                             ),
-                                            const SizedBox(height: 5),
+                                            const SizedBox(
+                                              height: ResonSpace.xs,
+                                            ),
                                             Text(
                                               _fields['role']!.text
                                                       .trim()
@@ -379,7 +379,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: ResonSpace.lg),
                                   Wrap(
                                     spacing: 8,
                                     runSpacing: 4,
@@ -418,11 +418,13 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                   ),
                                   Text(
                                     s.profilePhotoHint,
-                                    style: TextStyle(
-                                      color: scheme.onSurfaceVariant,
-                                      fontSize: 12,
-                                      height: 1.5,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: scheme.onSurfaceVariant,
+                                          height: 1.5,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -431,15 +433,12 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: ResonSpace.xl),
                     Text(
                       s.profileAvailability,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: ResonSpace.md),
                     Wrap(
                       spacing: 8,
                       runSpacing: 6,
@@ -464,15 +463,12 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: ResonSpace.xxl),
                     Text(
                       s.profileDetails,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: ResonSpace.sm),
                     Text(
                       s.profileIntro,
                       style: TextStyle(
@@ -480,7 +476,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                         height: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: ResonSpace.xl),
                     Form(
                       key: _form,
                       child: Column(
@@ -545,7 +541,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: ResonSpace.xl),
                     if (_message != null)
                       FeedbackMessage(text: _message!, error: _failed),
                     SizedBox(
@@ -555,7 +551,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                         child: Text(_busy ? s.savingCard : s.profileSave),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: ResonSpace.xxl),
                     const Divider(),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
@@ -568,12 +564,11 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                     ),
                     Text(
                       s.profileEmailNote,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: scheme.onSurfaceVariant,
-                        fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: ResonSpace.lg),
                     TextButton.icon(
                       onPressed: _busy
                           ? null

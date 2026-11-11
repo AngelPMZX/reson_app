@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 
 import '../../../core/theme/reson_motion.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_palette.dart';
 import '../../../core/theme/reson_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -150,7 +151,6 @@ class _AnimatedWalletState extends State<AnimatedWallet>
   Widget build(BuildContext context) {
     if (widget.cards.isEmpty) return const SizedBox.shrink();
     final s = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     final credentials = context.credentials;
     final many = widget.cards.length > 1;
     return Column(
@@ -167,14 +167,12 @@ class _AnimatedWalletState extends State<AnimatedWallet>
             return Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 520),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(14, 20, 14, 14),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(
-                      credentials.panelRadius,
-                    ),
-                    border: Border.all(color: scheme.outlineVariant),
+                child: ResonPanel(
+                  padding: const EdgeInsets.fromLTRB(
+                    ResonSpace.lg,
+                    ResonSpace.xl,
+                    ResonSpace.lg,
+                    ResonSpace.lg,
                   ),
                   child: GestureDetector(
                     onHorizontalDragStart: many ? _onDragStart : null,

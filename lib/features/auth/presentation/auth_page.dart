@@ -3,6 +3,7 @@ import 'auth_welcome.dart';
 import '../../../core/theme/reson_motion.dart';
 import '../../auth/domain/auth_repository.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -124,10 +125,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                             dark:
                                 Theme.of(context).brightness == Brightness.dark,
                           ),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: ResonSpace.xxl),
                           if (!_reset) ...[
                             const AuthWelcome(compact: true),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: ResonSpace.xl),
                           ],
                         ],
                         TextButton.icon(
@@ -143,36 +144,31 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                             padding: EdgeInsets.zero,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: ResonSpace.md),
                         Text(
                           _reset
                               ? s.resetTitle
                               : _register
                               ? s.registerTitle
                               : s.loginTitle,
-                          style: TextStyle(
-                            fontSize: 37,
-                            fontWeight: FontWeight.w600,
-                            height: 1.12,
-                            letterSpacing: -1.5,
-                          ),
+                          style: Theme.of(context).textTheme.displaySmall,
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: ResonSpace.md),
                         Text(
                           _reset
                               ? s.resetBody
                               : _register
                               ? s.registerBody
                               : s.loginBody,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                            fontSize: 14,
-                            height: 1.7,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                height: 1.7,
+                              ),
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: ResonSpace.xxl),
                         if (!ready && !availability.isLoading) ...[
                           FeedbackMessage(
                             text: availability.hasError
@@ -186,7 +182,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                   ref.invalidate(authRepositoryProvider),
                               child: Text(s.retry),
                             ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: ResonSpace.xl),
                         ],
                         if (!_reset) ...[
                           ResonPress(
@@ -206,7 +202,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: ResonSpace.lg),
                           Row(
                             children: [
                               const Expanded(child: Divider()),
@@ -216,18 +212,18 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                 ),
                                 child: Text(
                                   s.orEmail,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
+                                      ),
                                 ),
                               ),
                               const Expanded(child: Divider()),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: ResonSpace.xl),
                         ],
                         if (_register) ...[
                           _label(s.name),
@@ -251,7 +247,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                 ? s.nameTooLong
                                 : null,
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: ResonSpace.lg),
                         ],
                         _label(s.email),
                         TextFormField(
@@ -281,7 +277,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               : null,
                         ),
                         if (!_reset) ...[
-                          const SizedBox(height: 18),
+                          const SizedBox(height: ResonSpace.lg),
                           _label(s.password),
                           TextFormField(
                             key: const Key('password'),
@@ -328,7 +324,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                 : null,
                           ),
                           if (_register) ...[
-                            const SizedBox(height: 18),
+                            const SizedBox(height: ResonSpace.lg),
                             _label(s.confirmPassword),
                             TextFormField(
                               key: const Key('confirmPassword'),
@@ -361,22 +357,22 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                     : () => context.go('/reset-password'),
                                 child: Text(
                                   s.forgot,
-                                  style: TextStyle(fontSize: 12),
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ),
                             ),
                         ],
-                        const SizedBox(height: 24),
+                        const SizedBox(height: ResonSpace.xl),
                         if (_error != null) ...[
                           FeedbackMessage(
                             text: authErrorMessage(_error!, s),
                             error: true,
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: ResonSpace.lg),
                         ],
                         if (_sent) ...[
                           FeedbackMessage(text: s.resetSuccess),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: ResonSpace.lg),
                         ],
                         SizedBox(
                           width: double.infinity,
@@ -406,7 +402,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                               : s.login,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      const SizedBox(width: ResonSpace.md),
                                       const Icon(
                                         Icons.arrow_forward_rounded,
                                         size: 18,
@@ -415,7 +411,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                   ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: ResonSpace.xl),
                         Center(
                           child: _reset
                               ? TextButton(
@@ -432,12 +428,14 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                       _register
                                           ? s.alreadyAccount
                                           : s.noAccount,
-                                      style: TextStyle(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                        fontSize: 12,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                          ),
                                     ),
                                     TextButton(
                                       onPressed: _busy
@@ -449,13 +447,15 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                             ),
                                       child: Text(
                                         _register ? s.login : s.register,
-                                        style: TextStyle(fontSize: 12),
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
                                       ),
                                     ),
                                   ],
                                 ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: ResonSpace.xl),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -466,18 +466,18 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                 context,
                               ).colorScheme.onSurfaceVariant,
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: ResonSpace.sm),
                             Flexible(
                               child: Text(
                                 s.secureNote,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                  fontSize: 10,
-                                  height: 1.5,
-                                ),
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                      height: 1.5,
+                                    ),
                               ),
                             ),
                           ],
@@ -501,35 +501,36 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const ResonLogo(),
-                              const SizedBox(height: 56),
+                              const SizedBox(height: ResonSpace.huge),
                               Text(
                                 s.authPromise,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 38,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -1.2,
-                                  height: 1.18,
-                                ),
+                                style: Theme.of(context).textTheme.displaySmall
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.18,
+                                    ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: ResonSpace.lg),
                               Text(
                                 s.authPromiseBody,
-                                style: TextStyle(
-                                  color: ResonPalette.paleGrey,
-                                  fontSize: 14,
-                                  height: 1.7,
-                                ),
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(
+                                      color: ResonPalette.paleGrey,
+                                      height: 1.7,
+                                    ),
                               ),
-                              const SizedBox(height: 26),
+                              const SizedBox(height: ResonSpace.xl),
                               const Center(child: AuthWelcome()),
-                              const SizedBox(height: 40),
+                              const SizedBox(height: ResonSpace.huge),
                               Text(
                                 s.publisher,
-                                style: TextStyle(
-                                  color: ResonPalette.paleGrey,
-                                  fontSize: 11,
-                                ),
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: ResonPalette.paleGrey,
+                                      letterSpacing: null,
+                                      fontWeight: FontWeight.w400,
+                                    ),
                               ),
                             ],
                           ),
@@ -558,7 +559,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       text,
-      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
     ),
   );
 }

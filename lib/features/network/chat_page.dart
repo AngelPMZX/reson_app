@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
@@ -230,14 +231,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                           CircleAvatar(
                             child: Text(name.characters.firstOrNull ?? 'R'),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: ResonSpace.md),
                           Expanded(
                             child: Text(
                               name,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
                           TextButton(
@@ -353,16 +352,18 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                                           ),
                                           child: Text(
                                             '${date.day}/${date.month} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              color: mine
-                                                  ? Theme.of(context)
-                                                        .colorScheme
-                                                        .onPrimaryContainer
-                                                  : Theme.of(context)
-                                                        .colorScheme
-                                                        .onSurfaceVariant,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .labelSmall
+                                                ?.copyWith(
+                                                  color: mine
+                                                      ? Theme.of(context)
+                                                            .colorScheme
+                                                            .onPrimaryContainer
+                                                      : Theme.of(context)
+                                                            .colorScheme
+                                                            .onSurfaceVariant,
+                                                ),
                                           ),
                                         ),
                                     ],
@@ -406,7 +407,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: ResonSpace.md),
                           IconButton.filled(
                             tooltip: tr(
                               context,

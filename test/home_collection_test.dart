@@ -47,7 +47,9 @@ void main() {
         (w) => w is InkWell && w.key == const ValueKey('work'),
       );
       await tester.ensureVisible(workTab);
-      await tester.tap(find.descendant(of: workTab, matching: find.text('work')));
+      await tester.tap(
+        find.descendant(of: workTab, matching: find.text('work')),
+      );
       await tester.pumpAndSettle();
       expect(
         tester.widget<CardPreview>(find.byType(CardPreview)).card.kind,

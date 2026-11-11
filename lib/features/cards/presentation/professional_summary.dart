@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_tokens.dart';
 import 'package:url_launcher/link.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -49,17 +50,16 @@ class ProfessionalSummary extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: ResonSpace.xl),
             Row(
               children: [
                 Icon(icon, size: 19, color: scheme.primary),
-                const SizedBox(width: 10),
+                const SizedBox(width: ResonSpace.md),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -89,11 +89,8 @@ class ProfessionalSummary extends StatelessWidget {
                       if (e.period.isNotEmpty)
                         Text(
                           e.period,
-                          style: TextStyle(
-                            color: scheme.primary,
-                            fontSize: 12,
-                            height: 1.8,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: scheme.primary, height: 1.8),
                         ),
                       if (e.details.isNotEmpty)
                         Padding(
@@ -127,7 +124,7 @@ class ProfessionalSummary extends StatelessWidget {
           title: Text(s.professionalProfile),
           subtitle: Text(
             s.exploreProfile,
-            style: const TextStyle(fontSize: 12),
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
           childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
           children: [

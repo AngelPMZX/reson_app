@@ -9,6 +9,7 @@ import 'dart:ui' as ui;
 import 'package:image_picker/image_picker.dart';
 import '../data/card_media_repository.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
@@ -383,13 +384,13 @@ class _EditorState extends ConsumerState<_Editor> {
                     ResonLogo(
                       dark: Theme.of(context).brightness == Brightness.dark,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: ResonSpace.xl),
                     TextButton.icon(
                       onPressed: _busy ? null : _back,
                       icon: const Icon(Icons.arrow_back),
                       label: Text(s.backCards),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: ResonSpace.lg),
                     ResonReveal(
                       child: Container(
                         width: double.infinity,
@@ -411,18 +412,15 @@ class _EditorState extends ConsumerState<_Editor> {
                               color: Theme.of(context).colorScheme.primary,
                               size: 24,
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: ResonSpace.lg),
                             Text(
                               widget.initial.id.isEmpty
                                   ? s.newCard
                                   : s.editCard,
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -.8,
-                              ),
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(letterSpacing: -.8),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: ResonSpace.sm),
                             Text(
                               s.cardEditorBody,
                               style: TextStyle(
@@ -436,7 +434,7 @@ class _EditorState extends ConsumerState<_Editor> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: ResonSpace.xxl),
                     LayoutBuilder(
                       builder: (context, bounds) {
                         final form = Form(
@@ -445,7 +443,7 @@ class _EditorState extends ConsumerState<_Editor> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _customization(),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: ResonSpace.xl),
                               _field(
                                 'label',
                                 s.cardLabel,
@@ -545,13 +543,13 @@ class _EditorState extends ConsumerState<_Editor> {
                                         )
                                         .toList(),
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: ResonSpace.xl),
                               if (_error) ...[
                                 FeedbackMessage(
                                   text: _saveMessage ?? s.cardSaveError,
                                   error: true,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: ResonSpace.lg),
                               ],
                               if (_photoError != null && _photo != null)
                                 TextButton(
@@ -594,13 +592,13 @@ class _EditorState extends ConsumerState<_Editor> {
                           children: [
                             Text(
                               s.previewCard,
-                              style: const TextStyle(
-                                color: ResonTheme.muted,
-                                letterSpacing: 2,
-                                fontSize: 11,
-                              ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: ResonTheme.muted,
+                                    letterSpacing: 2,
+                                  ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: ResonSpace.lg),
                             CardPreview(
                               card: draft,
                               photoBytes: _photo,
@@ -610,13 +608,11 @@ class _EditorState extends ConsumerState<_Editor> {
                                   ? null
                                   : cardHeroTag(widget.initial.id),
                             ),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: ResonSpace.lg),
                             Text(
                               s.privateCard,
-                              style: const TextStyle(
-                                color: ResonTheme.muted,
-                                fontSize: 12,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: ResonTheme.muted),
                             ),
                           ],
                         );
@@ -625,14 +621,14 @@ class _EditorState extends ConsumerState<_Editor> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(child: form),
-                                  const SizedBox(width: 40),
+                                  const SizedBox(width: ResonSpace.huge),
                                   Expanded(child: preview),
                                 ],
                               )
                             : Column(
                                 children: [
                                   preview,
-                                  const SizedBox(height: 32),
+                                  const SizedBox(height: ResonSpace.xxl),
                                   form,
                                 ],
                               );
@@ -659,9 +655,9 @@ class _EditorState extends ConsumerState<_Editor> {
       children: [
         Text(
           AppLocalizations.of(context)!.designYourStyle,
-          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: ResonSpace.lg),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -688,7 +684,7 @@ class _EditorState extends ConsumerState<_Editor> {
               ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: ResonSpace.lg),
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -701,12 +697,12 @@ class _EditorState extends ConsumerState<_Editor> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(Icons.auto_awesome_outlined, size: 20),
-              const SizedBox(width: 12),
+              const SizedBox(width: ResonSpace.md),
               Expanded(child: Text(tip, style: const TextStyle(height: 1.5))),
             ],
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: ResonSpace.lg),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -733,12 +729,12 @@ class _EditorState extends ConsumerState<_Editor> {
               ),
           ],
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: ResonSpace.xl),
         Text(
           AppLocalizations.of(context)!.designPhotograph,
-          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: ResonSpace.md),
         Wrap(
           spacing: 8,
           children: [
@@ -780,12 +776,12 @@ class _EditorState extends ConsumerState<_Editor> {
         ),
         if (_photoError != null)
           FeedbackMessage(text: _photoError!, error: true),
-        const SizedBox(height: 16),
+        const SizedBox(height: ResonSpace.lg),
         Text(
           AppLocalizations.of(context)!.designYourInformation,
-          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: ResonSpace.sm),
         Text(
           AppLocalizations.of(context)!.designUseTheEyeIconToChoose,
           style: TextStyle(

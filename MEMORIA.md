@@ -220,6 +220,24 @@ Animaciones de entrada, cartera, selección, expansiones, formularios y conexió
 
 Las credenciales ya **no conservan neutros lavanda**: los ocho layouts usan neutros cálidos derivados del carmín, nombrados en `ResonPalette` (`roseVeil`, `roseMist`, `wineInk`, `wineGrey`, `wineShadow`, `nightWine`, `duskWine`, `parchment`, `studioInk`…). No quedan colores crudos en `card_preview.dart` ni en `credential_card.dart`. Los **17 presets de color que ofrece el editor siguen siendo variados a propósito**: son la elección del titular, no la marca.
 
+### Fundamentos visuales (noviembre 2026)
+
+`lib/core/theme/reson_surfaces.dart` añade tres piezas más al sistema:
+
+- **`ResonType`**: escala tipográfica de ocho roles montada sobre `TextTheme` (`displaySmall`, `headlineMedium`, `titleLarge`, `titleMedium`, `bodyLarge`, `bodyMedium`, `labelLarge`, `labelSmall`). Antes había 21 tamaños sueltos. **`bodyMedium` debe conservar `onSurface`**: Material lo usa como estilo por defecto de todo `Text` sin color propio, y teñirlo de gris vuelve gris la app entera, titulares incluidos. Hay prueba que lo fija.
+- **`ResonSpace`**: ritmo de 4pt (`xs` 4 … `huge` 48) frente a las 20 separaciones distintas que había.
+- **`ResonSurfaces`**: `resting`, `raised` y `floating`, con sombras distintas por brillo. La app tenía **5 sombras en total**: todo se separaba con borde de 1px y nada vivía por encima de nada. El borde pasa a ser la excepción; hoy solo lo usa la tarjeta activa, porque ahí es un estado, no un contenedor.
+
+Widgets nuevos: `ResonPanel` (superficie elevada, sustituye al `Container` con borde que cada pantalla construía a mano), `ResonStagger` (entrada en cascada sin temporizadores, para que `pumpAndSettle` siga asentando) y `ResonSkeleton`/`ResonCardSkeleton` (sustituyen al spinner; el barrido no corre con movimiento reducido, porque una animación en bucle impide asentar las pruebas).
+
+**La tipografía de las credenciales no sigue la escala de la app a propósito**: la credencial es una pieza de diseño, no cromo. Los tamaños de `card_preview.dart`, `credential_card.dart` y `animated_wallet.dart` se dejan a mano.
+
+El tema arranca en **`ThemeMode.system`** y solo fija un lado cuando el usuario toca el conmutador; la elección se guarda en `darkMode`. El icono debe leer `Theme.of(context).brightness`, no el `ThemeMode`, porque con `system` el modo no dice qué se está viendo.
+
+La migración está **completa en el cromo**: cero `fontSize` y cero separaciones crudas fuera del arte. Lo que conserva valores a mano es deliberado y no debe migrarse: `card_preview.dart`, `credential_card.dart`, `animated_wallet.dart`, `home_identity_art.dart` y la tarjeta de muestra de `brand_widgets.dart`. Esa última vive en un lienzo de alto fijo (250px): ajustar sus gaps al ritmo la desborda.
+
+Los filtros de inicio se probaron como carril horizontal y **se revirtió a `Wrap`**: con solo cuatro, un carril deja el cuarto fuera de pantalla. La fila huérfana es preferible a esconder un filtro.
+
 La cartera responde al dedo: arrastre continuo con posición fraccionaria y asentamiento por resorte, no por tween. La credencial vuela con `Hero` entre cartera, editor y compartir; esas dos rutas usan `context.push` y no `go`, porque un `Hero` necesita una ruta apilada. `/cards/new` sigue con `go` al no tener credencial de origen.
 
 ## 12. Incidencias resueltas y lecciones
@@ -267,7 +285,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 ## 14. Verificación y despliegue
 
-Última entrega: **76 pruebas Flutter**, **17 pruebas backend/reglas**, analyze sin incidencias, build web release correcto. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
+Última entrega: **80 pruebas Flutter**, **17 pruebas backend/reglas**, analyze sin incidencias, build web release correcto. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
 
 ```powershell
 flutter analyze

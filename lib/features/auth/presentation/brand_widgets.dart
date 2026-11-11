@@ -1,6 +1,7 @@
 import '../../../core/theme/reson_palette.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_theme.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
@@ -24,7 +25,7 @@ class ResonLogo extends StatelessWidget {
           size: 25,
         ),
       ),
-      const SizedBox(width: 10),
+      const SizedBox(width: ResonSpace.md),
       Text(
         'reson',
         style: TextStyle(
@@ -125,7 +126,7 @@ class IdentityPreview extends StatelessWidget {
                                 Icons.blur_on_rounded,
                                 color: ResonPalette.grey,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: ResonSpace.sm),
                               Expanded(
                                 child: Text(
                                   s.sampleCompany,
@@ -139,6 +140,9 @@ class IdentityPreview extends StatelessWidget {
                               const Icon(Icons.north_east, size: 18),
                             ],
                           ),
+                          // The sample card is artwork on a fixed canvas, so
+                          // its inner gaps stay hand-set rather than snapping
+                          // to the app rhythm and overflowing the frame.
                           const SizedBox(height: 26),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -159,7 +163,7 @@ class IdentityPreview extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
+                                    const SizedBox(height: ResonSpace.md),
                                     Text(
                                       s.sampleName,
                                       style: const TextStyle(
@@ -205,7 +209,7 @@ class IdentityPreview extends StatelessWidget {
               letterSpacing: 1.6,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: ResonSpace.xl),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -266,7 +270,7 @@ class FeedbackMessage extends StatelessWidget {
             size: 19,
             color: error ? const Color(0xFFA52A38) : ResonTheme.brand,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: ResonSpace.md),
           Expanded(
             child: Text(
               text,

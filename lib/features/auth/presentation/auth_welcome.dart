@@ -1,5 +1,6 @@
 import '../../../core/theme/reson_palette.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_motion.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
@@ -39,13 +40,12 @@ class _AuthWelcomeState extends State<AuthWelcome> {
                 color: ResonPalette.white,
                 size: 24,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: ResonSpace.md),
               Expanded(
                 child: Text(
                   s.authEyebrow,
-                  style: const TextStyle(
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: ResonPalette.white,
-                    fontSize: 9,
                     letterSpacing: 1.6,
                   ),
                 ),
@@ -67,7 +67,7 @@ class _AuthWelcomeState extends State<AuthWelcome> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 12),
+                const SizedBox(height: ResonSpace.md),
                 Text(
                   s.authVisualTitle,
                   style: TextStyle(
@@ -78,7 +78,7 @@ class _AuthWelcomeState extends State<AuthWelcome> {
                     letterSpacing: -1,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: ResonSpace.xl),
                 for (final item in [
                   (Icons.palette_outlined, s.authBenefit1),
                   (Icons.badge_outlined, s.authBenefit2),
@@ -89,15 +89,15 @@ class _AuthWelcomeState extends State<AuthWelcome> {
                     child: Row(
                       children: [
                         Icon(item.$1, color: ResonPalette.white, size: 17),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: ResonSpace.md),
                         Expanded(
                           child: Text(
                             item.$2,
-                            style: const TextStyle(
-                              color: ResonPalette.paleGrey,
-                              fontSize: 12,
-                              height: 1.5,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: ResonPalette.paleGrey,
+                                  height: 1.5,
+                                ),
                           ),
                         ),
                       ],

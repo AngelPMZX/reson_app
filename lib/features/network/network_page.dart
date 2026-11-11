@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_surfaces.dart';
+import '../../core/theme/reson_motion.dart';
 import '../../core/theme/reson_tokens.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,7 +82,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                     color: Theme.of(ctx).colorScheme.primary,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: ResonSpace.xl),
                 Text(
                   tr(
                     ctx,
@@ -88,12 +90,9 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                     'A meaningful connection',
                   ),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: ResonSpace.md),
                 Text(
                   tr(
                     ctx,
@@ -180,9 +179,9 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           if (busy) const LinearProgressIndicator(),
           Text(
             tr(context, 'Conexiones y chats', 'Connections and chats'),
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: ResonSpace.lg),
           connections.when(
             loading: () => const LinearProgressIndicator(),
             error: (e, _) => Text(networkError(e, true)),
@@ -200,115 +199,122 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
               }
               return Column(
                 children: [
-                  for (final doc in docs)
-                    Builder(
-                      builder: (context) {
-                        final d = doc.data();
-                        final other = (d['members'] as List).firstWhere(
-                          (v) => v != uid,
-                        );
-                        final name = (d['names'] as Map)[other] as String;
-                        final status = d['status'];
-                        return NetworkPanel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: CircleAvatar(
-                                  child: Text(
-                                    name.characters.firstOrNull ?? 'R',
+                  for (final (index, doc) in docs.indexed)
+                    ResonStagger(
+                      index: index,
+                      child: Builder(
+                        builder: (context) {
+                          final d = doc.data();
+                          final other = (d['members'] as List).firstWhere(
+                            (v) => v != uid,
+                          );
+                          final name = (d['names'] as Map)[other] as String;
+                          final status = d['status'];
+                          return NetworkPanel(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    child: Text(
+                                      name.characters.firstOrNull ?? 'R',
+                                    ),
                                   ),
+                                  title: Text(name),
+                                  subtitle: Text(
+                                    status == 'accepted'
+                                        ? tr(
+                                            context,
+                                            'Conexión aceptada',
+                                            'Connected',
+                                          )
+                                        : status == 'pending'
+                                        ? tr(
+                                            context,
+                                            'Solicitud pendiente',
+                                            'Pending request',
+                                          )
+                                        : status == 'blocked'
+                                        ? tr(
+                                            context,
+                                            'Conexión bloqueada',
+                                            'Blocked',
+                                          )
+                                        : tr(
+                                            context,
+                                            'Solicitud rechazada',
+                                            'Declined',
+                                          ),
+                                  ),
+                                  trailing: status == 'accepted'
+                                      ? IconButton(
+                                          tooltip: tr(
+                                            context,
+                                            'Conversar',
+                                            'Chat',
+                                          ),
+                                          onPressed: () =>
+                                              context.go('/chat/${doc.id}'),
+                                          icon: const Icon(
+                                            Icons.chat_bubble_outline,
+                                          ),
+                                        )
+                                      : null,
                                 ),
-                                title: Text(name),
-                                subtitle: Text(
-                                  status == 'accepted'
-                                      ? tr(
-                                          context,
-                                          'Conexión aceptada',
-                                          'Connected',
-                                        )
-                                      : status == 'pending'
-                                      ? tr(
-                                          context,
-                                          'Solicitud pendiente',
-                                          'Pending request',
-                                        )
-                                      : status == 'blocked'
-                                      ? tr(
-                                          context,
-                                          'Conexión bloqueada',
-                                          'Blocked',
-                                        )
-                                      : tr(
-                                          context,
-                                          'Solicitud rechazada',
-                                          'Declined',
+                                Wrap(
+                                  spacing: 8,
+                                  children: [
+                                    if (status == 'pending' &&
+                                        d['recipient'] == uid) ...[
+                                      FilledButton(
+                                        onPressed: busy
+                                            ? null
+                                            : () => respond(doc.id, 'accept'),
+                                        child: Text(
+                                          tr(context, 'Aceptar', 'Accept'),
                                         ),
-                                ),
-                                trailing: status == 'accepted'
-                                    ? IconButton(
-                                        tooltip: tr(
-                                          context,
-                                          'Conversar',
-                                          'Chat',
-                                        ),
-                                        onPressed: () =>
-                                            context.go('/chat/${doc.id}'),
-                                        icon: const Icon(
-                                          Icons.chat_bubble_outline,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              Wrap(
-                                spacing: 8,
-                                children: [
-                                  if (status == 'pending' &&
-                                      d['recipient'] == uid) ...[
-                                    FilledButton(
-                                      onPressed: busy
-                                          ? null
-                                          : () => respond(doc.id, 'accept'),
-                                      child: Text(
-                                        tr(context, 'Aceptar', 'Accept'),
                                       ),
-                                    ),
-                                    TextButton(
-                                      onPressed: busy
-                                          ? null
-                                          : () => respond(doc.id, 'decline'),
-                                      child: Text(
-                                        tr(context, 'Rechazar', 'Decline'),
+                                      TextButton(
+                                        onPressed: busy
+                                            ? null
+                                            : () => respond(doc.id, 'decline'),
+                                        child: Text(
+                                          tr(context, 'Rechazar', 'Decline'),
+                                        ),
                                       ),
-                                    ),
+                                    ],
+                                    if (status != 'blocked')
+                                      TextButton(
+                                        onPressed: () => context.go(
+                                          '/receive/${(d['cards'] as Map)[other]}',
+                                        ),
+                                        child: Text(
+                                          tr(
+                                            context,
+                                            'Ver tarjeta',
+                                            'View card',
+                                          ),
+                                        ),
+                                      ),
                                   ],
-                                  if (status != 'blocked')
-                                    TextButton(
-                                      onPressed: () => context.go(
-                                        '/receive/${(d['cards'] as Map)[other]}',
-                                      ),
-                                      child: Text(
-                                        tr(context, 'Ver tarjeta', 'View card'),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
                 ],
               );
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: ResonSpace.xl),
           Text(
             tr(context, 'Tarjetas recibidas', 'Saved cards'),
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: ResonSpace.lg),
           received.when(
             loading: () => const LinearProgressIndicator(),
             error: (e, _) => Text(networkError(e, true)),
@@ -324,42 +330,48 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                   )
                 : Column(
                     children: [
-                      for (final d in docs)
-                        NetworkPanel(
-                          child: ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(d.data()['name'] as String),
-                            subtitle: Text(d.data()['label'] as String),
-                            onTap: () => context.go('/receive/${d.id}'),
-                            trailing: IconButton(
-                              tooltip: tr(
-                                context,
-                                'Quitar de mi colección',
-                                'Remove from collection',
+                      for (final (index, d) in docs.indexed)
+                        ResonStagger(
+                          index: index,
+                          child: NetworkPanel(
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(d.data()['name'] as String),
+                              subtitle: Text(d.data()['label'] as String),
+                              onTap: () => context.go('/receive/${d.id}'),
+                              trailing: IconButton(
+                                tooltip: tr(
+                                  context,
+                                  'Quitar de mi colección',
+                                  'Remove from collection',
+                                ),
+                                icon: const Icon(
+                                  Icons.bookmark_remove_outlined,
+                                ),
+                                onPressed: busy
+                                    ? null
+                                    : () async {
+                                        setState(() => busy = true);
+                                        try {
+                                          await ref
+                                              .read(networkServiceProvider)
+                                              .act('removeSaved', {
+                                                'publicId': d.id,
+                                              });
+                                        } catch (e) {
+                                          if (mounted) {
+                                            setState(
+                                              () =>
+                                                  error = networkError(e, true),
+                                            );
+                                          }
+                                        } finally {
+                                          if (mounted) {
+                                            setState(() => busy = false);
+                                          }
+                                        }
+                                      },
                               ),
-                              icon: const Icon(Icons.bookmark_remove_outlined),
-                              onPressed: busy
-                                  ? null
-                                  : () async {
-                                      setState(() => busy = true);
-                                      try {
-                                        await ref
-                                            .read(networkServiceProvider)
-                                            .act('removeSaved', {
-                                              'publicId': d.id,
-                                            });
-                                      } catch (e) {
-                                        if (mounted) {
-                                          setState(
-                                            () => error = networkError(e, true),
-                                          );
-                                        }
-                                      } finally {
-                                        if (mounted) {
-                                          setState(() => busy = false);
-                                        }
-                                      }
-                                    },
                             ),
                           ),
                         ),

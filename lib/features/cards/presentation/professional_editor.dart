@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/professional_profile.dart';
@@ -266,7 +267,7 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
                   : s.addCareerItem,
             ),
           ),
-        const SizedBox(height: 20),
+        const SizedBox(height: ResonSpace.xl),
       ],
     );
   }
@@ -278,12 +279,12 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 24),
+        const SizedBox(height: ResonSpace.xl),
         Text(
           widget.showVisibility ? s.professionalTitle : s.profileCareerTitle,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: ResonSpace.sm),
         Text(
           widget.showVisibility ? s.professionalHint : s.profileCareerHint,
           style: TextStyle(
@@ -291,16 +292,15 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
             height: 1.5,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: ResonSpace.xl),
         _field(sector, s.careerSector, 100, field: 'sector'),
         Text(
           s.careerSectorHint,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 12,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: ResonSpace.lg),
         _field(specialty, s.careerSpecialty, 180, field: 'specialty'),
         _field(workMode, s.careerWorkMode, 100, field: 'workMode'),
         _field(location, s.location, 100, field: 'location'),
