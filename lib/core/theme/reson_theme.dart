@@ -1,4 +1,5 @@
 import 'reson_palette.dart';
+import 'reson_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -89,6 +90,7 @@ abstract final class ResonTheme {
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
+      extensions: const [ResonMotion(), ResonCredentials()],
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant.withValues(alpha: .45),
       ),

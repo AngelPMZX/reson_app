@@ -1,6 +1,7 @@
 import '../../../core/theme/reson_palette.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_tokens.dart';
 
 /// Decorative identity cards drawn locally; never implies a real QR or contact.
 class HomeIdentityArt extends StatelessWidget {
@@ -10,10 +11,8 @@ class HomeIdentityArt extends StatelessWidget {
   Widget build(BuildContext context) => ExcludeSemantics(
     child: TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 1200),
-      curve: Curves.easeOutCubic,
+      duration: context.motion.showcase,
+      curve: context.motion.standard,
       builder: (_, value, child) =>
           CustomPaint(painter: _IdentityPainter(value, compact)),
     ),

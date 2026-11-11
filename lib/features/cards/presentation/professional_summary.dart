@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_tokens.dart';
 import 'package:url_launcher/link.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/digital_card.dart';
@@ -120,9 +121,7 @@ class ProfessionalSummary extends StatelessWidget {
           key: ValueKey('professional_${card.id}'),
           shape: const Border(),
           expansionAnimationStyle: AnimationStyle(
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 350),
+            duration: context.motion.expand,
           ),
           leading: Icon(Icons.work_outline_rounded, color: scheme.primary),
           title: Text(s.professionalProfile),

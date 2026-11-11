@@ -701,7 +701,7 @@ abstract class AppLocalizations {
   /// No description provided for @invalidColor.
   ///
   /// In en, this message translates to:
-  /// **'Use a hex color, for example #7860E9.'**
+  /// **'Use a hex color, for example #C8102E.'**
   String get invalidColor;
 
   /// No description provided for @maxLength.

@@ -335,7 +335,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Usa una dirección que empiece con https:// o http://.';
 
   @override
-  String get invalidColor => 'Usa un color hexadecimal, por ejemplo #7860E9.';
+  String get invalidColor => 'Usa un color hexadecimal, por ejemplo #C8102E.';
 
   @override
   String get maxLength => 'El texto supera la longitud permitida.';

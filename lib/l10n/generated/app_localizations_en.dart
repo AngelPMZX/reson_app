@@ -333,7 +333,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Use an address starting with https:// or http://.';
 
   @override
-  String get invalidColor => 'Use a hex color, for example #7860E9.';
+  String get invalidColor => 'Use a hex color, for example #C8102E.';
 
   @override
   String get maxLength => 'This text is too long.';

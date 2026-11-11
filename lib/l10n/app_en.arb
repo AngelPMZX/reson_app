@@ -100,7 +100,7 @@
   "cardSaveError": "We couldn't save your changes. Check your connection and try again.",
   "cardNotFound": "This card is no longer available.",
   "invalidWebsite": "Use an address starting with https:// or http://.",
-  "invalidColor": "Use a hex color, for example #7860E9.",
+  "invalidColor": "Use a hex color, for example #C8102E.",
   "maxLength": "This text is too long.",
   "activeCard": "Active card",
   "activateCard": "Use this card",

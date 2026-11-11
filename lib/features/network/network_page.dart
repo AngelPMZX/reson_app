@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_tokens.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -69,10 +70,8 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
               children: [
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: .5, end: 1),
-                  duration: MediaQuery.disableAnimationsOf(ctx)
-                      ? Duration.zero
-                      : const Duration(milliseconds: 550),
-                  curve: Curves.easeOutBack,
+                  duration: ctx.motion.entrance,
+                  curve: ctx.motion.overshoot,
                   builder: (_, v, child) =>
                       Transform.scale(scale: v, child: child),
                   child: Icon(

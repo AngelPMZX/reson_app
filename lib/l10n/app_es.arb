@@ -100,7 +100,7 @@
   "cardSaveError": "No pudimos guardar los cambios. Revisa tu conexión e inténtalo otra vez.",
   "cardNotFound": "Esta tarjeta ya no está disponible.",
   "invalidWebsite": "Usa una dirección que empiece con https:// o http://.",
-  "invalidColor": "Usa un color hexadecimal, por ejemplo #7860E9.",
+  "invalidColor": "Usa un color hexadecimal, por ejemplo #C8102E.",
   "maxLength": "El texto supera la longitud permitida.",
   "activeCard": "Tarjeta activa",
   "activateCard": "Usar esta tarjeta",

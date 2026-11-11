@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/professional_profile.dart';
 
@@ -242,7 +243,12 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
               ],
             ),
           ),
-        if (list.length < 4 && experience.length + education.length + projects.length + certifications.length < 8)
+        if (list.length < 4 &&
+            experience.length +
+                    education.length +
+                    projects.length +
+                    certifications.length <
+                8)
           OutlinedButton.icon(
             key: Key('add_$id'),
             onPressed: widget.enabled
@@ -268,48 +274,51 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
   @override
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
+    final motion = context.motion;
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Text(
+          widget.showVisibility ? s.professionalTitle : s.profileCareerTitle,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          widget.showVisibility ? s.professionalHint : s.profileCareerHint,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 20),
+        _field(sector, s.careerSector, 100, field: 'sector'),
+        Text(
+          s.careerSectorHint,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _field(specialty, s.careerSpecialty, 180, field: 'specialty'),
+        _field(workMode, s.careerWorkMode, 100, field: 'workMode'),
+        _field(location, s.location, 100, field: 'location'),
+        _field(linkedin, 'LinkedIn', 500, field: 'linkedin'),
+        _field(skills, s.skills, 180, field: 'skills'),
+        _section('experience', s.experience, experience),
+        _section('education', s.education, education),
+        _section('projects', s.careerProjects, projects),
+        _section('certifications', s.careerCertifications, certifications),
+      ],
+    );
+    // AnimatedSize re-dirties itself during its own layout when handed a zero
+    // duration, so reduced motion drops the wrapper instead of stilling it.
+    if (motion.isStill) return body;
     return AnimatedSize(
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 280),
+      duration: motion.expand,
       alignment: Alignment.topCenter,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 24),
-          Text(
-            widget.showVisibility ? s.professionalTitle : s.profileCareerTitle,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.showVisibility ? s.professionalHint : s.profileCareerHint,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _field(sector, s.careerSector, 100, field: 'sector'),
-          Text(
-            s.careerSectorHint,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _field(specialty, s.careerSpecialty, 180, field: 'specialty'),
-          _field(workMode, s.careerWorkMode, 100, field: 'workMode'),
-          _field(location, s.location, 100, field: 'location'),
-          _field(linkedin, 'LinkedIn', 500, field: 'linkedin'),
-          _field(skills, s.skills, 180, field: 'skills'),
-          _section('experience', s.experience, experience),
-          _section('education', s.education, education),
-          _section('projects', s.careerProjects, projects),
-          _section('certifications', s.careerCertifications, certifications),
-        ],
-      ),
+      child: body,
     );
   }
 }
