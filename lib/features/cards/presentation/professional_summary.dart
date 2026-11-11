@@ -111,8 +111,8 @@ class ProfessionalSummary extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: scheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: scheme.outlineVariant),
+          borderRadius: BorderRadius.circular(context.surfaces.tileRadius + 4),
+          boxShadow: context.surfaces.resting,
         ),
         child: ExpansionTile(
           key: ValueKey('professional_${card.id}'),

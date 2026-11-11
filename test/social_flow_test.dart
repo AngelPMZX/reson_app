@@ -119,6 +119,7 @@ void main() {
       c.read(routerProvider).go('/cards/${card.id}/share');
       await tester.pumpAndSettle();
       expect(service.calls, isEmpty);
+      await captureSocial(tester, 'share');
       final email = find.widgetWithText(FilterChip, 'Correo de contacto');
       await tester.ensureVisible(email);
       await tester.tap(email);

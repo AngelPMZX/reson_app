@@ -137,7 +137,7 @@ void main() {
   });
 
   if (const bool.fromEnvironment('RESON_SCREENSHOTS')) {
-    for (final page in ['profile', 'wallet']) {
+    for (final page in ['profile', 'wallet', 'editor']) {
       testWidgets('$page visual preview', (tester) async {
         final auth = verified.session();
         addTearDown(auth.dispose);
@@ -162,6 +162,7 @@ void main() {
           size: const Size(390, 1000),
         );
         if (page == 'profile') container.read(routerProvider).go('/profile');
+        if (page == 'editor') container.read(routerProvider).go('/cards/new');
         final boundary = GlobalKey();
         await tester.pumpWidget(
           UncontrolledProviderScope(

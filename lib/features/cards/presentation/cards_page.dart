@@ -298,8 +298,10 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                           ),
                           decoration: BoxDecoration(
                             color: scheme.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(26),
-                            border: Border.all(color: scheme.outlineVariant),
+                            borderRadius: BorderRadius.circular(
+                              context.surfaces.panelRadius,
+                            ),
+                            boxShadow: context.surfaces.resting,
                           ),
                           child: Column(
                             children: [

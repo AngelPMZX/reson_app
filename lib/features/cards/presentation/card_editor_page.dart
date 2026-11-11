@@ -9,6 +9,7 @@ import 'dart:ui' as ui;
 import 'package:image_picker/image_picker.dart';
 import '../data/card_media_repository.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/reson_tokens.dart';
 import '../../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -399,10 +400,10 @@ class _EditorState extends ConsumerState<_Editor> {
                           color: Theme.of(
                             context,
                           ).colorScheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outlineVariant,
+                          borderRadius: BorderRadius.circular(
+                            context.surfaces.panelRadius,
                           ),
+                          boxShadow: context.surfaces.resting,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
