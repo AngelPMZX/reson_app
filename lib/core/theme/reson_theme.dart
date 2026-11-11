@@ -1,9 +1,14 @@
 import 'reson_palette.dart';
+import 'reson_surfaces.dart';
 import 'reson_tokens.dart';
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Theme mode. Follows the device until the user picks a side by hand, and
+/// remembers that choice from then on.
 class Appearance extends Notifier<ThemeMode> {
   bool _changed = false;
   @override
@@ -11,24 +16,36 @@ class Appearance extends Notifier<ThemeMode> {
     Future<void>(() async {
       try {
         final prefs = await SharedPreferences.getInstance();
-        if (ref.mounted && !_changed) {
-          state = prefs.getBool('darkMode') == false
-              ? ThemeMode.light
-              : ThemeMode.dark;
+        final stored = prefs.getBool('darkMode');
+        if (ref.mounted && !_changed && stored != null) {
+          state = stored ? ThemeMode.dark : ThemeMode.light;
         }
       } catch (_) {
         /* Device preferences are optional. */
       }
     });
-    return ThemeMode.dark;
+    return ThemeMode.system;
   }
 
+  /// Whether the device itself is currently dark, for when no choice is saved.
+  bool get _deviceIsDark =>
+      PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+
+  /// Switches away from whatever is on screen right now, which is not the same
+  /// as negating [state] while that state is [ThemeMode.system].
   Future<void> toggle() async {
     _changed = true;
-    state = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    final dark = state == ThemeMode.dark;
+    final showingDark = switch (state) {
+      ThemeMode.dark => true,
+      ThemeMode.light => false,
+      ThemeMode.system => _deviceIsDark,
+    };
+    state = showingDark ? ThemeMode.light : ThemeMode.dark;
     try {
-      await (await SharedPreferences.getInstance()).setBool('darkMode', dark);
+      await (await SharedPreferences.getInstance()).setBool(
+        'darkMode',
+        state == ThemeMode.dark,
+      );
     } catch (_) {}
   }
 }
@@ -90,7 +107,12 @@ abstract final class ResonTheme {
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surface,
-      extensions: const [ResonMotion(), ResonCredentials()],
+      textTheme: ResonType.of(scheme),
+      extensions: [
+        const ResonMotion(),
+        const ResonCredentials(),
+        ResonSurfaces.of(brightness),
+      ],
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant.withValues(alpha: .45),
       ),

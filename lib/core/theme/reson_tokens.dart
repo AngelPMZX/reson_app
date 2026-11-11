@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'reson_palette.dart';
+import 'reson_surfaces.dart';
 
 /// Named motion tokens for Reson.
 ///
@@ -327,4 +328,9 @@ extension ResonTokens on BuildContext {
   /// Credential geometry and colours.
   ResonCredentials get credentials =>
       Theme.of(this).extension<ResonCredentials>() ?? const ResonCredentials();
+
+  /// Depth tokens for the current brightness.
+  ResonSurfaces get surfaces =>
+      Theme.of(this).extension<ResonSurfaces>() ??
+      ResonSurfaces.of(Theme.of(this).brightness);
 }

@@ -124,7 +124,9 @@ void main() {
     await tester.enterText(find.byKey(const Key('card_label')), 'Borrador');
     await tester.tap(find.byKey(const Key('themeToggle')));
     await tester.pumpAndSettle();
-    expect(container.read(appearanceProvider), ThemeMode.light);
+    // Starts out following the device, so the first tap commits to the
+    // opposite of whatever brightness is actually on screen.
+    expect(container.read(appearanceProvider), ThemeMode.dark);
     expect(
       tester
           .widget<TextFormField>(find.byKey(const Key('card_label')))
@@ -324,7 +326,12 @@ void main() {
           cardsRepository: cards,
           size: const Size(390, 1000),
         );
-        if (!dark) await container.read(appearanceProvider.notifier).toggle();
+        // The default follows the device now, so a single toggle no longer
+        // lands on a known side. Drive it until it is the mode under test.
+        final wanted = dark ? ThemeMode.dark : ThemeMode.light;
+        while (container.read(appearanceProvider) != wanted) {
+          await container.read(appearanceProvider.notifier).toggle();
+        }
         final boundary = GlobalKey();
         await tester.pumpWidget(
           UncontrolledProviderScope(

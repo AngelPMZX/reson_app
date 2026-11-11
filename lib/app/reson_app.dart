@@ -167,8 +167,10 @@ class ResonApp extends ConsumerWidget {
                   ),
                   onPressed: () =>
                       ref.read(appearanceProvider.notifier).toggle(),
+                  // Reads the brightness actually on screen: under
+                  // ThemeMode.system the mode alone does not say which.
                   icon: Icon(
-                    ref.watch(appearanceProvider) == ThemeMode.dark
+                    Theme.of(context).brightness == Brightness.dark
                         ? Icons.light_mode_outlined
                         : Icons.dark_mode_outlined,
                   ),
