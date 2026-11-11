@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/firebase/firebase_bootstrap.dart';
 import '../../../core/theme/reson_motion.dart';
+import '../../../core/theme/reson_tokens.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../auth/presentation/brand_widgets.dart';
 import '../application/cards_providers.dart';
@@ -378,11 +379,18 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                       ? (box.maxWidth - 22) / 2
                                       : box.maxWidth,
                                   child: ResonReveal(
-                                    child: Container(
+                                    // Making a card active used to swap the
+                                    // border instantly; now the highlight
+                                    // travels with the rest of the change.
+                                    child: AnimatedContainer(
+                                      duration: context.motion.expand,
+                                      curve: context.motion.standard,
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
                                         color: scheme.surfaceContainerLow,
-                                        borderRadius: BorderRadius.circular(30),
+                                        borderRadius: BorderRadius.circular(
+                                          context.credentials.panelRadius,
+                                        ),
                                         border: Border.all(
                                           color: active?.id == card.id
                                               ? scheme.primary.withValues(
@@ -424,7 +432,10 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                               ],
                                             ),
                                           ),
-                                          CardPreview(card: card),
+                                          CardPreview(
+                                            card: card,
+                                            heroTag: cardHeroTag(card.id),
+                                          ),
                                           const SizedBox(height: 8),
                                           Wrap(
                                             spacing: 4,
@@ -432,7 +443,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                                 WrapCrossAlignment.center,
                                             children: [
                                               TextButton.icon(
-                                                onPressed: () => context.go(
+                                                onPressed: () => context.push(
                                                   '/cards/${card.id}/share',
                                                 ),
                                                 icon: const Icon(
@@ -449,7 +460,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                                 ),
                                               ),
                                               TextButton.icon(
-                                                onPressed: () => context.go(
+                                                onPressed: () => context.push(
                                                   '/cards/${card.id}/edit',
                                                 ),
                                                 icon: const Icon(
@@ -534,71 +545,71 @@ class _ProfileNudge extends StatelessWidget {
       card.professional.linkedin,
     ];
     final count = fields.where((v) => v.trim().isNotEmpty).length;
-    return Material(
-      color: scheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: () => context.go('/cards/${card.id}/edit'),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 38,
-                height: 38,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: count / fields.length),
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : const Duration(milliseconds: 800),
-                  builder: (_, value, child) => CircularProgressIndicator(
-                    value: value,
-                    backgroundColor: scheme.outlineVariant,
-                    strokeWidth: 3,
-                    semanticsLabel: s.homeProfileDetails,
+    return ResonPress(
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(context.credentials.passRadius),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(context.credentials.passRadius),
+          onTap: () => context.push('/cards/${card.id}/edit'),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 38,
+                  height: 38,
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: count / fields.length),
+                    duration: context.motion.meter,
+                    builder: (_, value, child) => CircularProgressIndicator(
+                      value: value,
+                      backgroundColor: scheme.outlineVariant,
+                      strokeWidth: 3,
+                      semanticsLabel: s.homeProfileDetails,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      card.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: scheme.primary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        card.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: scheme.primary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      count == fields.length ? s.homeReady : s.homeImprove,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      s.homeNudgeBody,
-                      style: TextStyle(
-                        color: scheme.onSurfaceVariant,
-                        fontSize: 12,
-                        height: 1.4,
+                      const SizedBox(height: 4),
+                      Text(
+                        count == fields.length ? s.homeReady : s.homeImprove,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        s.homeNudgeBody,
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.arrow_forward_rounded,
-                size: 19,
-                color: scheme.primary,
-              ),
-            ],
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 19,
+                  color: scheme.primary,
+                ),
+              ],
+            ),
           ),
         ),
       ),

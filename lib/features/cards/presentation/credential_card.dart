@@ -12,7 +12,8 @@ class _CredentialCard extends StatelessWidget {
     final work = card.kind == 'work';
     final freelance = card.kind == 'freelance';
     final seed = cardColor(card.primaryHex);
-    final ink = Color.lerp(seed, const Color(0xFF19152C), .8)!;
+    final skin = context.credentials.skin(card.layout);
+    final ink = Color.lerp(seed, skin.backdrop, skin.blend)!;
     final accent = Color.lerp(seed, Colors.black, .3)!;
     final wash = Color.lerp(seed, Colors.white, .91)!;
     final title = work

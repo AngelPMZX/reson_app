@@ -4,13 +4,19 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/card_media_repository.dart';
+import '../../../core/theme/reson_palette.dart';
+import '../../../core/theme/reson_tokens.dart';
 import '../domain/digital_card.dart';
 
 part 'credential_card.dart';
 
 Color cardColor(String hex) => RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(hex)
     ? Color(int.parse('FF${hex.substring(1)}', radix: 16))
-    : const Color(0xFF7860E9);
+    : ResonPalette.carmine;
+
+/// Shared tag that lets one credential fly between the wallet, the editor and
+/// the share screen. Only one widget per screen may carry a given tag.
+String cardHeroTag(String cardId) => 'credential_$cardId';
 
 class CardPortrait extends ConsumerWidget {
   const CardPortrait({super.key, required this.card, this.bytes});
@@ -68,9 +74,10 @@ class _ClassicCard extends StatelessWidget {
     final seed = cardColor(card.primaryHex);
     final minimal = card.layout == 'minimal';
     final bold = card.layout == 'bold';
-    final dark = Color.lerp(seed, const Color(0xFF130C27), .76)!;
-    final fg = minimal ? const Color(0xFF241636) : Colors.white;
-    final muted = minimal ? const Color(0xFF655477) : const Color(0xFFE2D5F7);
+    final skin = context.credentials.skin(card.layout);
+    final dark = Color.lerp(seed, skin.backdrop, skin.blend)!;
+    final fg = skin.ink;
+    final muted = skin.muted;
     final es = Localizations.localeOf(context).languageCode == 'es';
     Widget line(String field, String text, IconData icon) =>
         card.shows(field) && text.isNotEmpty
@@ -113,7 +120,7 @@ class _ClassicCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: minimal
-                        ? [const Color(0xFFFDFBFF), const Color(0xFFEAE0F8)]
+                        ? [ResonPalette.paperRose, ResonPalette.paperRoseDeep]
                         : bold
                         ? [Color.lerp(seed, Colors.black, .25)!, dark]
                         : [dark, Color.lerp(seed, dark, .38)!],
@@ -154,7 +161,7 @@ class _ClassicCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.graphic_eq_rounded,
-                          color: minimal ? seed : const Color(0xFFD6C0FF),
+                          color: skin.accent ?? seed,
                           size: 28,
                         ),
                         const SizedBox(width: 10),
@@ -244,35 +251,46 @@ class _ClassicCard extends StatelessWidget {
 }
 
 class CardPreview extends StatelessWidget {
-  const CardPreview({super.key, required this.card, this.photoBytes});
+  const CardPreview({
+    super.key,
+    required this.card,
+    this.photoBytes,
+    this.heroTag,
+  });
   final DigitalCard card;
   final Uint8List? photoBytes;
+
+  /// When set, the credential itself flies to the next screen. Build it with
+  /// [cardHeroTag] and leave it null wherever the same card is already shown.
+  final String? heroTag;
   @override
   Widget build(BuildContext context) {
-    final reduced = MediaQuery.disableAnimationsOf(context);
+    final motion = context.motion;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TweenAnimationBuilder<double>(
-          key: ValueKey('${card.layout}/${card.primaryHex}'),
-          tween: Tween(begin: reduced ? 1 : 0, end: 1),
-          duration: reduced ? Duration.zero : const Duration(milliseconds: 650),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, _) => Opacity(
-            opacity: .5 + value * .5,
-            child: Transform.translate(
-              offset: Offset(0, 12 * (1 - value)),
-              child: card.layout == 'signature'
-                  ? _CredentialCard(card: card, photoBytes: photoBytes)
-                  : ['noir', 'studio'].contains(card.layout)
-                  ? _PortfolioCard(card: card, photoBytes: photoBytes)
-                  : ['aurora', 'executive', 'editorial'].contains(card.layout)
-                  ? _DesignedCard(
-                      card: card,
-                      photoBytes: photoBytes,
-                      progress: value,
-                    )
-                  : _ClassicCard(card: card, photoBytes: photoBytes),
+        _flight(
+          TweenAnimationBuilder<double>(
+            key: ValueKey('${card.layout}/${card.primaryHex}'),
+            tween: Tween(begin: motion.isStill ? 1 : 0, end: 1),
+            duration: motion.entrance,
+            curve: motion.standard,
+            builder: (context, value, _) => Opacity(
+              opacity: .5 + value * .5,
+              child: Transform.translate(
+                offset: Offset(0, 12 * (1 - value)),
+                child: card.layout == 'signature'
+                    ? _CredentialCard(card: card, photoBytes: photoBytes)
+                    : ['noir', 'studio'].contains(card.layout)
+                    ? _PortfolioCard(card: card, photoBytes: photoBytes)
+                    : ['aurora', 'executive', 'editorial'].contains(card.layout)
+                    ? _DesignedCard(
+                        card: card,
+                        photoBytes: photoBytes,
+                        progress: value,
+                      )
+                    : _ClassicCard(card: card, photoBytes: photoBytes),
+              ),
             ),
           ),
         ),
@@ -280,6 +298,27 @@ class CardPreview extends StatelessWidget {
       ],
     );
   }
+
+  /// Wraps the credential in its [Hero] when a tag is set. The trajectory
+  /// summary stays behind: its height differs per screen, so carrying it would
+  /// distort the card mid-flight.
+  Widget _flight(Widget credential) => heroTag == null
+      ? credential
+      : Hero(
+          tag: heroTag!,
+          // Mid-flight the credential is laid out at an interpolated height,
+          // which overflows its own column by a fraction of a pixel. Giving
+          // the shuttle unbounded height lets it keep its natural size and
+          // simply be scaled into the rect the flight is drawing.
+          flightShuttleBuilder: (_, _, _, _, toHero) => Material(
+            type: MaterialType.transparency,
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              child: toHero.widget,
+            ),
+          ),
+          child: credential,
+        );
 }
 
 class _DesignedCard extends StatelessWidget {
@@ -296,12 +335,11 @@ class _DesignedCard extends StatelessWidget {
     final seed = cardColor(card.primaryHex);
     final editorial = card.layout == 'editorial';
     final executive = card.layout == 'executive';
-    final fg = editorial ? const Color(0xFF211A2E) : const Color(0xFFF9F5FF);
-    final subtle = editorial
-        ? const Color(0xFF5D536C)
-        : const Color(0xFFD6CCDF);
+    final skin = context.credentials.skin(card.layout);
+    final fg = skin.ink;
+    final subtle = skin.muted;
     final accent = Color.lerp(seed, Colors.white, .6)!;
-    final dark = Color.lerp(seed, const Color(0xFF0C101D), .88)!;
+    final dark = Color.lerp(seed, skin.backdrop, skin.blend)!;
     final es = Localizations.localeOf(context).languageCode == 'es';
     final name = card.displayName.isEmpty
         ? (es ? 'Tu nombre' : 'Your name')
@@ -356,11 +394,7 @@ class _DesignedCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  item.$3,
-                  size: 17,
-                  color: editorial ? const Color(0xFF5D536C) : accent,
-                ),
+                Icon(item.$3, size: 17, color: editorial ? skin.muted : accent),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -392,12 +426,12 @@ class _DesignedCard extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: editorial
                   ? [
-                      const Color(0xFFFFFCF5),
+                      ResonPalette.paperCream,
                       Color.lerp(seed, Colors.white, .89)!,
                     ]
                   : executive
-                  ? [dark, const Color(0xFF15151B)]
-                  : [dark, Color.lerp(seed, const Color(0xFF101226), .6)!],
+                  ? [dark, ResonPalette.coal]
+                  : [dark, Color.lerp(seed, ResonPalette.nightWine, .6)!],
             ),
           ),
           child: CustomPaint(
@@ -516,14 +550,15 @@ class _PortfolioCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final studio = card.layout == 'studio';
     final seed = cardColor(card.primaryHex);
-    final fg = studio ? const Color(0xFF22202A) : const Color(0xFFF7F2E9);
-    final minor = studio ? const Color(0xFF5D5864) : const Color(0xFFC8C0B5);
+    final skin = context.credentials.skin(card.layout);
+    final fg = skin.ink;
+    final minor = skin.muted;
     final es = Localizations.localeOf(context).languageCode == 'es';
     return ClipRRect(
       borderRadius: BorderRadius.circular(studio ? 28 : 8),
       child: Container(
         width: double.infinity,
-        color: studio ? const Color(0xFFFFFDF9) : const Color(0xFF141617),
+        color: skin.surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -535,7 +570,7 @@ class _PortfolioCard extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       seed,
-                      Color.lerp(seed, const Color(0xFF151B35), .6)!,
+                      Color.lerp(seed, skin.backdrop, skin.blend)!,
                     ],
                   ),
                 ),

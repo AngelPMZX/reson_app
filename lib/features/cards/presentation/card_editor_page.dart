@@ -601,7 +601,15 @@ class _EditorState extends ConsumerState<_Editor> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            CardPreview(card: draft, photoBytes: _photo),
+                            CardPreview(
+                              card: draft,
+                              photoBytes: _photo,
+                              // A brand new card has an empty id and no
+                              // credential on the previous screen to fly from.
+                              heroTag: widget.initial.id.isEmpty
+                                  ? null
+                                  : cardHeroTag(widget.initial.id),
+                            ),
                             const SizedBox(height: 14),
                             Text(
                               s.privateCard,

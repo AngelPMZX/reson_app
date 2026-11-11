@@ -25,7 +25,7 @@ const card = DigitalCard(
   email: 'alex@example.com',
   phone: '+52 555 010 0200',
   website: 'https://example.com',
-  primaryHex: '#956DFF',
+  primaryHex: '#D32945',
   bio: 'Conecto ideas, personas y tecnología.',
 );
 
@@ -275,7 +275,7 @@ void main() {
                                       email: 'alex@example.com',
                                       phone: '+52 555 010 0200',
                                       website: 'https://example.com',
-                                      primaryHex: '#7C3AED',
+                                      primaryHex: '#D32945',
                                       bio:
                                           'Transformo ideas en experiencias memorables.',
                                       layout: style,

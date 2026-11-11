@@ -190,7 +190,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              CardPreview(card: preview),
+              CardPreview(card: preview, heroTag: cardHeroTag(widget.cardId)),
               const SizedBox(height: 18),
               Text(
                 tr(

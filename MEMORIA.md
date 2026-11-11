@@ -209,6 +209,19 @@ Home con cartera de pases superpuestos, hasta tres visibles, selección por cabe
 
 Animaciones de entrada, cartera, selección, expansiones, formularios y conexión. Respetar `disableAnimations`/reducir movimiento. Controles globales de tema e idioma arriba a la derecha: dejar espacio en nuevas pantallas, como en AppBar del chat, para evitar superposición en móvil.
 
+### Sistema de diseño en el tema (noviembre 2026)
+
+`lib/core/theme/reson_tokens.dart` define dos `ThemeExtension` registradas en `ResonTheme.forSeed`:
+
+- **`ResonMotion`**: seis duraciones por intención (`press` 150, `expand` 320, `transition` 420, `entrance` 650, `meter` 800, `showcase` 1200), curvas nombradas y `deckSpring`, el resorte de la cartera. Antes había diez duraciones sueltas, cada una usada una sola vez. Leer siempre por `context.motion`, que ya devuelve cero cuando el dispositivo pide movimiento reducido: no repetir el ternario de `disableAnimationsOf`.
+- **`ResonCredentials`**: geometría del mazo (`passFace`, `passStep`, `passInset`, `passElevation`, radios) y un `ResonCredentialSkin` por cada uno de los ocho layouts, con `ink`, `muted`, `backdrop`, `blend`, `surface` y `accent`.
+
+**Trampa conocida**: `AnimatedSize` se re-ensucia durante su propio layout si recibe `Duration.zero`. Con movimiento reducido hay que **quitar el widget**, no ponerle duración cero. Comprobar `motion.isStill`. Ya mordió en la cartera y en el editor de trayectoria; hay pruebas de regresión en `test/reduced_motion_test.dart`.
+
+Las credenciales ya **no conservan neutros lavanda**: los ocho layouts usan neutros cálidos derivados del carmín, nombrados en `ResonPalette` (`roseVeil`, `roseMist`, `wineInk`, `wineGrey`, `wineShadow`, `nightWine`, `duskWine`, `parchment`, `studioInk`…). No quedan colores crudos en `card_preview.dart` ni en `credential_card.dart`. Los **17 presets de color que ofrece el editor siguen siendo variados a propósito**: son la elección del titular, no la marca.
+
+La cartera responde al dedo: arrastre continuo con posición fraccionaria y asentamiento por resorte, no por tween. La credencial vuela con `Hero` entre cartera, editor y compartir; esas dos rutas usan `context.push` y no `go`, porque un `Hero` necesita una ruta apilada. `/cards/new` sigue con `go` al no tener credencial de origen.
+
 ## 12. Incidencias resueltas y lecciones
 
 - Guardado interminable inicialmente: reglas desplegadas obsoletas rechazaban nuevos campos. Se reconstruyeron/validaron/desplegaron reglas. No arreglar incompatibilidad de esquema ampliando timeouts.
@@ -254,7 +267,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 ## 14. Verificación y despliegue
 
-Última entrega: **58 pruebas Flutter**, **17 pruebas backend/reglas**, analyze sin incidencias, build web release correcto. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
+Última entrega: **76 pruebas Flutter**, **17 pruebas backend/reglas**, analyze sin incidencias, build web release correcto. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
 
 ```powershell
 flutter analyze
@@ -279,6 +292,8 @@ Desplegar tras revisar cambios y pruebas:
 ```
 
 Para solo frontend, construir web y usar `--only hosting`. Subir un commit no despliega Firebase. No hay CI/CD configurado que lo haga automáticamente. Conservar sincronizados esquema, reglas y backend al cambiar campos.
+
+Las capturas de diseño salen con `flutter test test/card_design_test.dart --dart-define=RESON_SCREENSHOTS=true --dart-define=RESON_FONT_DIR=C:/flutter-sdk/flutter/bin/cache/artifacts/material_fonts` y aterrizan en `build/design-preview/`. Sin `RESON_FONT_DIR` el texto sale en cajas. Comparar sus hashes antes y después es la forma de demostrar que un refactor visual no cambió ni un píxel.
 
 Los logs y capturas de esta sesión viven en `build/` (ignorados): social-final-tests.log, social-backend-tests.log, social-hosted-smoke.log, social-final-build.log, social-hosting.log y design-preview/. No existen necesariamente tras clonar; se regeneran.
 
