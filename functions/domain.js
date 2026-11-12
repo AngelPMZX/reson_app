@@ -169,6 +169,63 @@ function shade(hex, amount) {
   return '#' + [0, 2, 4].map(i => mix(parseInt(value.slice(i, i + 2), 16))).join('');
 }
 
+/// Mixes two `#RRGGBB` colours, `t` of the way from `a` to `b`.
+function mix(a, b, t) {
+  const read = v => {
+    const m = /^#?([0-9a-fA-F]{6})$/.exec(String(v ?? ''));
+    const hex = m ? m[1] : 'C8102E';
+    return [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16));
+  };
+  const [ar, ag, ab] = read(a);
+  const [br, bg, bb] = read(b);
+  const pick = (x, y) =>
+    Math.round(x + (y - x) * t)
+      .toString(16)
+      .padStart(2, '0');
+  return '#' + pick(ar, br) + pick(ag, bg) + pick(ab, bb);
+}
+
+/// The eight credential skins, mirroring ResonCredentials in reson_tokens.dart.
+///
+/// The public page draws the credential its owner designed instead of a
+/// generic panel, so it needs the same surface, ink and blend the app uses.
+/// Change one of these maps and you must change the other.
+const skins = {
+  signature: { ink: '#FFFFFF', muted: '#ECCFD4', backdrop: '#300B12', blend: 0.8 },
+  minimal: { ink: '#2A1218', muted: '#7A6166', backdrop: '#1A070D', blend: 0.76 },
+  bold: { ink: '#FFFFFF', muted: '#ECCFD4', backdrop: '#1A070D', blend: 0.76 },
+  classic: { ink: '#FFFFFF', muted: '#ECCFD4', backdrop: '#1A070D', blend: 0.76 },
+  aurora: { ink: '#FAF9F7', muted: '#D9C3C7', backdrop: '#12060A', blend: 0.88 },
+  executive: { ink: '#FAF9F7', muted: '#D9C3C7', backdrop: '#12060A', blend: 0.88 },
+  editorial: { ink: '#2A1218', muted: '#7A6166', backdrop: '#12060A', blend: 0.88 },
+  noir: {
+    ink: '#F7F0EC',
+    muted: '#C4B8B5',
+    backdrop: '#3A0E1A',
+    blend: 0.6,
+    surface: '#101012',
+  },
+  studio: {
+    ink: '#241A1C',
+    muted: '#6C686B',
+    backdrop: '#3A0E1A',
+    blend: 0.6,
+    surface: '#FFFCFB',
+  },
+};
+
+/// How a card is painted: the surface its colour and layout produce, and the
+/// inks that sit on it.
+function credentialSkin(color, layout) {
+  const skin = skins[layout] ?? skins.signature;
+  return {
+    ink: skin.ink,
+    muted: skin.muted,
+    surface: skin.surface ?? mix(color, skin.backdrop, skin.blend),
+    accent: color,
+  };
+}
+
 /// Lowercase, accent-free prefixes for everything a person can be found by.
 ///
 /// Firestore has no text search, so each word is expanded into its prefixes
@@ -210,6 +267,8 @@ function searchQuery(text) {
 module.exports = {
   fields,
   shade,
+  mix,
+  credentialSkin,
   searchTerms,
   searchQuery,
   safeUrl,

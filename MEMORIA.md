@@ -334,14 +334,21 @@ El propietario avisó de que en el futuro habrá más idiomas. **Ya no queda ni 
 
 `test/network_errors_test.dart` incluye una guarda que falla si algún archivo de `lib/features/network` vuelve a traer texto inline o a ramificar por idioma.
 
-### La tarjeta pública se veía genérica (12 de noviembre de 2026)
+### La web ahora dibuja la credencial, no un panel (12 de noviembre de 2026)
 
-El propietario señaló que la página compartida no se ve bien. Mirando el HTML real de una publicada había dos defectos de verdad:
+El propietario comparó la tarjeta de la app con la página compartida y no se parecían. Tenía razón y el problema era de fondo: la web nunca dibujó la credencial, solo una cinta de color sobre un panel plano con botones apilados.
 
-- **El color que elige el dueño no se usaba.** El degradado y los botones estaban fijos en carmín dentro del CSS, así que todas las tarjetas se veían iguales por mucho que su dueño eligiera otro color. Ahora `shade()` deriva un tono oscuro y uno claro del color real y la página los usa en variables CSS.
-- **Se emitían párrafos vacíos.** `<p>${role}</p><p>${company}</p><p>${bio}</p>` salía siempre, así que un campo vacío dejaba un hueco bajo el nombre. Ahora puesto y empresa van en una sola línea y la biografía solo aparece si existe.
+**`credentialSkin(color, layout)` en `domain.js` replica la tabla de `ResonCredentials`** de `reson_tokens.dart`: la superficie es el color del dueño mezclado hacia el fondo del layout por su proporción. Un aurora cian da `#131920` en los dos sitios, exactamente. `noir` y `studio` imponen su propia superficie, igual que en la app. **Son dos copias de la misma tabla: cambiar una obliga a cambiar la otra**, y hay prueba que fija los valores.
 
-Hay pruebas de las dos cosas y de que un color inválido no produzca una variable CSS rota.
+La página dibuja ahora: arte vectorial en SVG (ondas para aurora/signature/bold/classic, arcos para el resto), barra superior con la marca y la etiqueta, avatar **circular** con aro, nombre, puesto, empresa, regla fina, filas de contacto en pastillas translúcidas y el pie «● RESON / TIPO». Las acciones quedan debajo de la credencial.
+
+Dos defectos que salieron por el camino:
+
+- **El color del dueño no se usaba en absoluto**: el degradado y los botones estaban fijos en carmín en el CSS.
+- **Se emitían párrafos vacíos**, dejando un hueco bajo el nombre.
+- **La web mostraba menos que la tarjeta**: un teléfono sin dígitos (`ext 4120`) se ocultaba porque no se podía enlazar. Ahora se muestra como texto, sin enlace.
+
+**No es un port de los ocho layouts**: la página usa una sola composición con la piel y el arte correctos por layout. Si algún día se quiere que cada layout tenga su propia composición en HTML, eso es trabajo aparte.
 
 ### Cartera de tarjetas recibidas (12 de noviembre de 2026)
 
@@ -459,7 +466,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 Estado al 11/11/2026, todo ejecutado y en verde:
 
 - **141 pruebas Flutter** (149 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
-- **33 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
+- **35 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
 **Java para el emulador: no hace falta instalarlo.** Android Studio trae OpenJDK 21 en `C:\Program Files\Android\Android Studio\jbr`. Basta ponerlo en PATH para el comando; la nota antigua sobre un JRE en `.tools` ya no aplica:

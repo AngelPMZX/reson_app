@@ -9,6 +9,7 @@ const {
   respondOutcome,
   preview,
   shade,
+  credentialSkin,
   searchTerms,
   searchQuery,
 } = require('../domain');
@@ -183,4 +184,35 @@ test('a typed query becomes one server term and the rest for the device', () => 
   assert.deepEqual(searchQuery('  '), { term: '', rest: [] });
   assert.deepEqual(searchQuery('a'), { term: '', rest: [] });
   assert.equal(searchQuery('Z'.repeat(40)).term.length, 14);
+});
+
+test('the web credential is painted like the app credential', () => {
+  // Mirrors ResonCredentials in reson_tokens.dart: the surface is the owner's
+  // colour mixed towards the layout's backdrop by the layout's blend. A cyan
+  // aurora card is a dark teal in both places, not a carmine panel.
+  assert.equal(credentialSkin('#1BA8C4', 'aurora').surface, '#131920');
+  assert.equal(credentialSkin('#1BA8C4', 'aurora').ink, '#FAF9F7');
+  // Two layouts that set their own surface ignore the colour for it.
+  assert.equal(credentialSkin('#1BA8C4', 'noir').surface, '#101012');
+  assert.equal(credentialSkin('#1BA8C4', 'studio').surface, '#FFFCFB');
+  // An unknown layout still produces a drawable card.
+  assert.match(credentialSkin('#1BA8C4', 'nope').surface, /^#[0-9a-f]{6}$/);
+});
+
+test('the page shows every contact line the card shows', () => {
+  const p = snapshot(
+    {
+      ...c,
+      contact: { email: 'a@b.com', phone: 'ext 4120', website: 'https://x.com' },
+      visibleFields: ['email', 'phone', 'website'],
+    },
+    ['email', 'phone', 'website'],
+  );
+  p.photo = false;
+  const html = render(p, 'a'.repeat(32), 'https://reson-app.web.app');
+  // A phone with no digits cannot be dialled, but the card still shows it, so
+  // the page must show it too rather than silently saying less.
+  assert.ok(html.includes('ext 4120'));
+  assert.ok(html.includes('a@b.com'));
+  assert.ok(html.includes('https://x.com'));
 });
