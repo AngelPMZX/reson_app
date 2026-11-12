@@ -120,3 +120,14 @@ test('social data cannot be forged and conversations are member-only',async()=>{
  await env.withSecurityRulesDisabled(async context=>updateDoc(doc(context.firestore(),'connections/test-connection'),{status:'blocked'}));
  await assertFails(getDoc(doc(database(),'connections/test-connection/messages/first')));
 });
+
+test('the directory is readable by members and writable by nobody',async()=>{
+ await env.withSecurityRulesDisabled(async context=>{
+  await setDoc(doc(context.firestore(),'directory/someone'),{uid:'someone',name:'Listed',terms:['li','lis']});
+ });
+ // Searching is for verified accounts; being listed is the backend's to write.
+ await assertSucceeds(getDoc(doc(database(),'directory/someone')));
+ await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(),'directory/someone')));
+ await assertFails(setDoc(doc(database(),'directory/'+uid),{uid,name:'Me',terms:['me']}));
+ await assertFails(setDoc(doc(database(),'directory/someone'),{uid:'someone',name:'Hijacked',terms:['hi']}));
+});

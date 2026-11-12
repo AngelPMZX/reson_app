@@ -356,5 +356,16 @@
   "switchTheme": "Switch theme",
   "credentialTagline": "Your identity. Your essence.",
   "cardYourNewIdentity": "Your new identity",
-  "theirCard": "Their card"
+  "theirCard": "Their card",
+  "discoverTitle": "Find people",
+  "discoverSubtitle": "Only people who chose to be findable show up here.",
+  "discoverHint": "Name, role, company or place",
+  "discoverPrompt": "Type to start searching.",
+  "discoverNoResults": "Nobody matches that search.",
+  "discoverOptInTitle": "Let people find me",
+  "discoverOptInBody": "The name, role, company and location of the card you pick become visible in search. You can turn it off whenever you want.",
+  "discoverOptInNeedsCard": "Publish a card before you can appear in search.",
+  "discoverWhichCard": "Card you appear with",
+  "discoverListed": "You appear in search",
+  "discoverSeeProfile": "View profile"
 }

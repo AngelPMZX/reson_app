@@ -88,7 +88,21 @@ test('publish → save → request → accept → chat → block → revoke', { 
   await call('bob', 'respond', { connectionId: request.id, decision: 'accept' });
   await call('alice', 'message', { connectionId: request.id, messageId: 'third', text: 'again' });
   assert.equal((await db.collection('connections/' + request.id + '/messages').get()).size, 2);
+  // Being findable is opt in: publishing a card does not list anybody.
+  assert.ok(!(await db.doc('directory/alice').get()).exists);
+  await assert.rejects(() => call('alice', 'setDiscoverable', { enabled: true, publicId: b.id }));
+  await call('alice', 'setDiscoverable', { enabled: true, publicId: a.id });
+  const listing = (await db.doc('directory/alice').get()).data();
+  assert.equal(listing.publicId, a.id);
+  assert.ok(listing.terms.includes('ali'));
+  // Only what was already public travels into the directory.
+  assert.ok(!JSON.stringify(listing).includes('SECRET'));
+  await call('alice', 'setDiscoverable', { enabled: false });
+  assert.ok(!(await db.doc('directory/alice').get()).exists);
+  // A listing points at a published card, so withdrawing the card withdraws it.
+  await call('alice', 'setDiscoverable', { enabled: true, publicId: a.id });
   await call('alice', 'unpublish', { cardId: 'cardA' });
+  assert.ok(!(await db.doc('directory/alice').get()).exists);
   await assert.rejects(() => getSharedCard.run({ data: { publicId: a.id } }));
   // A saved card is a copy, so it ages. Refreshing a withdrawn one records
   // that it is gone instead of failing, and the wallet keeps showing it.

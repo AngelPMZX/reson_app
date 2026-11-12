@@ -155,8 +155,63 @@ function preview(text, max = 120) {
   return line.length <= max ? line : line.slice(0, max - 1).trimEnd() + '…';
 }
 
+/// Mixes a `#RRGGBB` colour towards black (negative) or white (positive).
+///
+/// The public page needs a darker and a lighter relative of whatever colour
+/// the owner chose, so the page can be theirs rather than generically carmine.
+function shade(hex, amount) {
+  const match = /^#?([0-9a-fA-F]{6})$/.exec(String(hex ?? ''));
+  const value = match ? match[1] : 'C8102E';
+  const mix = c =>
+    Math.round(amount < 0 ? c * (1 + amount) : c + (255 - c) * amount)
+      .toString(16)
+      .padStart(2, '0');
+  return '#' + [0, 2, 4].map(i => mix(parseInt(value.slice(i, i + 2), 16))).join('');
+}
+
+/// Lowercase, accent-free prefixes for everything a person can be found by.
+///
+/// Firestore has no text search, so each word is expanded into its prefixes
+/// and matched with a single `array-contains`. Words shorter than two letters
+/// are dropped and the list is capped, because an array is also an index.
+function searchTerms(profile, max = 120) {
+  const source = [profile.name, profile.role, profile.company, profile.sector, profile.location]
+    .filter(v => typeof v === 'string')
+    .join(' ');
+  const plain = source.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const terms = new Set();
+  for (const word of plain.split(/[^a-z0-9]+/)) {
+    if (word.length < 2) continue;
+    for (let i = 2; i <= Math.min(word.length, 14); i++) terms.add(word.slice(0, i));
+    if (terms.size > max) break;
+  }
+  return [...terms].slice(0, max);
+}
+
+/// Normalises what somebody typed into the single term worth querying.
+///
+/// Only one `array-contains` is allowed per query, so the longest word goes to
+/// the server and the rest narrow the result on the device.
+function searchQuery(text) {
+  const words = String(text ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(w => w.length >= 2);
+  if (!words.length) return { term: '', rest: [] };
+  const longest = words.reduce((a, b) => (b.length > a.length ? b : a));
+  return {
+    term: longest.slice(0, 14),
+    rest: words.filter(w => w !== longest),
+  };
+}
+
 module.exports = {
   fields,
+  shade,
+  searchTerms,
+  searchQuery,
   safeUrl,
   snapshot,
   connectionId,

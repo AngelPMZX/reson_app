@@ -148,6 +148,8 @@ Future<ProviderContainer> launch(
   // screen below it read the nested ones.
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? connections,
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? received,
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? directory,
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? publications,
   NetworkService? networkService,
 }) async {
   SharedPreferences.setMockInitialValues({});
@@ -171,8 +173,16 @@ Future<ProviderContainer> launch(
         (ref) => Stream.value(connections ?? []),
       ),
       receivedProvider.overrideWith((ref) => Stream.value(received ?? [])),
-      publicationsProvider.overrideWith((ref) => Stream.value([])),
+      publicationsProvider.overrideWith(
+        (ref) => Stream.value(publications ?? []),
+      ),
+      directoryProvider.overrideWith(
+        (ref, query) => Stream.value(
+          searchQuery(query).term.isEmpty ? [] : (directory ?? []),
+        ),
+      ),
       blockedProvider.overrideWith((ref) => Stream.value(const {})),
+      discoverableProvider.overrideWith((ref, uid) => Stream.value(null)),
       if (networkService != null)
         networkServiceProvider.overrideWithValue(networkService),
     ],

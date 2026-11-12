@@ -1159,4 +1159,40 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get theirCard => 'Su tarjeta';
+
+  @override
+  String get discoverTitle => 'Buscar personas';
+
+  @override
+  String get discoverSubtitle =>
+      'Solo aparecen quienes activaron ser encontrables.';
+
+  @override
+  String get discoverHint => 'Nombre, puesto, empresa o lugar';
+
+  @override
+  String get discoverPrompt => 'Escribe para empezar a buscar.';
+
+  @override
+  String get discoverNoResults => 'Nadie coincide con esa búsqueda.';
+
+  @override
+  String get discoverOptInTitle => 'Que me puedan encontrar';
+
+  @override
+  String get discoverOptInBody =>
+      'Tu nombre, puesto, empresa y ubicación de la tarjeta que elijas serán visibles en el buscador. Puedes desactivarlo cuando quieras.';
+
+  @override
+  String get discoverOptInNeedsCard =>
+      'Publica una tarjeta para poder aparecer en el buscador.';
+
+  @override
+  String get discoverWhichCard => 'Tarjeta con la que apareces';
+
+  @override
+  String get discoverListed => 'Apareces en el buscador';
+
+  @override
+  String get discoverSeeProfile => 'Ver perfil';
 }

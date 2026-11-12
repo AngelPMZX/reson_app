@@ -2239,6 +2239,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Their card'**
   String get theirCard;
+
+  /// No description provided for @discoverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find people'**
+  String get discoverTitle;
+
+  /// No description provided for @discoverSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only people who chose to be findable show up here.'**
+  String get discoverSubtitle;
+
+  /// No description provided for @discoverHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, role, company or place'**
+  String get discoverHint;
+
+  /// No description provided for @discoverPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Type to start searching.'**
+  String get discoverPrompt;
+
+  /// No description provided for @discoverNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody matches that search.'**
+  String get discoverNoResults;
+
+  /// No description provided for @discoverOptInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Let people find me'**
+  String get discoverOptInTitle;
+
+  /// No description provided for @discoverOptInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The name, role, company and location of the card you pick become visible in search. You can turn it off whenever you want.'**
+  String get discoverOptInBody;
+
+  /// No description provided for @discoverOptInNeedsCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish a card before you can appear in search.'**
+  String get discoverOptInNeedsCard;
+
+  /// No description provided for @discoverWhichCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card you appear with'**
+  String get discoverWhichCard;
+
+  /// No description provided for @discoverListed.
+  ///
+  /// In en, this message translates to:
+  /// **'You appear in search'**
+  String get discoverListed;
+
+  /// No description provided for @discoverSeeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'View profile'**
+  String get discoverSeeProfile;
 }
 
 class _AppLocalizationsDelegate

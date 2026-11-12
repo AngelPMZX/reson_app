@@ -8,6 +8,9 @@ const {
   requestOutcome,
   respondOutcome,
   preview,
+  shade,
+  searchTerms,
+  searchQuery,
 } = require('../domain');
 const render = require('../render');
 const c = {
@@ -122,4 +125,62 @@ test('a long message is cut, never stretched across the row', () => {
   assert.ok(cut.endsWith('…'));
   assert.equal(preview('b'.repeat(120)).length, 120);
   assert.ok(!preview('b'.repeat(120)).endsWith('…'));
+});
+
+test('a colour is mixed towards black and white, and garbage falls back', () => {
+  assert.equal(shade('#C8102E', 0), '#c8102e');
+  assert.equal(shade('#FFFFFF', -1), '#000000');
+  assert.equal(shade('#000000', 1), '#ffffff');
+  // An unparseable colour must not produce an unparseable CSS variable.
+  for (const bad of ['', null, 'red', '#12345', 'javascript:x']) {
+    assert.match(shade(bad, 0), /^#[0-9a-f]{6}$/);
+  }
+});
+
+test('the public page wears the colour its owner chose', () => {
+  const p = snapshot({ ...c, theme: { primaryHex: '#1E6BB8' } }, ['role', 'company']);
+  p.photo = false;
+  const html = render(p, 'a'.repeat(32), 'https://reson-app.web.app');
+  // It used to be carmine for everybody, so every card looked like the same
+  // card however the owner had designed theirs.
+  assert.ok(html.includes('--accent:#1e6bb8'));
+  assert.ok(!html.includes('#C2415B'));
+});
+
+test('empty fields leave no empty paragraphs under the name', () => {
+  const bare = snapshot({ ...c, bio: '' }, []);
+  bare.photo = false;
+  const html = render(bare, 'a'.repeat(32), 'https://reson-app.web.app');
+  assert.ok(!html.includes('<p></p>'));
+});
+
+test('search terms are accent free prefixes of every findable word', () => {
+  const terms = searchTerms({
+    name: 'María Soto',
+    role: 'Diseñadora',
+    company: 'Acme',
+    sector: 'Tecnología',
+    location: 'CDMX',
+  });
+  // Typing without accents has to find somebody who writes with them.
+  assert.ok(terms.includes('ma'));
+  assert.ok(terms.includes('maria'));
+  assert.ok(terms.includes('disen'));
+  assert.ok(terms.includes('tecnologia'));
+  // One letter is not a search, and the array is an index: it stays bounded.
+  assert.ok(!terms.includes('a'));
+  assert.ok(terms.length <= 120);
+  assert.ok(searchTerms({ name: 'A'.repeat(400) }).length <= 120);
+});
+
+test('a typed query becomes one server term and the rest for the device', () => {
+  // Firestore allows a single array-contains, so the longest word is the one
+  // worth sending and the others narrow what comes back.
+  assert.deepEqual(searchQuery('María diseño'), {
+    term: 'diseno',
+    rest: ['maria'],
+  });
+  assert.deepEqual(searchQuery('  '), { term: '', rest: [] });
+  assert.deepEqual(searchQuery('a'), { term: '', rest: [] });
+  assert.equal(searchQuery('Z'.repeat(40)).term.length, 14);
 });

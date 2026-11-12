@@ -87,6 +87,12 @@ service cloud.firestore {
           : d.get('photoPath','') == '')
         && professional(d.professional) && d.updatedAt == request.time;
     }
+    // Opt-in directory. A verified account may read it; only the backend
+    // writes it, and an entry exists only while its owner wants to be found.
+    match /directory/{uid} {
+      allow read: if request.auth != null && request.auth.token.email_verified == true;
+      allow write: if false;
+    }
     match /connections/{connectionId} {
       allow get, list: if request.auth != null && request.auth.token.email_verified == true && request.auth.uid in resource.data.members;
       allow write: if false;

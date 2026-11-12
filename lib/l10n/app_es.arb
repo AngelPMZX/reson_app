@@ -356,5 +356,16 @@
   "switchTheme": "Cambiar tema",
   "credentialTagline": "Una identidad. Tu esencia.",
   "cardYourNewIdentity": "Tu nueva identidad",
-  "theirCard": "Su tarjeta"
+  "theirCard": "Su tarjeta",
+  "discoverTitle": "Buscar personas",
+  "discoverSubtitle": "Solo aparecen quienes activaron ser encontrables.",
+  "discoverHint": "Nombre, puesto, empresa o lugar",
+  "discoverPrompt": "Escribe para empezar a buscar.",
+  "discoverNoResults": "Nadie coincide con esa búsqueda.",
+  "discoverOptInTitle": "Que me puedan encontrar",
+  "discoverOptInBody": "Tu nombre, puesto, empresa y ubicación de la tarjeta que elijas serán visibles en el buscador. Puedes desactivarlo cuando quieras.",
+  "discoverOptInNeedsCard": "Publica una tarjeta para poder aparecer en el buscador.",
+  "discoverWhichCard": "Tarjeta con la que apareces",
+  "discoverListed": "Apareces en el buscador",
+  "discoverSeeProfile": "Ver perfil"
 }

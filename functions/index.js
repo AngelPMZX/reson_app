@@ -11,6 +11,7 @@ const {
   requestOutcome,
   respondOutcome,
   preview,
+  searchTerms,
 } = require('./domain');
 const render = require('./render');
 initializeApp({ storageBucket: 'reson-app.firebasestorage.app' });
@@ -145,9 +146,11 @@ async function social(uid, data) {
   if (action === 'unpublish') {
     const ref = db.doc(`users/${uid}/publications/${id(data.cardId)}`);
     let photo = '';
+    let publicId = '';
     await db.runTransaction(async t => {
       const d = (await t.get(ref)).data();
       if (!d) return;
+      publicId = d.id;
       const pub = db.doc('publicCards/' + d.id);
       const old = (await t.get(pub)).data();
       photo = old?.photoPath ?? '';
@@ -159,6 +162,11 @@ async function social(uid, data) {
         .file(photo)
         .delete({ ignoreNotFound: true })
         .catch(() => {});
+    // A directory entry points at a published card, so taking the card down
+    // must take the listing with it rather than leaving a dead result.
+    const listing = db.doc('directory/' + uid);
+    const listed = (await listing.get()).data();
+    if (listed && listed.publicId === publicId) await listing.delete();
     return { ok: true };
   }
   if (action === 'save') {
@@ -198,6 +206,41 @@ async function social(uid, data) {
       { merge: true },
     );
     return { ok: true, active: true };
+  }
+  if (action === 'setDiscoverable') {
+    // Opt in only. Nobody is listed because they published a card; being
+    // findable is a separate thing you ask for, and withdrawing removes the
+    // entry rather than hiding it behind a flag.
+    const entry = db.doc('directory/' + uid);
+    if (data.enabled !== true) {
+      await entry.delete();
+      return { ok: true, listed: false };
+    }
+    const publicId = id(data.publicId);
+    const mine = (await db.doc('publicCards/' + publicId).get()).data();
+    if (!mine?.active || mine.ownerId !== uid)
+      fail('failed-precondition', 'Publish that card first');
+    const p = mine.snapshot;
+    // Only what the owner already made public travels into the directory.
+    await entry.set({
+      uid,
+      publicId,
+      name: p.name,
+      role: p.role ?? '',
+      company: p.company ?? '',
+      sector: p.professional?.sector ?? '',
+      location: p.professional?.location ?? '',
+      photo: p.photo === true,
+      terms: searchTerms({
+        name: p.name,
+        role: p.role,
+        company: p.company,
+        sector: p.professional?.sector,
+        location: p.professional?.location,
+      }),
+      updatedAt: now(),
+    });
+    return { ok: true, listed: true };
   }
   if (action === 'removeSaved') {
     await db.doc(`users/${uid}/received/${id(data.publicId)}`).delete();

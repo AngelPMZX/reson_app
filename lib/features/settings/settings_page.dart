@@ -9,6 +9,8 @@ import '../../core/theme/reson_surfaces.dart';
 import '../../core/theme/reson_theme.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
+import '../network/network_service.dart';
+import '../network/network_widgets.dart';
 
 /// Everything that is a preference rather than a piece of identity.
 ///
@@ -127,6 +129,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                   ),
                   _Section(
+                    title: s.discoverOptInTitle,
+                    note: s.discoverOptInBody,
+                    child: const _Discoverable(),
+                  ),
+                  _Section(
                     title: s.settingsAccount,
                     child: Align(
                       alignment: Alignment.centerLeft,
@@ -227,4 +234,106 @@ class _Choice<T> extends StatelessWidget {
         ),
     ],
   );
+}
+
+/// Opting in to being found, and choosing which published card represents you.
+///
+/// Deliberately not a side effect of publishing: a card can be shared with one
+/// person without that putting its owner in a public directory.
+class _Discoverable extends ConsumerStatefulWidget {
+  const _Discoverable();
+  @override
+  ConsumerState<_Discoverable> createState() => _DiscoverableState();
+}
+
+class _DiscoverableState extends ConsumerState<_Discoverable> {
+  bool busy = false;
+  String? error;
+
+  Future<void> _set({required bool enabled, String? publicId}) async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await ref.read(networkServiceProvider).act('setDiscoverable', {
+        'enabled': enabled,
+        'publicId': ?publicId,
+      });
+    } catch (e) {
+      if (mounted) setState(() => error = networkErrorText(context, e));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    final uid = ref.watch(authSessionProvider).asData?.value?.uid;
+    final listing = ref.watch(discoverableProvider(uid)).asData?.value;
+    final cards =
+        ref
+            .watch(publicationsProvider)
+            .asData
+            ?.value
+            .where((p) => p.data()['active'] == true)
+            .toList() ??
+        [];
+    if (cards.isEmpty) {
+      return Text(
+        s.discoverOptInNeedsCard,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      );
+    }
+    final current = listing?['publicId'] as String?;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ?(error == null
+            ? null
+            : Padding(
+                padding: const EdgeInsets.only(bottom: ResonSpace.sm),
+                child: Text(
+                  error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              )),
+        SwitchListTile(
+          key: const Key('discoverableToggle'),
+          contentPadding: EdgeInsets.zero,
+          title: Text(s.discoverListed),
+          value: listing != null,
+          onChanged: busy
+              ? null
+              : (v) => _set(
+                  enabled: v,
+                  publicId: v
+                      ? (current ?? cards.first.data()['id'] as String)
+                      : null,
+                ),
+        ),
+        if (listing != null && cards.length > 1) ...[
+          const SizedBox(height: ResonSpace.md),
+          DropdownButtonFormField<String>(
+            isExpanded: true,
+            initialValue: current,
+            decoration: InputDecoration(labelText: s.discoverWhichCard),
+            items: [
+              for (final c in cards)
+                DropdownMenuItem(
+                  value: c.data()['id'] as String,
+                  child: Text(c.data()['label'] as String? ?? ''),
+                ),
+            ],
+            onChanged: busy
+                ? null
+                : (v) => v == null ? null : _set(enabled: true, publicId: v),
+          ),
+        ],
+      ],
+    );
+  }
 }

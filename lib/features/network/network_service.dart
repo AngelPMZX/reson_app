@@ -138,6 +138,93 @@ final messagesProvider = StreamProvider.autoDispose
           .map((s) => s.docs);
     });
 
+/// What a typed query becomes: one term for Firestore, the rest for here.
+///
+/// Mirrors `searchQuery` in functions/domain.js. Only one `arrayContains` is
+/// allowed per query, so the longest word goes to the server and the others
+/// narrow the result on the device.
+({String term, List<String> rest}) searchQuery(String text) {
+  final words = _plain(
+    text,
+  ).split(RegExp('[^a-z0-9]+')).where((w) => w.length >= 2).toList();
+  if (words.isEmpty) return (term: '', rest: const []);
+  final longest = words.reduce((a, b) => b.length > a.length ? b : a);
+  return (
+    term: longest.substring(0, longest.length.clamp(0, 14)),
+    rest: words.where((w) => w != longest).toList(),
+  );
+}
+
+String _plain(String value) => value.toLowerCase().replaceAllMapped(
+  RegExp('[áàäâãéèëêíìïîóòöôõúùüûñç]'),
+  (m) => const {
+    'á': 'a',
+    'à': 'a',
+    'ä': 'a',
+    'â': 'a',
+    'ã': 'a',
+    'é': 'e',
+    'è': 'e',
+    'ë': 'e',
+    'ê': 'e',
+    'í': 'i',
+    'ì': 'i',
+    'ï': 'i',
+    'î': 'i',
+    'ó': 'o',
+    'ò': 'o',
+    'ö': 'o',
+    'ô': 'o',
+    'õ': 'o',
+    'ú': 'u',
+    'ù': 'u',
+    'ü': 'u',
+    'û': 'u',
+    'ñ': 'n',
+    'ç': 'c',
+  }[m[0]]!,
+);
+
+/// People who asked to be findable, matching [query].
+///
+/// The directory holds only what its owner already published, and only while
+/// they want to be in it: nobody is listed for having a card.
+final directoryProvider = StreamProvider.autoDispose
+    .family<List<QueryDocumentSnapshot<Map<String, dynamic>>>, String>((
+      ref,
+      query,
+    ) {
+      final parsed = searchQuery(query);
+      if (parsed.term.isEmpty) return Stream.value([]);
+      final uid = ref.watch(authSessionProvider).asData?.value?.uid;
+      return FirebaseFirestore.instance
+          .collection('directory')
+          .where('terms', arrayContains: parsed.term)
+          .limit(30)
+          .snapshots()
+          .map(
+            (s) => s.docs.where((d) {
+              if (d.id == uid) return false;
+              if (parsed.rest.isEmpty) return true;
+              final terms = List<String>.from(
+                (d.data()['terms'] as List?) ?? const [],
+              );
+              return parsed.rest.every(terms.contains);
+            }).toList(),
+          );
+    });
+
+/// Whether this account is listed, and under which card.
+final discoverableProvider = StreamProvider.autoDispose
+    .family<Map<String, dynamic>?, String?>(
+      (ref, uid) => uid == null
+          ? Stream.value(null)
+          : FirebaseFirestore.instance
+                .doc('directory/$uid')
+                .snapshots()
+                .map((d) => d.data()),
+    );
+
 /// Rebuilds a card from the sanitised snapshot the backend publishes.
 ///
 /// The receive screen and the wallet both draw somebody else's credential, so

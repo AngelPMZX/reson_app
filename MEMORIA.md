@@ -176,6 +176,7 @@ Información profesional: sector, especialidad, modalidad, ubicación, LinkedIn,
 | `publicCards/{publicId}` | Instantánea publicada y metadatos internos; sin acceso directo del cliente |
 | `connections/{connectionId}` | Dos miembros, requester/recipient, estado, nombres, tarjetas, timestamps, `respondedAt`, `lastMessage {text, sender}` y `reads {uid: timestamp}` |
 | `connections/{connectionId}/messages/{messageId}` | sender, text, createdAt; lectura solo miembros aceptados, escritura servidor |
+| `directory/{uid}` | Entrada del buscador; solo de quien lo activó. Lectura: cuenta verificada. Escritura: servidor |
 | `reports/{connectionId_uid}` | Reportes para administración; no lectura pública |
 | `socialLimits/{uid}` | Límite de frecuencia backend |
 
@@ -307,6 +308,18 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### Buscador de personas, solo para quien se apunta (12 de noviembre de 2026)
+
+Era el hueco que separaba una tarjeta digital de una red: solo se podía conectar escaneando un QR o abriendo un enlace. **Decisión del propietario: encontrable solo quien lo active.**
+
+- Colección **`directory/{uid}`**, una entrada por persona listada. La escribe solo el backend (`setDiscoverable`); las reglas dan lectura a cuentas verificadas y **escritura a nadie**, con prueba de reglas que lo comprueba.
+- **Publicar una tarjeta no lista a nadie.** Son dos consentimientos distintos: compartir una tarjeta con una persona no es querer salir en un directorio. La entrada contiene solo lo que su dueño ya había hecho público, copiado de la instantánea.
+- Despublicar la tarjeta con la que apareces **retira la entrada**, o el buscador devolvería resultados muertos.
+- Firestore no tiene búsqueda de texto. `searchTerms` guarda **prefijos sin acentos** de nombre, puesto, empresa, sector y ubicación (tope 120, porque un array también es un índice) y `searchQuery` manda **la palabra más larga** al servidor —solo se permite un `array-contains` por consulta— y filtra el resto en el dispositivo. Hay una copia en Dart en `network_service.dart`: **si cambias una, cambia la otra**, y las pruebas de ambos lados usan el mismo ejemplo.
+- `array-contains` sin `orderBy` **no necesita índice compuesto**; el orden se hace en cliente a propósito.
+- El interruptor vive en Ajustes, con selector de tarjeta cuando hay más de una publicada. Sin tarjeta publicada no hay interruptor, solo la explicación.
+- Entrada al buscador desde Mi red, y cada resultado abre el perfil de esa persona.
+
 ### Listo para un tercer idioma (12 de noviembre de 2026)
 
 El propietario avisó de que en el futuro habrá más idiomas. **Ya no queda ni un texto que elija idioma en código.**
@@ -320,6 +333,15 @@ El propietario avisó de que en el futuro habrá más idiomas. **Ya no queda ni 
 **Para añadir un idioma** basta con: copiar `lib/l10n/app_es.arb` a `app_<código>.arb`, traducir los valores, y `flutter gen-l10n`. `supportedLocales` se genera solo. Lo que **no** cubre el ARB y habría que revisar: `functions/render.js` (la página pública acepta `?lang=en` y tiene dos idiomas a mano) y los correos de verificación, que reciben `languageCode` desde la app.
 
 `test/network_errors_test.dart` incluye una guarda que falla si algún archivo de `lib/features/network` vuelve a traer texto inline o a ramificar por idioma.
+
+### La tarjeta pública se veía genérica (12 de noviembre de 2026)
+
+El propietario señaló que la página compartida no se ve bien. Mirando el HTML real de una publicada había dos defectos de verdad:
+
+- **El color que elige el dueño no se usaba.** El degradado y los botones estaban fijos en carmín dentro del CSS, así que todas las tarjetas se veían iguales por mucho que su dueño eligiera otro color. Ahora `shade()` deriva un tono oscuro y uno claro del color real y la página los usa en variables CSS.
+- **Se emitían párrafos vacíos.** `<p>${role}</p><p>${company}</p><p>${bio}</p>` salía siempre, así que un campo vacío dejaba un hueco bajo el nombre. Ahora puesto y empresa van en una sola línea y la biografía solo aparece si existe.
+
+Hay pruebas de las dos cosas y de que un color inválido no produzca una variable CSS rota.
 
 ### Cartera de tarjetas recibidas (12 de noviembre de 2026)
 
@@ -436,8 +458,8 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **132 pruebas Flutter** (140 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
-- **27 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
+- **141 pruebas Flutter** (149 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **33 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
 **Java para el emulador: no hace falta instalarlo.** Android Studio trae OpenJDK 21 en `C:\Program Files\Android\Android Studio\jbr`. Basta ponerlo en PATH para el comando; la nota antigua sobre un JRE en `.tools` ya no aplica:
@@ -498,12 +520,14 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 
 ### Lo que sigue abierto, por prioridad
 
+**Las capturas de diseño viven en `build/design-preview/`, que está en `.gitignore`**: no viajan en los commits y hay que regenerarlas con el comando de la sección 14. Sin `RESON_FONT_DIR` el texto sale en cajas.
+
 **Ahora mismo, antes que nada:** el código está en `main` pero **no desplegado**. Falta `functions`, `firestore:rules`, `storage` y `hosting`; el índice sí está. Hasta que se despliegue, `unblock` y `markRead` no existen en el backend real y la app publicada sigue siendo la anterior. La interfaz aguanta mientras tanto —una conexión sin `lastMessage` dice «Sin mensajes todavía» y `markRead` falla en silencio— pero nadie verá vistas previas ni no leídos hasta desplegar Functions. Ver sección 14.
 
 **Diagnóstico del 12/11/2026 sobre lo que le falta al producto**, por tamaño del hueco:
 
-- **No se puede encontrar a nadie.** No hay buscador de personas, ni directorio, ni sugerencias: solo se conecta escaneando un QR o abriendo un enlace. Es la diferencia entre una tarjeta digital y una red profesional, que es la dirección declarada del producto. Requiere decidir antes **quién es encontrable** y por qué campos, más índices y reglas nuevas.
-- **No existe «persona», solo «tarjeta».** Al aceptar una conexión se guarda una instantánea publicada: si la otra parte actualiza su trayectoria, tú sigues viendo la foto fija de aquel día. `ProfileHero` y `ProfessionalSummary` ya son reutilizables para resolverlo.
+- ~~No se puede encontrar a nadie~~ **resuelto el 12/11/2026** con el buscador opt-in (sección 10).
+- ~~No existe «persona», solo «tarjeta»~~ **resuelto el 12/11/2026** (sección 11). Lo que sigue en pie: la instantánea guardada envejece, y `refreshSaved` existe pero **no se llama desde ninguna pantalla todavía**.
 - **El chat es solo texto.** Sin adjuntos ni imágenes, sin responder a un mensaje, sin editar ni borrar, sin indicador de escribiendo. Los acuses de lectura **ya tienen los datos** (`reads`) y no se muestran: es decisión de producto, no olvido.
 - **Nada avisa de nada** sin push: la app solo existe cuando se abre.
 - **Nadie sabe si su tarjeta funciona**: no hay métricas de aperturas ni de contactos guardados. Para quien reparte tarjetas en un evento, eso es la mitad del valor.

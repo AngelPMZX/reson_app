@@ -1149,4 +1149,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get theirCard => 'Their card';
+
+  @override
+  String get discoverTitle => 'Find people';
+
+  @override
+  String get discoverSubtitle =>
+      'Only people who chose to be findable show up here.';
+
+  @override
+  String get discoverHint => 'Name, role, company or place';
+
+  @override
+  String get discoverPrompt => 'Type to start searching.';
+
+  @override
+  String get discoverNoResults => 'Nobody matches that search.';
+
+  @override
+  String get discoverOptInTitle => 'Let people find me';
+
+  @override
+  String get discoverOptInBody =>
+      'The name, role, company and location of the card you pick become visible in search. You can turn it off whenever you want.';
+
+  @override
+  String get discoverOptInNeedsCard =>
+      'Publish a card before you can appear in search.';
+
+  @override
+  String get discoverWhichCard => 'Card you appear with';
+
+  @override
+  String get discoverListed => 'You appear in search';
+
+  @override
+  String get discoverSeeProfile => 'View profile';
 }

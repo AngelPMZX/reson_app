@@ -151,6 +151,17 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Finding somebody lives one tap from the people you already
+            // know, which is where you go looking for them.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: () => context.go('/discover'),
+                icon: const Icon(Icons.person_search_outlined),
+                label: Text(s.discoverTitle),
+              ),
+            ),
+            const SizedBox(height: ResonSpace.lg),
             TabBar(
               tabs: [
                 Tab(text: s.networkConnections),
