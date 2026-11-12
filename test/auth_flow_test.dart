@@ -147,6 +147,7 @@ Future<ProviderContainer> launch(
   // like the unread count would read the root's empty streams while the
   // screen below it read the nested ones.
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? connections,
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? received,
   NetworkService? networkService,
 }) async {
   SharedPreferences.setMockInitialValues({});
@@ -169,7 +170,7 @@ Future<ProviderContainer> launch(
       connectionsProvider.overrideWith(
         (ref) => Stream.value(connections ?? []),
       ),
-      receivedProvider.overrideWith((ref) => Stream.value([])),
+      receivedProvider.overrideWith((ref) => Stream.value(received ?? [])),
       publicationsProvider.overrideWith((ref) => Stream.value([])),
       blockedProvider.overrideWith((ref) => Stream.value(const {})),
       if (networkService != null)

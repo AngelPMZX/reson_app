@@ -1693,6 +1693,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tell people what you do. Whatever you write here becomes the starting point for every card you create.'**
   String get profileEmptyBody;
+
+  /// No description provided for @walletSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, company or place'**
+  String get walletSearch;
+
+  /// No description provided for @walletEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallet is empty'**
+  String get walletEmptyTitle;
+
+  /// No description provided for @walletEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'When somebody hands you their card and you keep it, you will find it here whenever you need it.'**
+  String get walletEmptyBody;
+
+  /// No description provided for @walletNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No card matches that filter.'**
+  String get walletNoMatch;
+
+  /// No description provided for @walletUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Its owner took this card down'**
+  String get walletUnavailable;
+
+  /// No description provided for @walletRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from my wallet'**
+  String get walletRemove;
 }
 
 class _AppLocalizationsDelegate

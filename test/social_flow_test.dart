@@ -334,7 +334,7 @@ void main() {
     await openNetwork(tester, status: 'accepted');
     await tester.tap(find.text('Guardadas'));
     await tester.pumpAndSettle();
-    expect(find.text('Aquí estarán las tarjetas que guardes.'), findsOneWidget);
+    expect(find.text('Tu cartera está vacía'), findsOneWidget);
     await captureSocial(tester, 'network-saved');
     expect(tester.takeException(), isNull);
   });

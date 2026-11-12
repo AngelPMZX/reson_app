@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
 import 'network_service.dart';
 import 'network_widgets.dart';
+import 'received_wallet.dart';
 
 class NetworkPage extends ConsumerStatefulWidget {
   const NetworkPage({super.key});
@@ -252,37 +253,21 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
         },
       );
 
-  Widget _saved(BuildContext context, AppLocalizations s) => ref
-      .watch(receivedProvider)
-      .when(
-        loading: () => const ResonCardSkeleton(),
-        error: (e, _) => ResonNotice(
-          icon: Icons.cloud_off_outlined,
-          text: networkErrorText(context, e),
-        ),
-        data: (docs) => docs.isEmpty
-            ? NetworkPanel(
-                child: ResonNotice(
-                  icon: Icons.bookmark_border,
-                  text: tr(
-                    context,
-                    'Aquí estarán las tarjetas que guardes.',
-                    'Cards you save will appear here.',
-                  ),
-                ),
-              )
-            : Column(
-                children: [
-                  for (final (i, d) in docs.indexed)
-                    ResonStagger(index: i, child: _savedRow(context, d)),
-                  NetworkMore(
-                    visible: docs.length >= ref.watch(receivedPageProvider),
-                    onPressed: () =>
-                        ref.read(receivedPageProvider.notifier).grow(),
-                  ),
-                ],
-              ),
-      );
+  Widget _saved(BuildContext context, AppLocalizations s) =>
+      ReceivedWallet(busy: busy, onRemove: _removeSaved);
+
+  Future<void> _removeSaved(String publicId) async {
+    setState(() => busy = true);
+    try {
+      await ref.read(networkServiceProvider).act('removeSaved', {
+        'publicId': publicId,
+      });
+    } catch (e) {
+      if (mounted) setState(() => error = networkErrorText(context, e));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
 
   Widget _heading(BuildContext context, String text, [int? count]) => Padding(
     padding: const EdgeInsets.only(bottom: ResonSpace.md),
@@ -476,46 +461,6 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
       ),
     );
   }
-
-  Widget _savedRow(
-    BuildContext context,
-    QueryDocumentSnapshot<Map<String, dynamic>> d,
-  ) => Padding(
-    padding: const EdgeInsets.only(bottom: ResonSpace.md),
-    child: ResonPanel(
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: _Avatar(name: d.data()['name'] as String? ?? 'R'),
-        title: Text(d.data()['name'] as String),
-        subtitle: Text(d.data()['label'] as String),
-        onTap: () => context.go('/receive/${d.id}'),
-        trailing: IconButton(
-          tooltip: tr(
-            context,
-            'Quitar de mi colección',
-            'Remove from collection',
-          ),
-          icon: const Icon(Icons.bookmark_remove_outlined),
-          onPressed: busy
-              ? null
-              : () async {
-                  setState(() => busy = true);
-                  try {
-                    await ref.read(networkServiceProvider).act('removeSaved', {
-                      'publicId': d.id,
-                    });
-                  } catch (e) {
-                    if (mounted) {
-                      setState(() => error = networkErrorText(context, e));
-                    }
-                  } finally {
-                    if (mounted) setState(() => busy = false);
-                  }
-                },
-        ),
-      ),
-    ),
-  );
 }
 
 /// Shows the selected tab's children inside a scrolling page.

@@ -265,5 +265,11 @@
   "profileAbout": "About",
   "profileSkills": "Skills",
   "profileEmptyTitle": "Your profile is empty",
-  "profileEmptyBody": "Tell people what you do. Whatever you write here becomes the starting point for every card you create."
+  "profileEmptyBody": "Tell people what you do. Whatever you write here becomes the starting point for every card you create.",
+  "walletSearch": "Search by name, company or place",
+  "walletEmptyTitle": "Your wallet is empty",
+  "walletEmptyBody": "When somebody hands you their card and you keep it, you will find it here whenever you need it.",
+  "walletNoMatch": "No card matches that filter.",
+  "walletUnavailable": "Its owner took this card down",
+  "walletRemove": "Remove from my wallet"
 }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../cards/domain/digital_card.dart';
-import '../cards/domain/professional_profile.dart';
 import '../cards/presentation/card_preview.dart';
 import 'network_service.dart';
 import 'network_widgets.dart';
@@ -76,25 +74,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
           ),
         ),
         data: (p) {
-          final card = DigitalCard(
-            id: widget.publicId,
-            label: p['label'] as String,
-            displayName: p['name'] as String,
-            role: p['role'] as String,
-            company: p['company'] as String,
-            email: p['email'] as String,
-            phone: p['phone'] as String,
-            website: p['website'] as String,
-            primaryHex: p['color'] as String,
-            kind: p['kind'] as String,
-            layout: p['layout'] as String,
-            bio: p['bio'] as String,
-            professional: ProfessionalProfile.fromMap(
-              Map<String, dynamic>.from(p['professional'] as Map),
-            ),
-            visibleFields: List<String>.from(p['visibleFields'] as List)
-              ..remove('photo'),
-          );
+          final card = cardFromSnapshot(p, widget.publicId);
           final ownCards =
               publications.asData?.value
                   .where((v) => v.data()['active'] == true)

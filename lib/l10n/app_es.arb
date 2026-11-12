@@ -265,5 +265,11 @@
   "profileAbout": "Sobre mí",
   "profileSkills": "Habilidades",
   "profileEmptyTitle": "Tu perfil está en blanco",
-  "profileEmptyBody": "Cuéntale al mundo a qué te dedicas. Lo que escribas aquí será el punto de partida de cada tarjeta que crees."
+  "profileEmptyBody": "Cuéntale al mundo a qué te dedicas. Lo que escribas aquí será el punto de partida de cada tarjeta que crees.",
+  "walletSearch": "Buscar por nombre, empresa o lugar",
+  "walletEmptyTitle": "Tu cartera está vacía",
+  "walletEmptyBody": "Cuando alguien te pase su tarjeta y la guardes, la tendrás aquí para consultarla cuando quieras.",
+  "walletNoMatch": "Ninguna tarjeta coincide con ese filtro.",
+  "walletUnavailable": "Su dueño retiró esta tarjeta",
+  "walletRemove": "Quitar de mi cartera"
 }

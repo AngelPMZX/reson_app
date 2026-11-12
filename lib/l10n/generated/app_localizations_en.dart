@@ -858,4 +858,23 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get profileEmptyBody =>
       'Tell people what you do. Whatever you write here becomes the starting point for every card you create.';
+
+  @override
+  String get walletSearch => 'Search by name, company or place';
+
+  @override
+  String get walletEmptyTitle => 'Your wallet is empty';
+
+  @override
+  String get walletEmptyBody =>
+      'When somebody hands you their card and you keep it, you will find it here whenever you need it.';
+
+  @override
+  String get walletNoMatch => 'No card matches that filter.';
+
+  @override
+  String get walletUnavailable => 'Its owner took this card down';
+
+  @override
+  String get walletRemove => 'Remove from my wallet';
 }

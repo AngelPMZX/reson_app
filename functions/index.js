@@ -163,10 +163,41 @@ async function social(uid, data) {
   }
   if (action === 'save') {
     const p = await published(data.publicId);
-    await db
-      .doc(`users/${uid}/received/${p.id}`)
-      .set({ publicId: p.id, name: p.snapshot.name, label: p.snapshot.label, savedAt: now() });
+    // The whole sanitised snapshot is kept, not just a name and a label: the
+    // wallet draws real credentials, and reading them back one callable at a
+    // time would mean a network round trip per card on every open.
+    await db.doc(`users/${uid}/received/${p.id}`).set({
+      publicId: p.id,
+      name: p.snapshot.name,
+      label: p.snapshot.label,
+      snapshot: p.snapshot,
+      active: true,
+      savedAt: now(),
+      updatedAt: now(),
+    });
     return { ok: true };
+  }
+  if (action === 'refreshSaved') {
+    // A saved card is a copy, so it ages. This pulls the current one, and
+    // records that it is gone rather than failing when it was taken down.
+    const ref = db.doc(`users/${uid}/received/${id(data.publicId)}`);
+    if (!(await ref.get()).exists) fail('not-found', 'This card is not saved');
+    const d = (await db.doc('publicCards/' + id(data.publicId)).get()).data();
+    if (!d?.active) {
+      await ref.set({ active: false, updatedAt: now() }, { merge: true });
+      return { ok: true, active: false };
+    }
+    await ref.set(
+      {
+        name: d.snapshot.name,
+        label: d.snapshot.label,
+        snapshot: d.snapshot,
+        active: true,
+        updatedAt: now(),
+      },
+      { merge: true },
+    );
+    return { ok: true, active: true };
   }
   if (action === 'removeSaved') {
     await db.doc(`users/${uid}/received/${id(data.publicId)}`).delete();

@@ -867,4 +867,23 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get profileEmptyBody =>
       'Cuéntale al mundo a qué te dedicas. Lo que escribas aquí será el punto de partida de cada tarjeta que crees.';
+
+  @override
+  String get walletSearch => 'Buscar por nombre, empresa o lugar';
+
+  @override
+  String get walletEmptyTitle => 'Tu cartera está vacía';
+
+  @override
+  String get walletEmptyBody =>
+      'Cuando alguien te pase su tarjeta y la guardes, la tendrás aquí para consultarla cuando quieras.';
+
+  @override
+  String get walletNoMatch => 'Ninguna tarjeta coincide con ese filtro.';
+
+  @override
+  String get walletUnavailable => 'Su dueño retiró esta tarjeta';
+
+  @override
+  String get walletRemove => 'Quitar de mi cartera';
 }

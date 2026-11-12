@@ -89,6 +89,7 @@ lib/
       receive_card_page.dart        Recibir, guardar, solicitar conexión
       network_page.dart             Personas: solicitudes, conexiones, en pausa, guardadas
       messages_page.dart            Lista de conversaciones con búsqueda
+      received_wallet.dart          Cartera de tarjetas recibidas con filtros
       chat_page.dart                Conversación, paginación, bloquear, reportar
     settings/settings_page.dart     Apariencia, idioma, sonido y cerrar sesión
   l10n/                             ARB ES/EN y código generado
@@ -170,7 +171,7 @@ Información profesional: sector, especialidad, modalidad, ubicación, LinkedIn,
 | `users/{uid}/settings/identity` | Perfil base opcional; dueño verificado |
 | `users/{uid}/cards/{cardId}` | Tarjetas privadas; dueño verificado |
 | `users/{uid}/publications/{cardId}` | Mapeo a ID público, revisión, label, active; cliente lee, servidor escribe |
-| `users/{uid}/received/{publicId}` | Tarjetas guardadas; propietario lee, servidor escribe |
+| `users/{uid}/received/{publicId}` | Tarjetas guardadas con su instantánea completa y `active`; propietario lee, servidor escribe |
 | `users/{uid}/blocks/{otherUid}` | Bloqueos; servidor administra |
 | `publicCards/{publicId}` | Instantánea publicada y metadatos internos; sin acceso directo del cliente |
 | `connections/{connectionId}` | Dos miembros, requester/recipient, estado, nombres, tarjetas, timestamps, `respondedAt`, `lastMessage {text, sender}` y `reads {uid: timestamp}` |
@@ -306,6 +307,18 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### Cartera de tarjetas recibidas (12 de noviembre de 2026)
+
+Idea del propietario: que las tarjetas que te pasan se guarden y se consulten en una cartera aparte con filtros. La mitad existía —`users/{uid}/received` y la pestaña Guardadas— pero **solo almacenaba `publicId`, `name`, `label` y `savedAt`**, así que no había con qué dibujar la credencial y la pestaña era una lista de dos líneas.
+
+- `save` guarda ahora **la instantánea saneada completa** más `active`. Leerla por callable al abrir habría costado un viaje de red por tarjeta. La redacción del backend sobrevive la copia y hay prueba de ello.
+- Nueva acción **`refreshSaved`**: una tarjeta guardada es una copia y envejece. Trae la actual y, si su dueño la retiró, **marca `active: false` en vez de fallar**; la cartera la conserva atenuada con «Su dueño retiró esta tarjeta» en lugar de hacerla desaparecer sin explicación.
+- `cardFromSnapshot` en `network_service.dart` es el conversor compartido de instantánea a `DigitalCard`; la pantalla de recibir lo reutiliza en vez de repetir el mapeo.
+- `received_wallet.dart` dibuja `CardPreview` real, con buscador por nombre, empresa, puesto, etiqueta o ubicación, y filtros por tipo en `Wrap` (no en carril: con cuatro, un carril deja el último fuera).
+- Las cuentas que guardaron antes del cambio no tienen `snapshot`: la cartera las muestra como fila de nombre y etiqueta en lugar de quedarse en blanco. Hay prueba.
+
+**Decisión tomada, no olvido**: no se guarda automáticamente lo que solo miras. El propietario mencionó «o que has visto sus perfiles»; guardar sin pedirlo convierte la cartera en un historial ruidoso y registra a quién has mirado. El guardado sigue siendo explícito.
+
 ### El perfil pasó a ser un perfil (12 de noviembre de 2026)
 
 El propietario lo describió como «soso y medio feo». El problema de fondo no era el aspecto: **era un editor disfrazado de perfil**. 602 líneas, unas veinte entradas seguidas, y ninguna forma de verte como te ven los demás. Lo más rico que recoge la app —sector, habilidades, experiencia, educación, proyectos, certificaciones— solo se veía dentro de un formulario o en una tarjeta publicada.
@@ -399,7 +412,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **119 pruebas Flutter** (127 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **127 pruebas Flutter** (135 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **27 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 

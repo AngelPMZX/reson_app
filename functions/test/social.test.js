@@ -34,7 +34,13 @@ test('publish → save → request → accept → chat → block → revoke', { 
   assert.ok(!JSON.stringify(pub).includes('SECRET'));
   await assert.rejects(() => call('bob', 'publish', { cardId: 'cardA', fields: [] }));
   await call('bob', 'save', { publicId: a.id });
-  assert.ok((await db.doc('users/bob/received/' + a.id).get()).exists);
+  const saved = (await db.doc('users/bob/received/' + a.id).get()).data();
+  // The wallet draws the credential, so the whole sanitised snapshot is kept
+  // and the redaction must survive the copy.
+  assert.equal(saved.snapshot.name, 'alice');
+  assert.equal(saved.snapshot.email, '');
+  assert.ok(!JSON.stringify(saved).includes('SECRET'));
+  assert.equal(saved.active, true);
   const request = await call('alice', 'request', { publicId: b.id, ownPublicId: a.id });
   assert.equal(
     (await call('alice', 'request', { publicId: b.id, ownPublicId: a.id })).id,
@@ -84,4 +90,12 @@ test('publish → save → request → accept → chat → block → revoke', { 
   assert.equal((await db.collection('connections/' + request.id + '/messages').get()).size, 2);
   await call('alice', 'unpublish', { cardId: 'cardA' });
   await assert.rejects(() => getSharedCard.run({ data: { publicId: a.id } }));
+  // A saved card is a copy, so it ages. Refreshing a withdrawn one records
+  // that it is gone instead of failing, and the wallet keeps showing it.
+  const gone = await call('bob', 'refreshSaved', { publicId: a.id });
+  assert.equal(gone.active, false);
+  const stale = (await db.doc('users/bob/received/' + a.id).get()).data();
+  assert.equal(stale.active, false);
+  assert.equal(stale.snapshot.name, 'alice');
+  await assert.rejects(() => call('bob', 'refreshSaved', { publicId: b.id }));
 });

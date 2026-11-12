@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
+import '../cards/domain/digital_card.dart';
+import '../cards/domain/professional_profile.dart';
 
 final networkServiceProvider = Provider((ref) => NetworkService());
 
@@ -135,6 +137,33 @@ final messagesProvider = StreamProvider.autoDispose
           .snapshots()
           .map((s) => s.docs);
     });
+
+/// Rebuilds a card from the sanitised snapshot the backend publishes.
+///
+/// The receive screen and the wallet both draw somebody else's credential, so
+/// the mapping lives here once. `photo` is dropped from the visible fields:
+/// the bytes are served over HTTP by the public endpoint, not held locally.
+DigitalCard cardFromSnapshot(Map<String, dynamic> p, String publicId) =>
+    DigitalCard(
+      id: publicId,
+      label: p['label'] as String? ?? '',
+      displayName: p['name'] as String? ?? '',
+      role: p['role'] as String? ?? '',
+      company: p['company'] as String? ?? '',
+      email: p['email'] as String? ?? '',
+      phone: p['phone'] as String? ?? '',
+      website: p['website'] as String? ?? '',
+      primaryHex: p['color'] as String? ?? '#C8102E',
+      kind: p['kind'] as String? ?? 'work',
+      layout: p['layout'] as String? ?? 'signature',
+      bio: p['bio'] as String? ?? '',
+      professional: ProfessionalProfile.fromMap(
+        Map<String, dynamic>.from((p['professional'] as Map?) ?? const {}),
+      ),
+      visibleFields: List<String>.from(
+        (p['visibleFields'] as List?) ?? const <String>[],
+      )..remove('photo'),
+    );
 
 /// The member of a connection who is not you.
 String otherMember(Map<String, dynamic> d, String? uid) =>
