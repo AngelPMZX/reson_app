@@ -260,5 +260,10 @@
   "messagesEmptyBody": "Once you accept a connection you can write here.",
   "messagesNoMatch": "No conversation matches that search.",
   "networkConnections": "Connections",
-  "networkSaved": "Saved"
+  "networkSaved": "Saved",
+  "profileEdit": "Edit profile",
+  "profileAbout": "About",
+  "profileSkills": "Skills",
+  "profileEmptyTitle": "Your profile is empty",
+  "profileEmptyBody": "Tell people what you do. Whatever you write here becomes the starting point for every card you create."
 }

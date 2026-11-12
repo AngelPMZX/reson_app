@@ -842,4 +842,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get networkSaved => 'Saved';
+
+  @override
+  String get profileEdit => 'Edit profile';
+
+  @override
+  String get profileAbout => 'About';
+
+  @override
+  String get profileSkills => 'Skills';
+
+  @override
+  String get profileEmptyTitle => 'Your profile is empty';
+
+  @override
+  String get profileEmptyBody =>
+      'Tell people what you do. Whatever you write here becomes the starting point for every card you create.';
 }

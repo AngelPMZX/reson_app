@@ -1,26 +1,28 @@
-import '../../core/theme/reson_chrome.dart';
-import '../../core/theme/reson_palette.dart';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-import 'package:image_picker/image_picker.dart';
-import '../cards/data/card_media_repository.dart';
-import 'profile_avatar.dart';
-import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/firebase/firebase_bootstrap.dart';
-import '../../core/theme/reson_motion.dart';
-import '../../l10n/generated/app_localizations.dart';
-import '../auth/presentation/brand_widgets.dart';
-import '../cards/domain/professional_profile.dart';
-import '../cards/presentation/professional_editor.dart';
-import '../cards/domain/digital_card.dart';
-import 'personal_profile.dart';
 
+import '../../core/firebase/firebase_bootstrap.dart';
+import '../../core/theme/reson_chrome.dart';
+import '../../core/theme/reson_motion.dart';
+import '../../core/theme/reson_palette.dart';
+import '../../core/theme/reson_surfaces.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../cards/domain/digital_card.dart';
+import '../cards/presentation/professional_summary.dart';
+import 'personal_profile.dart';
+import 'profile_avatar.dart';
+
+/// Who you are, shown rather than typed.
+///
+/// This screen used to be the edit form itself: a banner and then twenty
+/// inputs, so you could fill yourself in but never look at yourself. The form
+/// still exists behind the edit button; what changed is that the profile has
+/// a face now, and the career data the app already collects is finally
+/// presented somewhere other than a published card.
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = AppLocalizations.of(context)!;
@@ -29,574 +31,381 @@ class ProfilePage extends ConsumerWidget {
         .when(
           loading: () =>
               const Scaffold(body: Center(child: CircularProgressIndicator())),
-          error: (_, st) => Scaffold(
-            body: Center(
+          error: (_, _) => Scaffold(
+            body: ResonNotice(
+              icon: Icons.cloud_off_outlined,
+              text: s.cardLoadError,
+              action: FilledButton(
+                onPressed: () => ref.invalidate(personalProfileProvider),
+                child: Text(s.retry),
+              ),
+            ),
+          ),
+          data: (profile) => _Profile(profile: profile),
+        );
+  }
+}
+
+class _Profile extends ConsumerWidget {
+  const _Profile({this.profile});
+  final PersonalProfile? profile;
+
+  /// The career sections read from a card, so the profile reuses the same
+  /// presentation the cards already have instead of growing a second one.
+  DigitalCard _asCard(PersonalProfile p) => DigitalCard(
+    id: 'profile',
+    label: '',
+    // Location and work mode are already identity chips under the name, so
+    // the career block hides them rather than saying them twice.
+    visibleFields: DigitalCard.defaultFields
+        .where((f) => f != 'location' && f != 'workMode')
+        .toList(),
+    displayName: p.value('name'),
+    role: p.value('role'),
+    company: p.value('company'),
+    email: p.value('email'),
+    phone: p.value('phone'),
+    website: p.value('website'),
+    primaryHex: '#C8102E',
+    bio: p.value('bio'),
+    professional: p.professional,
+  );
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final user = ref.watch(authSessionProvider).asData?.value;
+    final p = profile ?? PersonalProfile(fields: const {});
+    final name = p.value('name').isEmpty
+        ? (user?.name ?? s.navProfile)
+        : p.value('name');
+    final empty = p.value('role').isEmpty && p.value('bio').isEmpty;
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: ResonSpace.huge),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 680),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(s.cardLoadError),
-                  TextButton(
-                    onPressed: () => ref.invalidate(personalProfileProvider),
-                    child: Text(s.retry),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      ResonSpace.xl,
+                      ResonSpace.xl,
+                      ResonSpace.xl,
+                      ResonSpace.lg,
+                    ),
+                    child: ResonHeader(
+                      leading: IconButton(
+                        tooltip: s.settings,
+                        icon: const Icon(Icons.tune),
+                        onPressed: () => context.go('/settings'),
+                      ),
+                    ),
                   ),
-                  TextButton(
-                    onPressed: () => context.go('/home'),
-                    child: Text(s.backCards),
+                  ProfileHero(
+                    name: name,
+                    role: p.value('role'),
+                    company: p.value('company'),
+                    location: p.professional.location,
+                    workMode: p.professional.workMode,
+                    photoPath: p.photoPath,
+                    photoSource: p.photoSource,
+                    googleUrl: user?.googlePhotoUrl,
+                    badge: _availabilityLabel(s, p.availability),
+                    action: FilledButton.icon(
+                      onPressed: () => context.go('/profile/edit'),
+                      icon: const Icon(Icons.edit_outlined),
+                      label: Text(s.profileEdit),
+                    ),
+                  ),
+                  const SizedBox(height: ResonSpace.xl),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ResonSpace.xl,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (empty)
+                          ResonPanel(
+                            child: ResonNotice(
+                              icon: Icons.auto_awesome_outlined,
+                              tone: scheme.primary,
+                              title: s.profileEmptyTitle,
+                              text: s.profileEmptyBody,
+                              action: FilledButton(
+                                onPressed: () => context.go('/profile/edit'),
+                                child: Text(s.profileEdit),
+                              ),
+                            ),
+                          )
+                        else ...[
+                          if (p.value('bio').isNotEmpty)
+                            _Block(
+                              title: s.profileAbout,
+                              child: Text(
+                                p.value('bio'),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.copyWith(height: 1.6),
+                              ),
+                            ),
+                          if (p.value('languages').isNotEmpty)
+                            _Block(
+                              title: s.profileLanguages,
+                              child: _Tags(value: p.value('languages')),
+                            ),
+                          if (p.value('services').isNotEmpty)
+                            _Block(
+                              title: s.profileServices,
+                              child: _Tags(value: p.value('services')),
+                            ),
+                          // The career section brings its own surface, and
+                          // says nothing at all when there is nothing to
+                          // say. Unfolded here: on a profile the career is
+                          // the subject, not a detail behind a disclosure.
+                          ProfessionalSummary(card: _asCard(p), open: true),
+                        ],
+                        const SizedBox(height: ResonSpace.lg),
+                        _Block(
+                          title: s.profileVerified,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.verified_outlined,
+                                color: scheme.primary,
+                              ),
+                              const SizedBox(width: ResonSpace.md),
+                              Expanded(child: Text(user?.email ?? '')),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
-          data: (profile) => _ProfileForm(initial: profile),
-        );
-  }
-}
-
-class _ProfileForm extends ConsumerStatefulWidget {
-  const _ProfileForm({this.initial});
-  final PersonalProfile? initial;
-  @override
-  ConsumerState<_ProfileForm> createState() => _ProfileFormState();
-}
-
-class _ProfileFormState extends ConsumerState<_ProfileForm> {
-  final _form = GlobalKey<FormState>();
-  late Map<String, TextEditingController> _fields;
-  late ProfessionalProfile _professional;
-  bool _busy = false, _dirty = false;
-  bool _pending = false;
-  int _revision = 0;
-  Uint8List? _photoBytes;
-  String _photoPath = '', _photoSource = 'google', _availability = 'private';
-  String? _uploadedPath;
-  String? _message;
-  bool _failed = false;
-  @override
-  void initState() {
-    super.initState();
-    final user = ref.read(authSessionProvider).asData?.value;
-    final data =
-        widget.initial ??
-        PersonalProfile(
-          fields: {'name': user?.name ?? '', 'email': user?.email ?? ''},
-        );
-    _professional = data.professional;
-    _photoPath = data.photoPath;
-    _photoSource = data.photoSource;
-    _availability = data.availability;
-    _fields = {
-      for (final key in PersonalProfile.limits.keys)
-        key: TextEditingController(text: data.value(key)),
-    };
-    for (final c in _fields.values) {
-      c.addListener(() {
-        _revision++;
-        if (mounted) setState(() => _dirty = true);
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    for (final c in _fields.values) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  Future<bool> _confirmLeave() async {
-    final s = AppLocalizations.of(context)!;
-    if (_dirty) {
-      final leave = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(s.profileDiscard),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(s.profileStay),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(s.profileLeave),
-            ),
-          ],
         ),
-      );
-      if (leave != true) return false;
-    }
-    return true;
-  }
-
-  Future<void> _back() async {
-    if (await _confirmLeave() && mounted) context.go('/home');
-  }
-
-  Future<void> _pickPhoto() async {
-    if (_busy || _pending) return;
-    setState(() {
-      _busy = true;
-      _message = null;
-    });
-    try {
-      final file = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
-      if (file == null) return;
-      if (await file.length() > maxPhotoBytes) {
-        throw const FormatException('size');
-      }
-      final bytes = await file.readAsBytes();
-      photoContentType(bytes);
-      final codec = await ui.instantiateImageCodec(bytes, targetWidth: 1024);
-      final frame = await codec.getNextFrame();
-      frame.image.dispose();
-      codec.dispose();
-      if (mounted) {
-        setState(() {
-          _photoBytes = bytes;
-          _uploadedPath = null;
-          _photoSource = 'upload';
-          _dirty = true;
-          _revision++;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _failed = true;
-          _message = AppLocalizations.of(context)!.designChooseAJPGPNGOrWebP;
-        });
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  void _choosePhotoSource(String source) {
-    setState(() {
-      _photoSource = source;
-      _photoBytes = null;
-      _uploadedPath = null;
-      _photoPath = '';
-      _dirty = true;
-      _revision++;
-    });
-  }
-
-  Future<void> _save() async {
-    if (_busy || _pending || !_form.currentState!.validate()) return;
-    final repo = ref.read(personalProfileRepositoryProvider);
-    if (repo == null) return;
-    final revision = _revision;
-    setState(() {
-      _busy = true;
-      _pending = true;
-      _message = null;
-    });
-    final draft = PersonalProfile(
-      fields: _fields.map((k, v) => MapEntry(k, v.text.trim())),
-      professional: _professional,
-      photoPath: _photoPath,
-      photoSource: _photoSource,
-      availability: _availability,
-    );
-    final bytes = _photoBytes;
-    final operation = Future<void>.sync(() async {
-      var path = draft.photoPath;
-      if (bytes != null && draft.photoSource == 'upload') {
-        path =
-            _uploadedPath ??
-            await ref.read(cardMediaProvider).uploadProfile(bytes);
-        if (mounted && revision == _revision) _uploadedPath = path;
-      }
-      await repo.save(
-        PersonalProfile(
-          fields: draft.fields,
-          professional: draft.professional,
-          photoPath: path,
-          photoSource: draft.photoSource,
-          availability: draft.availability,
-        ),
-      );
-    });
-    unawaited(
-      operation.then(
-        (_) {
-          if (mounted) {
-            setState(() {
-              _pending = false;
-              if (_revision == revision) _dirty = false;
-              _message = AppLocalizations.of(context)!.profileSaved;
-              _failed = false;
-            });
-          }
-        },
-        onError: (Object error, StackTrace stack) {
-          if (mounted) {
-            setState(() {
-              _pending = false;
-              _message = AppLocalizations.of(context)!.cardSaveError;
-              _failed = true;
-            });
-          }
-        },
       ),
     );
-    try {
-      await operation.timeout(const Duration(seconds: 20));
-    } on TimeoutException {
-      if (mounted) {
-        setState(() {
-          _message = AppLocalizations.of(context)!.saveUnconfirmed;
-          _failed = true;
-        });
-      }
-    } catch (_) {
-      /* The completion listener reports the original failure. */
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
   }
+
+  String? _availabilityLabel(AppLocalizations s, String availability) =>
+      switch (availability) {
+        'projects' => s.profileStatusProjects,
+        'employment' => s.profileStatusEmployment,
+        'unavailable' => s.profileStatusUnavailable,
+        _ => null,
+      };
+}
+
+/// The top of a person: a brand band, their face over it, and who they are.
+///
+/// Shared so that looking at somebody else uses the same shape as looking at
+/// yourself, rather than a card standing in for a person.
+class ProfileHero extends StatelessWidget {
+  const ProfileHero({
+    super.key,
+    required this.name,
+    this.role = '',
+    this.company = '',
+    this.location = '',
+    this.workMode = '',
+    this.photoPath = '',
+    this.photoSource = 'none',
+    this.googleUrl,
+    this.badge,
+    this.action,
+  });
+  final String name, role, company, location, workMode, photoPath, photoSource;
+  final String? googleUrl;
+  final String? badge;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
-    final user = ref.watch(authSessionProvider).asData?.value;
-    final labels = {
-      'name': s.name,
-      'role': s.jobTitle,
-      'company': s.company,
-      'bio': s.designAboutYou,
-      'email': s.email,
-      'phone': s.phone,
-      'website': s.website,
-      'languages': s.profileLanguages,
-      'services': s.profileServices,
-    };
-    return PopScope(
-      canPop: !_dirty && !_busy,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && !_busy) _back();
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              ResonSpace.xl,
-              ResonSpace.xl,
-              ResonSpace.xl,
-              ResonSpace.huge,
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 680),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const ResonHeader(),
-                    const SizedBox(height: ResonSpace.lg),
-                    ResonReveal(
-                      child: ResonPanel(
-                        padding: EdgeInsets.zero,
-                        raised: true,
-                        clip: true,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 78,
-                              width: double.infinity,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    ResonPalette.wine,
-                                    ResonPalette.deepWine,
-                                  ],
-                                ),
-                              ),
-                              padding: const EdgeInsets.all(ResonSpace.xl),
-                              child: Text(
-                                s.profileStudio,
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      letterSpacing: 2,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(ResonSpace.xl),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      ProfileAvatar(
-                                        name: _fields['name']!.text,
-                                        path: _uploadedPath ?? _photoPath,
-                                        source: _photoSource,
-                                        googleUrl: user?.googlePhotoUrl,
-                                        bytes: _photoBytes,
-                                      ),
-                                      const SizedBox(width: ResonSpace.lg),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              _fields['name']!.text
-                                                      .trim()
-                                                      .isEmpty
-                                                  ? s.profileTitle
-                                                  : _fields['name']!.text,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .headlineMedium
-                                                  ?.copyWith(
-                                                    letterSpacing: -.7,
-                                                  ),
-                                            ),
-                                            const SizedBox(
-                                              height: ResonSpace.xs,
-                                            ),
-                                            Text(
-                                              _fields['role']!.text
-                                                      .trim()
-                                                      .isEmpty
-                                                  ? s.profileTagline
-                                                  : _fields['role']!.text,
-                                              style: TextStyle(
-                                                color: scheme.onSurfaceVariant,
-                                                height: 1.4,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: ResonSpace.lg),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 4,
-                                    children: [
-                                      OutlinedButton.icon(
-                                        key: const Key('profilePickPhoto'),
-                                        onPressed: _busy || _pending
-                                            ? null
-                                            : _pickPhoto,
-                                        icon: const Icon(
-                                          Icons.add_a_photo_outlined,
-                                          size: 18,
-                                        ),
-                                        label: Text(s.designChoosePhoto),
-                                      ),
-                                      if (user?.googlePhotoUrl != null)
-                                        TextButton(
-                                          onPressed: _busy || _pending
-                                              ? null
-                                              : () => _choosePhotoSource(
-                                                  'google',
-                                                ),
-                                          child: Text(s.profileUseGoogle),
-                                        ),
-                                      if (_photoSource == 'upload' ||
-                                          (_photoSource == 'google' &&
-                                              user?.googlePhotoUrl != null))
-                                        TextButton(
-                                          onPressed: _busy || _pending
-                                              ? null
-                                              : () =>
-                                                    _choosePhotoSource('none'),
-                                          child: Text(s.designRemovePhoto),
-                                        ),
-                                    ],
-                                  ),
-                                  Text(
-                                    s.profilePhotoHint,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: scheme.onSurfaceVariant,
-                                          height: 1.5,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: ResonSpace.xl),
-                    Text(
-                      s.profileAvailability,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: ResonSpace.md),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        for (final item in {
-                          'private': s.profileStatusPrivate,
-                          'projects': s.profileStatusProjects,
-                          'employment': s.profileStatusEmployment,
-                          'unavailable': s.profileStatusUnavailable,
-                        }.entries)
-                          ChoiceChip(
-                            label: Text(item.value),
-                            selected: _availability == item.key,
-                            showCheckmark: false,
-                            onSelected: _busy || _pending
-                                ? null
-                                : (_) => setState(() {
-                                    _availability = item.key;
-                                    _dirty = true;
-                                    _revision++;
-                                  }),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: ResonSpace.xxl),
-                    Text(
-                      s.profileDetails,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: ResonSpace.sm),
-                    Text(
-                      s.profileIntro,
-                      style: TextStyle(
-                        color: scheme.onSurfaceVariant,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: ResonSpace.xl),
-                    Form(
-                      key: _form,
-                      child: Column(
-                        children: [
-                          for (final entry in labels.entries)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: ResonSpace.lg,
-                              ),
-                              child: TextFormField(
-                                key: ValueKey('profile_${entry.key}'),
-                                controller: _fields[entry.key],
-                                enabled: !_busy,
-                                maxLength: PersonalProfile.limits[entry.key],
-                                maxLines: entry.key == 'bio' ? 3 : 1,
-                                keyboardType: entry.key == 'email'
-                                    ? TextInputType.emailAddress
-                                    : entry.key == 'phone'
-                                    ? TextInputType.phone
-                                    : entry.key == 'website'
-                                    ? TextInputType.url
-                                    : TextInputType.text,
-                                decoration: InputDecoration(
-                                  labelText: entry.value,
-                                  counterText: '',
-                                ),
-                                validator: (value) {
-                                  final text = value?.trim() ?? '';
-                                  if (entry.key == 'website' &&
-                                      text.isNotEmpty) {
-                                    final uri = Uri.tryParse(text);
-                                    if (uri == null ||
-                                        ![
-                                          'http',
-                                          'https',
-                                        ].contains(uri.scheme) ||
-                                        uri.host.isEmpty) {
-                                      return s.profileUrlError;
-                                    }
-                                  }
-                                  if (entry.key == 'email' &&
-                                      text.isNotEmpty &&
-                                      !RegExp(
-                                        r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
-                                      ).hasMatch(text)) {
-                                    return s.profileEmailError;
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ),
-                          ProfessionalEditor(
-                            initial: _professional,
-                            enabled: !_busy,
-                            visible: DigitalCard.defaultFields.toSet(),
-                            onChanged: (p) {
-                              _professional = p;
-                              _revision++;
-                              _dirty = true;
-                            },
-                            onVisibility: (_, show) {},
-                            showVisibility: false,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: ResonSpace.xl),
-                    if (_message != null)
-                      FeedbackMessage(text: _message!, error: _failed),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: _busy || _pending ? null : _save,
-                        child: Text(_busy ? s.savingCard : s.profileSave),
-                      ),
-                    ),
-                    const SizedBox(height: ResonSpace.xxl),
-                    const Divider(),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.verified_user_outlined,
-                        color: scheme.primary,
-                      ),
-                      title: Text(s.profileVerified),
-                      subtitle: Text(user?.email ?? ''),
-                    ),
-                    Text(
-                      s.profileEmailNote,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: ResonSpace.lg),
-                    // Signing out moved to Settings: it is a preference about
-                    // the app, not a field of your identity, and here it was
-                    // tangled with the unsaved-changes guard of this form.
-                    TextButton.icon(
-                      onPressed: _busy
-                          ? null
-                          : () async {
-                              if (_dirty) {
-                                await _back();
-                                return;
-                              }
-                              if (mounted) context.go('/settings');
-                            },
-                      icon: const Icon(Icons.tune),
-                      label: Text(s.openSettings),
-                    ),
-                  ],
-                ),
-              ),
+    final subtitle = [role, company].where((v) => v.isNotEmpty).join(' · ');
+    final place = [location, workMode].where((v) => v.isNotEmpty).join(' · ');
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          height: 132,
+          margin: const EdgeInsets.symmetric(horizontal: ResonSpace.xl),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(ResonRadius.lg),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [ResonPalette.wine, ResonPalette.deepWine],
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            ResonSpace.xl + ResonSpace.sm,
+            96,
+            ResonSpace.xl + ResonSpace.sm,
+            0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: scheme.surface, width: 4),
+                ),
+                child: ProfileAvatar(
+                  name: name,
+                  size: 88,
+                  path: photoPath,
+                  source: photoSource,
+                  googleUrl: googleUrl,
+                ),
+              ),
+              const SizedBox(height: ResonSpace.md),
+              Text(
+                name,
+                style: Theme.of(
+                  context,
+                ).textTheme.headlineMedium?.copyWith(letterSpacing: -1),
+              ),
+              if (subtitle.isNotEmpty) ...[
+                const SizedBox(height: ResonSpace.xs),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              if (place.isNotEmpty || badge != null) ...[
+                const SizedBox(height: ResonSpace.md),
+                Wrap(
+                  spacing: ResonSpace.sm,
+                  runSpacing: ResonSpace.sm,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (place.isNotEmpty)
+                      _Chip(icon: Icons.place_outlined, label: place),
+                    if (badge != null)
+                      _Chip(
+                        icon: Icons.bolt_outlined,
+                        label: badge!,
+                        tone: scheme.primary,
+                      ),
+                  ],
+                ),
+              ],
+              if (action != null) ...[
+                const SizedBox(height: ResonSpace.lg),
+                Align(alignment: Alignment.centerLeft, child: action),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  const _Chip({required this.label, this.icon, this.tone});
+
+  /// Optional: a tag is a word, and a bullet beside every one of them reads
+  /// as decoration rather than meaning.
+  final IconData? icon;
+  final String label;
+  final Color? tone;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final colour = tone ?? scheme.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ResonSpace.md,
+        vertical: ResonSpace.sm - 2,
       ),
+      decoration: BoxDecoration(
+        color: tone == null
+            ? scheme.surfaceContainerHigh
+            : scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(ResonRadius.sm),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 15, color: colour),
+            const SizedBox(width: ResonSpace.xs + 2),
+          ],
+          // Flexible, or a long skill on a 320 pixel phone pushes the chip
+          // past the edge instead of ellipsising inside it.
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: colour),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Block extends StatelessWidget {
+  const _Block({required this.title, required this.child});
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: ResonSpace.lg),
+    child: ResonPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: ResonSpace.md),
+          child,
+        ],
+      ),
+    ),
+  );
+}
+
+/// A comma separated field, shown as the list it already is.
+class _Tags extends StatelessWidget {
+  const _Tags({required this.value});
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = value
+        .split(RegExp('[,·]'))
+        .map((v) => v.trim())
+        .where((v) => v.isNotEmpty)
+        .toList();
+    if (items.isEmpty) return const SizedBox.shrink();
+    return Wrap(
+      spacing: ResonSpace.sm,
+      runSpacing: ResonSpace.sm,
+      children: [for (final item in items) _Chip(label: item)],
     );
   }
 }

@@ -260,5 +260,10 @@
   "messagesEmptyBody": "Cuando aceptes una conexión podrán escribirse aquí.",
   "messagesNoMatch": "Ninguna conversación coincide con esa búsqueda.",
   "networkConnections": "Conexiones",
-  "networkSaved": "Guardadas"
+  "networkSaved": "Guardadas",
+  "profileEdit": "Editar perfil",
+  "profileAbout": "Sobre mí",
+  "profileSkills": "Habilidades",
+  "profileEmptyTitle": "Tu perfil está en blanco",
+  "profileEmptyBody": "Cuéntale al mundo a qué te dedicas. Lo que escribas aquí será el punto de partida de cada tarjeta que crees."
 }

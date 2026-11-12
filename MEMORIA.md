@@ -81,7 +81,7 @@ lib/
       data/                         FirestoreCardsRepository y CardMediaRepository
       application/cards_providers.dart
       presentation/                 Home, editor, credenciales, cartera, trayectoria
-    profile/                        Perfil reutilizable, repositorio, avatar y pantalla
+    profile/                        Perfil: vista, editor, repositorio y avatar
     network/
       network_service.dart          Callables y providers de Firestore
       network_widgets.dart          Shell y paneles compartidos
@@ -140,7 +140,7 @@ Intro antes del login, registro email/contraseña, recuperación de contraseña 
 
 Firebase **sí crea el usuario de Authentication antes de verificar el correo**. La solución aplicada no promete lo contrario: bloquea acceso a funciones privadas con router, repositorios y reglas hasta `emailVerified` y claim `email_verified`. Verificación tiene envío, reenvío con espera, recarga del usuario y renovación de token. Un correo ya verificado no requiere otra verificación en cada login.
 
-Rutas: `/`, `/login`, `/register`, `/reset-password`, `/session`, `/verify-email`, `/home`, `/network`, `/messages`, `/profile`, `/settings`, `/cards/new`, `/cards/:id/edit`, `/cards/:id/share`, `/receive/:id`, `/chat/:id`.
+Rutas: `/`, `/login`, `/register`, `/reset-password`, `/session`, `/verify-email`, `/home`, `/network`, `/messages`, `/profile`, `/profile/edit`, `/settings`, `/cards/new`, `/cards/:id/edit`, `/cards/:id/share`, `/receive/:id`, `/chat/:id`.
 
 **`/home`, `/network`, `/messages` y `/profile` son los cuatro destinos de la barra** y viven en un `StatefulShellRoute.indexedStack`, una rama cada uno: cambiar de destino no tira el estado de los otros tres. Las demás rutas son pantalla completa, sin barra — el chat incluido, igual que en cualquier app de mensajería.
 
@@ -306,6 +306,15 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### El perfil pasó a ser un perfil (12 de noviembre de 2026)
+
+El propietario lo describió como «soso y medio feo». El problema de fondo no era el aspecto: **era un editor disfrazado de perfil**. 602 líneas, unas veinte entradas seguidas, y ninguna forma de verte como te ven los demás. Lo más rico que recoge la app —sector, habilidades, experiencia, educación, proyectos, certificaciones— solo se veía dentro de un formulario o en una tarjeta publicada.
+
+- **`/profile`** es ahora la presentación: banda de marca, avatar montado sobre ella, nombre, puesto · empresa, chips de ubicación/modalidad y disponibilidad, «Sobre mí», idiomas, servicios y la trayectoria.
+- **`/profile/edit`** es el formulario de antes, intacto, detrás de un botón. **Carga el perfil él mismo**: al separarlo se quedó sin el `initial` que le pasaba su padre y abría en blanco sobre datos reales. Si vuelve a aparecer vacío, es eso.
+- La trayectoria **reutiliza `ProfessionalSummary`**, el mismo widget que presentan las tarjetas, en vez de duplicar la presentación. Se le añadió `open`: una tarjeta la deja plegada porque el protagonista es la credencial; un perfil la abre porque ahí la trayectoria **es** el contenido.
+- Para no decir las cosas dos veces, la tarjeta sintética oculta `location` y `workMode` (ya son chips de identidad) y las habilidades las pinta solo el bloque de trayectoria.
+
 ### Ajustes (11 de noviembre de 2026)
 
 `lib/features/settings/settings_page.dart`, ruta `/settings`. Reúne lo que estaba disperso —el sonido vivía en Mi red, cerrar sesión al fondo del formulario de perfil— y **añade algo que antes era imposible: volver a seguir al dispositivo.** Un conmutador de dos estados no puede decir «lo que tenga mi teléfono», así que una vez tocabas el de la cabecera te quedabas fijado para siempre.
@@ -390,7 +399,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **113 pruebas Flutter** (121 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **119 pruebas Flutter** (127 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **27 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
@@ -453,6 +462,15 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 ### Lo que sigue abierto, por prioridad
 
 **Ahora mismo, antes que nada:** el código está en `main` pero **no desplegado**. Falta `functions`, `firestore:rules`, `storage` y `hosting`; el índice sí está. Hasta que se despliegue, `unblock` y `markRead` no existen en el backend real y la app publicada sigue siendo la anterior. La interfaz aguanta mientras tanto —una conexión sin `lastMessage` dice «Sin mensajes todavía» y `markRead` falla en silencio— pero nadie verá vistas previas ni no leídos hasta desplegar Functions. Ver sección 14.
+
+**Diagnóstico del 12/11/2026 sobre lo que le falta al producto**, por tamaño del hueco:
+
+- **No se puede encontrar a nadie.** No hay buscador de personas, ni directorio, ni sugerencias: solo se conecta escaneando un QR o abriendo un enlace. Es la diferencia entre una tarjeta digital y una red profesional, que es la dirección declarada del producto. Requiere decidir antes **quién es encontrable** y por qué campos, más índices y reglas nuevas.
+- **No existe «persona», solo «tarjeta».** Al aceptar una conexión se guarda una instantánea publicada: si la otra parte actualiza su trayectoria, tú sigues viendo la foto fija de aquel día. `ProfileHero` y `ProfessionalSummary` ya son reutilizables para resolverlo.
+- **El chat es solo texto.** Sin adjuntos ni imágenes, sin responder a un mensaje, sin editar ni borrar, sin indicador de escribiendo. Los acuses de lectura **ya tienen los datos** (`reads`) y no se muestran: es decisión de producto, no olvido.
+- **Nada avisa de nada** sin push: la app solo existe cuando se abre.
+- **Nadie sabe si su tarjeta funciona**: no hay métricas de aperturas ni de contactos guardados. Para quien reparte tarjetas en un evento, eso es la mitad del valor.
+- **Falta lo legal**: borrar cuenta, exportar datos, términos y privacidad. Bloquea las tiendas.
 
 **Corto plazo, barato y verificable aquí:**
 

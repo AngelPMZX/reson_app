@@ -69,7 +69,7 @@ void main() {
         personalRepository: profiles,
         size: const Size(390, 1000),
       );
-      container.read(routerProvider).go('/profile');
+      container.read(routerProvider).go('/profile/edit');
       await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const ValueKey('profile_name')),
@@ -117,7 +117,7 @@ void main() {
         personalRepository: profiles,
       );
       expect(find.byTooltip('Cerrar sesión'), findsNothing);
-      container.read(routerProvider).go('/profile');
+      container.read(routerProvider).go('/profile/edit');
       await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const ValueKey('profile_name')),

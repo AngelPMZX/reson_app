@@ -1663,6 +1663,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved'**
   String get networkSaved;
+
+  /// No description provided for @profileEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get profileEdit;
+
+  /// No description provided for @profileAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get profileAbout;
+
+  /// No description provided for @profileSkills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get profileSkills;
+
+  /// No description provided for @profileEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile is empty'**
+  String get profileEmptyTitle;
+
+  /// No description provided for @profileEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell people what you do. Whatever you write here becomes the starting point for every card you create.'**
+  String get profileEmptyBody;
 }
 
 class _AppLocalizationsDelegate

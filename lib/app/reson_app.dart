@@ -3,6 +3,7 @@ import '../features/network/receive_card_page.dart';
 import '../features/network/network_page.dart';
 import '../features/network/chat_page.dart';
 import '../features/profile/profile_page.dart';
+import '../features/profile/profile_editor_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -61,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           !path.startsWith('/chat/') &&
           path != '/home' &&
           path != '/profile' &&
+          path != '/profile/edit' &&
           path != '/settings' &&
           !path.startsWith('/cards/')) {
         return '/home';
@@ -93,7 +95,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(path: '/profile', builder: (_, _) => const ProfilePage()),
+              GoRoute(
+                path: '/profile',
+                builder: (_, _) => const ProfilePage(),
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (_, _) => const ProfileEditorPage(),
+                  ),
+                ],
+              ),
             ],
           ),
         ],

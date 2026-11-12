@@ -7,8 +7,12 @@ import '../domain/digital_card.dart';
 import '../domain/professional_profile.dart';
 
 class ProfessionalSummary extends StatelessWidget {
-  const ProfessionalSummary({super.key, required this.card});
+  const ProfessionalSummary({super.key, required this.card, this.open = false});
   final DigitalCard card;
+
+  /// Starts unfolded. A card preview keeps the career behind a disclosure so
+  /// the credential stays the subject; on a profile the career is the subject.
+  final bool open;
   @override
   Widget build(BuildContext context) {
     final p = card.professional;
@@ -116,6 +120,7 @@ class ProfessionalSummary extends StatelessWidget {
         ),
         child: ExpansionTile(
           key: ValueKey('professional_${card.id}'),
+          initiallyExpanded: open,
           shape: const Border(),
           expansionAnimationStyle: AnimationStyle(
             duration: context.motion.expand,

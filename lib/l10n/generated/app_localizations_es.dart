@@ -851,4 +851,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get networkSaved => 'Guardadas';
+
+  @override
+  String get profileEdit => 'Editar perfil';
+
+  @override
+  String get profileAbout => 'Sobre mí';
+
+  @override
+  String get profileSkills => 'Habilidades';
+
+  @override
+  String get profileEmptyTitle => 'Tu perfil está en blanco';
+
+  @override
+  String get profileEmptyBody =>
+      'Cuéntale al mundo a qué te dedicas. Lo que escribas aquí será el punto de partida de cada tarjeta que crees.';
 }
