@@ -15,8 +15,9 @@ La última versión fue aceptada visualmente por el usuario. El último pedido e
 - Repositorio del proyecto: **https://github.com/AngelPMZX/reson_app**; se utiliza como repositorio privado del usuario.
 - Remoto `origin`: `https://github.com/AngelPMZX/reson_app.git`.
 - Rama actual: `main`.
-- Commit anterior a esta entrega: `75b85ee` (`Replace legacy app with current Reson implementation`). La versión vieja ya se sustituyó; no hace falta borrar ni forzar historia.
-- Carpeta en esta PC: `C:\Proyectos\Reson`.
+- Último commit de esta entrega: `4945c25` (`Let a refusal be undone, and settle the chrome into the system`), ya en `origin/main`. La versión vieja se sustituyó hace tiempo en `75b85ee`; no hace falta borrar ni forzar historia.
+- Carpeta en esta PC: `C:\Proyectos\reson_app`.
+eson_app`.
 - Windows, PowerShell, VS Code con Flutter/Dart.
 - Flutter local: `C:\flutter-sdk\flutter`; versión usada **3.41.6**, Dart **3.11.4**.
 - Desarrollo web: **http://127.0.0.1:5211**. Un servidor local puede no seguir ejecutándose después de cerrar la sesión: comprobarlo, no asumirlo.
