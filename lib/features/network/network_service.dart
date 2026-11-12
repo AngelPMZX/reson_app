@@ -136,6 +136,44 @@ final messagesProvider = StreamProvider.autoDispose
           .map((s) => s.docs);
     });
 
+/// The member of a connection who is not you.
+String otherMember(Map<String, dynamic> d, String? uid) =>
+    (d['members'] as List).firstWhere((v) => v != uid, orElse: () => '')
+        as String;
+
+/// The name a connection recorded for [member] when it was made.
+String memberName(Map<String, dynamic> d, String member) =>
+    (d['names'] as Map?)?[member] as String? ?? 'Reson';
+
+/// Whether this connection has something the account has not read.
+///
+/// Unread is derived rather than stored: there is a last message, somebody
+/// else sent it, and either no read marker exists or it predates the message.
+bool connectionIsUnread(Map<String, dynamic> d, String? uid) {
+  final last = d['lastMessage'] as Map<String, dynamic>?;
+  final at = d['lastMessageAt'] as Timestamp?;
+  if (last == null || at == null || last['sender'] == uid) return false;
+  final read = (d['reads'] as Map?)?[uid] as Timestamp?;
+  return read == null || read.compareTo(at) < 0;
+}
+
+/// How many conversations are waiting, for the badge on the bar.
+///
+/// Counted over the loaded page rather than the whole collection: Firestore
+/// cannot compare two fields of the same document server-side, so a true count
+/// would mean reading every connection on every launch.
+final unreadCountProvider = Provider.autoDispose<int>((ref) {
+  final uid = ref.watch(authSessionProvider).asData?.value?.uid;
+  final docs = ref.watch(connectionsProvider).asData?.value ?? const [];
+  return docs
+      .where(
+        (d) =>
+            d.data()['status'] == 'accepted' &&
+            connectionIsUnread(d.data(), uid),
+      )
+      .length;
+});
+
 /// Saved cards the account has blocked, so the screen can offer to undo its own
 /// block without the connection ever recording who blocked whom.
 final blockedProvider = StreamProvider.autoDispose<Set<String>>((ref) {

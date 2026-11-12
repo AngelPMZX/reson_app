@@ -300,11 +300,6 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                   children: [
                     const ResonHeader(),
                     const SizedBox(height: ResonSpace.lg),
-                    TextButton.icon(
-                      onPressed: _busy ? null : _back,
-                      icon: const Icon(Icons.arrow_back),
-                      label: Text(s.backCards),
-                    ),
                     ResonReveal(
                       child: ResonPanel(
                         padding: EdgeInsets.zero,

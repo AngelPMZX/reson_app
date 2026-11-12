@@ -7,6 +7,7 @@ import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'network_service.dart';
 import 'network_widgets.dart';
 
@@ -136,6 +137,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       });
       if (mounted) {
         if (action == 'block') {
+          // A blocked thread no longer belongs in Messages, so the list of
+          // people is the right place to land.
           context.go('/network');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -172,17 +175,21 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               child: Column(
                 children: [
                   const SizedBox(height: ResonSpace.xl),
+                  // Back to the list this thread came from, which is the
+                  // Messages destination now, not the network screen.
                   ResonHeader(
                     leading: resonCompact(context)
                         ? IconButton(
-                            onPressed: () => context.go('/network'),
-                            tooltip: tr(context, 'Mi red', 'My network'),
+                            onPressed: () => context.go('/messages'),
+                            tooltip: AppLocalizations.of(context)!.navMessages,
                             icon: const Icon(Icons.arrow_back),
                           )
                         : TextButton.icon(
-                            onPressed: () => context.go('/network'),
+                            onPressed: () => context.go('/messages'),
                             icon: const Icon(Icons.arrow_back),
-                            label: Text(tr(context, 'Mi red', 'My network')),
+                            label: Text(
+                              AppLocalizations.of(context)!.navMessages,
+                            ),
                           ),
                   ),
                   const SizedBox(height: ResonSpace.lg),

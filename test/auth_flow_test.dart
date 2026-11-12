@@ -10,6 +10,8 @@ import 'package:reson/core/firebase/firebase_bootstrap.dart';
 import 'package:reson/features/auth/domain/auth_repository.dart';
 import 'package:reson/features/cards/domain/digital_card.dart';
 import 'package:reson/features/cards/application/cards_providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:reson/features/network/network_service.dart';
 
 class TestAuthRepository implements AuthRepository {
   int googleCalls = 0;
@@ -140,6 +142,12 @@ Future<ProviderContainer> launch(
   double textScale = 1,
   TestCardsRepository? cardsRepository,
   PersonalProfileRepository? personalRepository,
+  // Set on the container rather than in a nested ProviderScope, because a
+  // provider nobody overrides is created in the root container: a derived one
+  // like the unread count would read the root's empty streams while the
+  // screen below it read the nested ones.
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? connections,
+  NetworkService? networkService,
 }) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = size;
@@ -153,6 +161,19 @@ Future<ProviderContainer> launch(
       personalProfileRepositoryProvider.overrideWithValue(personalRepository),
       authRepositoryProvider.overrideWith((ref) async => repository),
       cardsRepositoryProvider.overrideWith((ref) async => cards),
+      // The navigation bar reads the unread count on every screen, so these
+      // Firestore streams are now live everywhere rather than only on the
+      // network screen. Left real they reach a Firebase that does not exist
+      // in a test, fail, and leave Riverpod's retry timer pending forever.
+      // Tests that care about their contents override them again.
+      connectionsProvider.overrideWith(
+        (ref) => Stream.value(connections ?? []),
+      ),
+      receivedProvider.overrideWith((ref) => Stream.value([])),
+      publicationsProvider.overrideWith((ref) => Stream.value([])),
+      blockedProvider.overrideWith((ref) => Stream.value(const {})),
+      if (networkService != null)
+        networkServiceProvider.overrideWithValue(networkService),
     ],
   );
   container.read(localeProvider.notifier).set(Locale(locale));

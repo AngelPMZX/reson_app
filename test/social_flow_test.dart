@@ -282,72 +282,60 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Only the member who blocked is offered the undo', (
-    tester,
-  ) async {
-    final mine = await openNetwork(tester, status: 'blocked', iBlocked: true);
+  testWidgets('The member who blocked is offered the undo', (tester) async {
+    final service = await openNetwork(
+      tester,
+      status: 'blocked',
+      iBlocked: true,
+    );
     expect(find.text('Bloqueaste a esta persona'), findsOneWidget);
     await captureSocial(tester, 'network-blocked-by-me');
     final undo = find.widgetWithText(OutlinedButton, 'Desbloquear');
     await tester.ensureVisible(undo);
     await tester.tap(undo);
     await tester.pumpAndSettle();
-    expect(mine.calls.single['action'], 'unblock');
+    expect(service.calls.single['action'], 'unblock');
     expect(tester.takeException(), isNull);
+  });
 
-    final theirs = await openNetwork(tester, status: 'blocked');
+  testWidgets('The member who was blocked is not', (tester) async {
+    // Each scenario builds its own tree: two in one test leaves Riverpod's
+    // dispose timer pending and the test never settles.
+    final service = await openNetwork(tester, status: 'blocked');
     expect(find.text('Conexión bloqueada'), findsOneWidget);
     await captureSocial(tester, 'network-blocked-by-them');
     expect(find.text('Desbloquear'), findsNothing);
-    expect(theirs.calls, isEmpty);
+    expect(service.calls, isEmpty);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('A conversation shows its last message and unread mark', (
-    tester,
-  ) async {
-    await openNetwork(
-      tester,
-      status: 'accepted',
-      lastMessage: {'text': '¿Nos vemos el jueves?', 'sender': 'other'},
-    );
-    // Sending a message and coming back used to look exactly like sending
-    // nothing: the row said only "Conexión aceptada" beside a chat icon.
-    expect(find.text('¿Nos vemos el jueves?'), findsOneWidget);
-    expect(find.text('5 min'), findsOneWidget);
-    expect(find.text('Conversaciones'), findsOneWidget);
-    await captureSocial(tester, 'network-conversation');
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('Your own last message is marked as yours and reads as read', (
-    tester,
-  ) async {
-    await openNetwork(
-      tester,
-      status: 'accepted',
-      lastMessage: {'text': 'Te paso mi tarjeta', 'sender': 'owner'},
-    );
-    expect(find.textContaining('Tú: '), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('A conversation with nothing said says so', (tester) async {
-    await openNetwork(tester, status: 'accepted');
-    expect(find.text('Sin mensajes todavía'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('Requests are kept apart from conversations', (tester) async {
+  testWidgets('Requests are kept apart from connections', (tester) async {
     await openNetwork(tester, status: 'pending');
     expect(find.text('Solicitudes'), findsOneWidget);
     expect(find.text('Quiere conectar contigo'), findsOneWidget);
-    // An empty conversation list must still invite, not vanish.
-    expect(
-      find.text('Cuando aceptes una conexión, la conversación aparecerá aquí.'),
-      findsOneWidget,
-    );
     await captureSocial(tester, 'network-request');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('A connection points at the card and the conversation', (
+    tester,
+  ) async {
+    await openNetwork(tester, status: 'accepted');
+    // Conversations live in their own destination now, so this row is about
+    // the person: their card, and a way into the thread.
+    expect(find.text('Conexión aceptada'), findsOneWidget);
+    expect(find.byTooltip('Ver tarjeta'), findsOneWidget);
+    expect(find.byTooltip('Conversar'), findsOneWidget);
+    await captureSocial(tester, 'network-connections');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Saved cards have a tab of their own', (tester) async {
+    await openNetwork(tester, status: 'accepted');
+    await tester.tap(find.text('Guardadas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Aquí estarán las tarjetas que guardes.'), findsOneWidget);
+    await captureSocial(tester, 'network-saved');
     expect(tester.takeException(), isNull);
   });
 

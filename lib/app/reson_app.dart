@@ -14,6 +14,8 @@ import '../features/cards/presentation/card_editor_page.dart';
 import '../features/auth/presentation/auth_page.dart';
 import '../features/auth/presentation/intro_page.dart';
 import '../features/settings/settings_page.dart';
+import '../features/network/messages_page.dart';
+import 'reson_shell.dart';
 import '../features/auth/presentation/verification_page.dart';
 import '../l10n/generated/app_localizations.dart';
 
@@ -54,6 +56,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
       if (path.startsWith('/receive/')) pendingReceive = null;
       if (path != '/network' &&
+          path != '/messages' &&
           !path.startsWith('/receive/') &&
           !path.startsWith('/chat/') &&
           path != '/home' &&
@@ -65,7 +68,36 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/network', builder: (_, s) => const NetworkPage()),
+      // The four places the app lives in keep a branch each, so moving
+      // between them does not throw away where you were in the other three.
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => ResonShell(shell: shell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/home', builder: (_, _) => const CardsPage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/network', builder: (_, _) => const NetworkPage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/messages',
+                builder: (_, _) => const MessagesPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/profile', builder: (_, _) => const ProfilePage()),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
         path: '/receive/:id',
         builder: (_, s) => ReceiveCardPage(publicId: s.pathParameters['id']!),
@@ -78,7 +110,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/cards/:id/share',
         builder: (_, s) => ShareCardPage(cardId: s.pathParameters['id']!),
       ),
-      GoRoute(path: '/profile', builder: (_, state) => const ProfilePage()),
       GoRoute(path: '/settings', builder: (_, state) => const SettingsPage()),
       GoRoute(path: '/session', builder: (_, state) => const _SessionPage()),
       GoRoute(
@@ -101,7 +132,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) =>
             const AuthPage(key: ValueKey('reset'), mode: AuthMode.reset),
       ),
-      GoRoute(path: '/home', builder: (_, state) => const CardsPage()),
       GoRoute(
         path: '/cards/new',
         builder: (_, state) => const CardEditorPage(),

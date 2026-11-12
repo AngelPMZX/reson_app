@@ -249,5 +249,16 @@
   "networkYouPrefix": "Tú: ",
   "timeNow": "ahora",
   "connectionSound": "Sonido al aceptar una conexión",
-  "connectionSoundNote": "Tono suave de Reson. Puedes desactivarlo cuando quieras."
+  "connectionSoundNote": "Tono suave de Reson. Puedes desactivarlo cuando quieras.",
+  "navHome": "Inicio",
+  "navNetwork": "Mi red",
+  "navMessages": "Mensajes",
+  "navProfile": "Perfil",
+  "messagesSearch": "Buscar una conversación",
+  "messagesClearSearch": "Borrar búsqueda",
+  "messagesEmptyTitle": "Aún no hay conversaciones",
+  "messagesEmptyBody": "Cuando aceptes una conexión podrán escribirse aquí.",
+  "messagesNoMatch": "Ninguna conversación coincide con esa búsqueda.",
+  "networkConnections": "Conexiones",
+  "networkSaved": "Guardadas"
 }

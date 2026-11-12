@@ -35,10 +35,17 @@ class NetworkShell extends StatelessWidget {
     required this.title,
     required this.child,
     this.subtitle,
+    this.back = true,
   });
   final String title;
   final String? subtitle;
   final Widget child;
+
+  /// Whether to offer a way back to the cards.
+  ///
+  /// False for the screens that are destinations on the navigation bar: the
+  /// bar already is the way back, and a second one only adds noise.
+  final bool back;
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
@@ -52,12 +59,14 @@ class NetworkShell extends StatelessWidget {
               children: [
                 const ResonHeader(),
                 const SizedBox(height: ResonSpace.xxl),
-                TextButton.icon(
-                  onPressed: () => context.go('/home'),
-                  icon: const Icon(Icons.arrow_back),
-                  label: Text(tr(context, 'Mis tarjetas', 'My cards')),
-                ),
-                const SizedBox(height: ResonSpace.md),
+                if (back) ...[
+                  TextButton.icon(
+                    onPressed: () => context.go('/home'),
+                    icon: const Icon(Icons.arrow_back),
+                    label: Text(tr(context, 'Mis tarjetas', 'My cards')),
+                  ),
+                  const SizedBox(height: ResonSpace.md),
+                ],
                 Text(
                   title,
                   style: Theme.of(

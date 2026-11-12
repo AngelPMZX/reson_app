@@ -130,8 +130,9 @@ void main() {
     expect(find.text('Ver tarjeta'), findsOneWidget);
     expect(find.text('¿Nos vemos el jueves?'), findsOneWidget);
     // The back link replaced an AppBar that reserved 132px for the global
-    // controls; both must now be on screen at once.
-    expect(find.text('Mi red'), findsOneWidget);
+    // controls; both must now be on screen at once. It points at Messages,
+    // which is where a thread is reached from.
+    expect(find.text('Mensajes'), findsOneWidget);
     expect(find.byKey(const Key('themeToggle')), findsOneWidget);
     expect(find.byKey(const Key('languageToggle')), findsOneWidget);
     await capture(tester, 'chat');

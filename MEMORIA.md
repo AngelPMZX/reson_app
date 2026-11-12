@@ -59,7 +59,8 @@ Override temporal: **firebase_core_web 3.10.0**, por compatibilidad con Dart 3.1
 lib/
   main.dart                         Arranque
   firebase_options.dart             Configuración cliente de Firebase
-  app/reson_app.dart                 Router, sesión, temas, idioma y controles globales
+  app/reson_app.dart                 Router, sesión, temas e idioma
+  app/reson_shell.dart               Barra inferior y carril lateral de los cuatro destinos
   core/
     firebase/firebase_bootstrap.dart Inicialización y providers de Firebase
     firebase/google_oauth_config.dart IDs OAuth públicos vía dart-define
@@ -86,7 +87,8 @@ lib/
       network_widgets.dart          Shell y paneles compartidos
       share_card_page.dart          Selección de campos, publicar, QR, despublicar
       receive_card_page.dart        Recibir, guardar, solicitar conexión
-      network_page.dart             Solicitudes, conversaciones, guardadas, en pausa
+      network_page.dart             Personas: solicitudes, conexiones, en pausa, guardadas
+      messages_page.dart            Lista de conversaciones con búsqueda
       chat_page.dart                Conversación, paginación, bloquear, reportar
     settings/settings_page.dart     Apariencia, idioma, sonido y cerrar sesión
   l10n/                             ARB ES/EN y código generado
@@ -138,7 +140,9 @@ Intro antes del login, registro email/contraseña, recuperación de contraseña 
 
 Firebase **sí crea el usuario de Authentication antes de verificar el correo**. La solución aplicada no promete lo contrario: bloquea acceso a funciones privadas con router, repositorios y reglas hasta `emailVerified` y claim `email_verified`. Verificación tiene envío, reenvío con espera, recarga del usuario y renovación de token. Un correo ya verificado no requiere otra verificación en cada login.
 
-Rutas: `/`, `/login`, `/register`, `/reset-password`, `/session`, `/verify-email`, `/home`, `/profile`, `/settings`, `/cards/new`, `/cards/:id/edit`, `/cards/:id/share`, `/network`, `/receive/:id`, `/chat/:id`.
+Rutas: `/`, `/login`, `/register`, `/reset-password`, `/session`, `/verify-email`, `/home`, `/network`, `/messages`, `/profile`, `/settings`, `/cards/new`, `/cards/:id/edit`, `/cards/:id/share`, `/receive/:id`, `/chat/:id`.
+
+**`/home`, `/network`, `/messages` y `/profile` son los cuatro destinos de la barra** y viven en un `StatefulShellRoute.indexedStack`, una rama cada uno: cambiar de destino no tira el estado de los otros tres. Las demás rutas son pantalla completa, sin barra — el chat incluido, igual que en cualquier app de mensajería.
 
 Al entrar por `/receive/:id` sin sesión se guarda el destino en memoria del router y se retoma después de login/verificación. El destino pendiente no es un sistema de deep links persistente entre cierres completos. Se quitaron redirecciones imperativas a home tras email login/registro para no perderlo.
 
@@ -218,6 +222,23 @@ Bloquear detiene mensajes y nuevas solicitudes. Reportar registra motivo para re
 **Listas acotadas (11/11/2026).** Conexiones y recibidas se traían enteras y se ordenaban en el dispositivo: abrir Mi red costaba una lectura por cada contacto acumulado. Ahora piden **25 por página** (`networkPageSize`) y la pantalla ofrece «Ver más» (`NetworkMore`) cuando la página vuelve llena, para que acotar no esconda datos. El orden de conexiones pasó al servidor, lo que **exige el índice compuesto** de `firestore.indexes.json` — ver sección 14; sin desplegarlo, Mi red falla.
 
 Sigue pendiente el **cursor real del chat**: hoy `limit += 50` recrea el stream, así que ver mensajes antiguos vuelve a leer los anteriores. Es una ventana acotada, no un desbordamiento, pero el coste por página crece. Conviene abordarlo junto al rediseño del chat.
+
+### Cuatro destinos, no un solo scroll (11 de noviembre de 2026)
+
+Pedido por el propietario: separar conexiones, chats y lo demás, con el aire de LinkedIn o Facebook. Se eligió **barra inferior de cuatro destinos**, que en pantalla ancha (≥760) pasa a carril lateral: `lib/app/reson_shell.dart`.
+
+- **Inicio** `/home` — la cartera, sin cambios.
+- **Mi red** `/network` — personas, con pestañas **Conexiones** y **Guardadas**. Dentro de Conexiones: solicitudes, conexiones y «en pausa». Ya no contiene conversaciones.
+- **Mensajes** `/messages` — pantalla nueva, con buscador por nombre, avatar, último mensaje, hora relativa, negrita y punto para lo no leído. **Insignia con el total** en la barra.
+- **Perfil** `/profile`.
+
+El chat es pantalla completa, fuera de la barra, y vuelve a `/messages`. Tras bloquear sale a `/network`, porque un hilo bloqueado ya no pertenece a Mensajes.
+
+Se quitaron los accesos que la barra sustituye: el botón «Mi red · Conexiones y chats» del inicio, el «Volver a mis tarjetas» del perfil y el de `NetworkShell` (parámetro `back`, falso en los destinos).
+
+**Trampa de Riverpod que costó encontrar**: `unreadCountProvider` deriva de `connectionsProvider`, y un provider que nadie sobreescribe **se crea en el contenedor raíz**. En una prueba con `ProviderScope` anidado, la pantalla leía los datos del scope anidado mientras la insignia leía los vacíos del raíz. Por eso `launch()` en `test/auth_flow_test.dart` acepta `connections` y `networkService` y los aplica **en el contenedor**, no en un scope anidado. Si algo derivado aparece vacío en una prueba, es esto.
+
+Esa misma barra montó los streams de Firestore en **todas** las pantallas, no solo en la de red: `launch()` los sobreescribe por defecto o cada prueba acaba con el temporizador de reintento de Riverpod pendiente y no asienta nunca.
 
 ### Una conversación se ve (11 de noviembre de 2026)
 
@@ -369,7 +390,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **106 pruebas Flutter** (114 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **113 pruebas Flutter** (121 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **27 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
@@ -423,6 +444,9 @@ Una sola sesión, en este orden. Sirve para no volver a abrir nada de esto:
 3. **El backend se formateó** (sección 4), demostrando con hash que no cambió ni un byte de comportamiento.
 4. **Conexiones y recibidas se acotaron** con paginación y «Ver más»; el índice compuesto quedó desplegado en producción (secciones 10 y 14).
 5. **Repolish de diseño** dentro del carmín/grafito (sección 11): cabecera compartida, chat dentro del sistema, `ResonRadius`, `ResonSpace.screen`, `ResonNotice`, estados del tema y arreglo del modo oscuro en los botones.
+6. **Las conversaciones se ven** y dejaron de parecer rotas: vista previa, hora y no leídos (sección 10).
+7. **Ajustes** como pantalla propia, recogiendo lo disperso (sección 11).
+8. **Cuatro destinos con barra inferior** al estilo LinkedIn, separando personas de conversaciones (sección 10).
 
 Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 
@@ -454,7 +478,7 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 ### Escalabilidad/mantenimiento
 
 - Conexiones y recibidas ya están acotadas con paginación y «Ver más» (sección 10). Queda el **cursor del chat**, que todavía crece el límite y reelee lo anterior.
-- `/cards/:id/share` sigue **sin pruebas de pantalla**; `/chat/:id` ya tiene siete.
+- `/cards/:id/share` sigue **sin pruebas de pantalla**; `/chat/:id` y `/messages` ya tienen las suyas.
 - Revisar los estados de foco con teclado en un navegador real: se definieron en el tema pero no hay prueba automática que los capture.
 - Definir migraciones de schemaVersion, limpieza de fotos antiguas sin referencias y ciclo de vida al borrar tarjetas/cuentas.
 - Unificar strings de network (helper `tr`) en ARB: siguen **82 `tr(context, 'es', 'en')`** más 6 pares en `networkError` escritos en Dart, frente a 228 claves en ARB. Añadir un tercer idioma hoy obliga a editar Dart, no a traducir. Los errores que forzaban español **ya están corregidos**: todas las pantallas pasan por `networkErrorText(context, error)`, que lee el locale, y `test/network_errors_test.dart` impide que vuelva un indicador de idioma fijo.

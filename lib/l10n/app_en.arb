@@ -249,5 +249,16 @@
   "networkYouPrefix": "You: ",
   "timeNow": "now",
   "connectionSound": "Sound when accepting a connection",
-  "connectionSoundNote": "A soft Reson chime. You can turn it off at any time."
+  "connectionSoundNote": "A soft Reson chime. You can turn it off at any time.",
+  "navHome": "Home",
+  "navNetwork": "Network",
+  "navMessages": "Messages",
+  "navProfile": "Profile",
+  "messagesSearch": "Search a conversation",
+  "messagesClearSearch": "Clear search",
+  "messagesEmptyTitle": "No conversations yet",
+  "messagesEmptyBody": "Once you accept a connection you can write here.",
+  "messagesNoMatch": "No conversation matches that search.",
+  "networkConnections": "Connections",
+  "networkSaved": "Saved"
 }

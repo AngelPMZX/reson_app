@@ -816,4 +816,39 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get connectionSoundNote =>
       'Tono suave de Reson. Puedes desactivarlo cuando quieras.';
+
+  @override
+  String get navHome => 'Inicio';
+
+  @override
+  String get navNetwork => 'Mi red';
+
+  @override
+  String get navMessages => 'Mensajes';
+
+  @override
+  String get navProfile => 'Perfil';
+
+  @override
+  String get messagesSearch => 'Buscar una conversación';
+
+  @override
+  String get messagesClearSearch => 'Borrar búsqueda';
+
+  @override
+  String get messagesEmptyTitle => 'Aún no hay conversaciones';
+
+  @override
+  String get messagesEmptyBody =>
+      'Cuando aceptes una conexión podrán escribirse aquí.';
+
+  @override
+  String get messagesNoMatch =>
+      'Ninguna conversación coincide con esa búsqueda.';
+
+  @override
+  String get networkConnections => 'Conexiones';
+
+  @override
+  String get networkSaved => 'Guardadas';
 }

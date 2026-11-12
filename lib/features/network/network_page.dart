@@ -147,131 +147,142 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
   Widget build(BuildContext context) {
     final s = AppLocalizations.of(context)!;
     final uid = ref.watch(authSessionProvider).asData?.value?.uid;
-    final connections = ref.watch(connectionsProvider);
-    final received = ref.watch(receivedProvider);
-    // Only the member who placed a block may lift it, so the screen offers the
-    // undo from the account's own block list rather than from the connection.
-    final blocked =
-        ref.watch(blockedProvider).asData?.value ?? const <String>{};
-    return NetworkShell(
-      title: tr(context, 'Tu red', 'Your network'),
-      subtitle: tr(
-        context,
-        'Personas que conoces. Conversaciones que importan.',
-        'People you know. Conversations that matter.',
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (error != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: ResonSpace.md),
-              child: Text(
-                error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+    // Conversations moved out to their own destination, so this screen is
+    // about people and the cards they handed over, not about threads.
+    return DefaultTabController(
+      length: 2,
+      child: NetworkShell(
+        back: false,
+        title: s.navNetwork,
+        subtitle: tr(
+          context,
+          'Personas que conoces. Tarjetas que guardaste.',
+          'People you know. Cards you kept.',
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TabBar(
+              tabs: [
+                Tab(text: s.networkConnections),
+                Tab(text: s.networkSaved),
+              ],
+            ),
+            const SizedBox(height: ResonSpace.lg),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: ResonSpace.md),
+                child: Text(
+                  error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
-            ),
-          if (busy) const LinearProgressIndicator(),
-          connections.when(
-            loading: () => const ResonCardSkeleton(),
-            error: (e, _) => ResonNotice(
-              icon: Icons.cloud_off_outlined,
-              text: networkErrorText(context, e),
-            ),
-            // One stream carries every kind of connection, so the screen sorts
-            // them into what needs an answer, what is a live conversation and
-            // what is set aside. Before, all four states shared one list and a
-            // pending request looked like a chat.
-            data: (docs) {
-              final requests = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
-              final chats = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
-              final paused = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
-              for (final doc in docs) {
-                switch (doc.data()['status']) {
-                  case 'pending':
-                    requests.add(doc);
-                  case 'accepted':
-                    chats.add(doc);
-                  default:
-                    paused.add(doc);
-                }
-              }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (requests.isNotEmpty) ...[
-                    _heading(context, s.networkRequests, requests.length),
-                    for (final (i, doc) in requests.indexed)
-                      ResonStagger(
-                        index: i,
-                        child: _request(context, doc, uid),
-                      ),
-                    const SizedBox(height: ResonSpace.xl),
-                  ],
-                  _heading(context, s.networkConversations, chats.length),
-                  if (chats.isEmpty)
-                    NetworkPanel(
-                      child: ResonNotice(
-                        icon: Icons.forum_outlined,
-                        text: s.networkNoConversations,
-                      ),
-                    )
-                  else
-                    for (final (i, doc) in chats.indexed)
-                      ResonStagger(
-                        index: i,
-                        child: _conversation(context, doc, uid),
-                      ),
-                  NetworkMore(
-                    visible: docs.length >= ref.watch(connectionsPageProvider),
-                    onPressed: () =>
-                        ref.read(connectionsPageProvider.notifier).grow(),
-                  ),
-                  if (paused.isNotEmpty) ...[
-                    const SizedBox(height: ResonSpace.xl),
-                    _heading(context, s.networkPaused, paused.length),
-                    for (final doc in paused)
-                      _paused(context, doc, uid, blocked),
-                  ],
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: ResonSpace.xxl),
-          _heading(context, tr(context, 'Tarjetas recibidas', 'Saved cards')),
-          received.when(
-            loading: () => const ResonCardSkeleton(),
-            error: (e, _) => ResonNotice(
-              icon: Icons.cloud_off_outlined,
-              text: networkErrorText(context, e),
-            ),
-            data: (docs) => docs.isEmpty
-                ? NetworkPanel(
-                    child: ResonNotice(
-                      icon: Icons.bookmark_border,
-                      text: tr(
-                        context,
-                        'Aquí estarán las tarjetas que guardes.',
-                        'Cards you save will appear here.',
-                      ),
-                    ),
-                  )
-                : Column(
-                    children: [
-                      for (final (i, d) in docs.indexed)
-                        ResonStagger(index: i, child: _saved(context, d)),
-                      NetworkMore(
-                        visible: docs.length >= ref.watch(receivedPageProvider),
-                        onPressed: () =>
-                            ref.read(receivedPageProvider.notifier).grow(),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+            if (busy) const LinearProgressIndicator(),
+            // A tab view needs a bounded height and this screen scrolls as a
+            // whole, so each tab is built and only the chosen one is shown.
+            _Tabs(children: [_people(context, uid, s), _saved(context, s)]),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _people(BuildContext context, String? uid, AppLocalizations s) => ref
+      .watch(connectionsProvider)
+      .when(
+        loading: () => const ResonCardSkeleton(),
+        error: (e, _) => ResonNotice(
+          icon: Icons.cloud_off_outlined,
+          text: networkErrorText(context, e),
+        ),
+        data: (docs) {
+          final requests = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+          final connected = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+          final paused = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+          for (final doc in docs) {
+            switch (doc.data()['status']) {
+              case 'pending':
+                requests.add(doc);
+              case 'accepted':
+                connected.add(doc);
+              default:
+                paused.add(doc);
+            }
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (requests.isNotEmpty) ...[
+                _heading(context, s.networkRequests, requests.length),
+                for (final (i, doc) in requests.indexed)
+                  ResonStagger(index: i, child: _request(context, doc, uid)),
+                const SizedBox(height: ResonSpace.xl),
+              ],
+              // The tab already says "Connections"; a heading repeating it
+              // only earns its place once there are other groups to tell it
+              // apart from.
+              if (requests.isNotEmpty || paused.isNotEmpty)
+                _heading(context, s.networkConnections, connected.length),
+              if (connected.isEmpty)
+                NetworkPanel(
+                  child: ResonNotice(
+                    icon: Icons.hub_outlined,
+                    text: tr(
+                      context,
+                      'Todavía no hay conexiones. Comparte tu QR para empezar.',
+                      'No connections yet. Share your QR to get started.',
+                    ),
+                  ),
+                )
+              else
+                for (final (i, doc) in connected.indexed)
+                  ResonStagger(index: i, child: _connected(context, doc, uid)),
+              NetworkMore(
+                visible: docs.length >= ref.watch(connectionsPageProvider),
+                onPressed: () =>
+                    ref.read(connectionsPageProvider.notifier).grow(),
+              ),
+              if (paused.isNotEmpty) ...[
+                const SizedBox(height: ResonSpace.xl),
+                _heading(context, s.networkPaused, paused.length),
+                for (final doc in paused) _paused(context, doc, uid),
+              ],
+            ],
+          );
+        },
+      );
+
+  Widget _saved(BuildContext context, AppLocalizations s) => ref
+      .watch(receivedProvider)
+      .when(
+        loading: () => const ResonCardSkeleton(),
+        error: (e, _) => ResonNotice(
+          icon: Icons.cloud_off_outlined,
+          text: networkErrorText(context, e),
+        ),
+        data: (docs) => docs.isEmpty
+            ? NetworkPanel(
+                child: ResonNotice(
+                  icon: Icons.bookmark_border,
+                  text: tr(
+                    context,
+                    'Aquí estarán las tarjetas que guardes.',
+                    'Cards you save will appear here.',
+                  ),
+                ),
+              )
+            : Column(
+                children: [
+                  for (final (i, d) in docs.indexed)
+                    ResonStagger(index: i, child: _savedRow(context, d)),
+                  NetworkMore(
+                    visible: docs.length >= ref.watch(receivedPageProvider),
+                    onPressed: () =>
+                        ref.read(receivedPageProvider.notifier).grow(),
+                  ),
+                ],
+              ),
+      );
 
   Widget _heading(BuildContext context, String text, [int? count]) => Padding(
     padding: const EdgeInsets.only(bottom: ResonSpace.md),
@@ -295,13 +306,6 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
     ),
   );
 
-  String _other(Map<String, dynamic> d, String? uid) =>
-      (d['members'] as List).firstWhere((v) => v != uid, orElse: () => '')
-          as String;
-
-  String _name(Map<String, dynamic> d, String other) =>
-      (d['names'] as Map?)?[other] as String? ?? 'Reson';
-
   /// Somebody asked to connect, or we did and are waiting.
   Widget _request(
     BuildContext context,
@@ -310,7 +314,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
   ) {
     final s = AppLocalizations.of(context)!;
     final d = doc.data();
-    final other = _other(d, uid);
+    final other = otherMember(d, uid);
     final mine = d['recipient'] == uid;
     return NetworkPanel(
       child: Column(
@@ -318,8 +322,8 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: _Avatar(name: _name(d, other)),
-            title: Text(_name(d, other)),
+            leading: _Avatar(name: memberName(d, other)),
+            title: Text(memberName(d, other)),
             subtitle: Text(
               mine
                   ? tr(context, 'Quiere conectar contigo', 'Wants to connect')
@@ -351,100 +355,53 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
     );
   }
 
-  /// A live conversation: the whole row opens it.
-  ///
-  /// It used to be a tiny chat icon beside a status line, with nothing to say
-  /// whether anything had ever been said. Sending a message and coming back
-  /// here looked exactly like sending nothing.
-  Widget _conversation(
+  /// Somebody you are connected to. The conversation lives in Messages, so
+  /// here the row is about the person and their card.
+  Widget _connected(
     BuildContext context,
     QueryDocumentSnapshot<Map<String, dynamic>> doc,
     String? uid,
   ) {
-    final s = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
     final d = doc.data();
-    final other = _other(d, uid);
-    final last = d['lastMessage'] as Map<String, dynamic>?;
-    final at = d['lastMessageAt'] as Timestamp?;
-    final read = (d['reads'] as Map?)?[uid] as Timestamp?;
-    final unread =
-        last != null &&
-        last['sender'] != uid &&
-        at != null &&
-        (read == null || read.compareTo(at) < 0);
-    final body = last == null
-        ? s.networkNoMessages
-        : '${last['sender'] == uid ? s.networkYouPrefix : ''}${last['text']}';
+    final other = otherMember(d, uid);
     return Padding(
       padding: const EdgeInsets.only(bottom: ResonSpace.md),
-      child: ResonPress(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(context.surfaces.panelRadius),
-            onTap: () => context.go('/chat/${doc.id}'),
-            child: ResonPanel(
-              child: Row(
+      child: ResonPanel(
+        child: Row(
+          children: [
+            _Avatar(name: memberName(d, other)),
+            const SizedBox(width: ResonSpace.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Avatar(name: _name(d, other)),
-                  const SizedBox(width: ResonSpace.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _name(d, other),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                fontWeight: unread
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                              ),
-                        ),
-                        const SizedBox(height: ResonSpace.xs),
-                        Text(
-                          body,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: unread
-                                    ? scheme.onSurface
-                                    : scheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                    ),
+                  Text(
+                    memberName(d, other),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(width: ResonSpace.sm),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (at != null && at.millisecondsSinceEpoch > 0)
-                        Text(
-                          shortMoment(context, at.toDate()),
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-                      const SizedBox(height: ResonSpace.sm),
-                      if (unread)
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: scheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                    ],
+                  Text(
+                    tr(context, 'Conexión aceptada', 'Connected'),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
+            IconButton(
+              tooltip: tr(context, 'Ver tarjeta', 'View card'),
+              icon: const Icon(Icons.badge_outlined),
+              onPressed: () =>
+                  context.go('/receive/${(d['cards'] as Map)[other]}'),
+            ),
+            IconButton(
+              tooltip: tr(context, 'Conversar', 'Chat'),
+              icon: const Icon(Icons.forum_outlined),
+              onPressed: () => context.go('/chat/${doc.id}'),
+            ),
+          ],
         ),
       ),
     );
@@ -455,11 +412,14 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
     BuildContext context,
     QueryDocumentSnapshot<Map<String, dynamic>> doc,
     String? uid,
-    Set<String> blocked,
   ) {
+    final blocked =
+        ref.watch(blockedProvider).asData?.value ?? const <String>{};
     final d = doc.data();
-    final other = _other(d, uid);
+    final other = otherMember(d, uid);
     final isBlocked = d['status'] == 'blocked';
+    // Only the member who placed a block may lift it, so the screen asks the
+    // account's own block list rather than the connection.
     final iBlocked = blocked.contains(other);
     return Padding(
       padding: const EdgeInsets.only(bottom: ResonSpace.md),
@@ -469,8 +429,8 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           children: [
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: _Avatar(name: _name(d, other), muted: true),
-              title: Text(_name(d, other)),
+              leading: _Avatar(name: memberName(d, other), muted: true),
+              title: Text(memberName(d, other)),
               subtitle: Text(
                 isBlocked
                     ? (iBlocked
@@ -496,7 +456,8 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                     ),
                   ),
                 // Lifting a block is deliberate but it is a repair, not the
-                // main move on this screen, so it carries weight without shouting.
+                // main move on this screen, so it carries weight without
+                // shouting.
                 if (isBlocked && iBlocked)
                   OutlinedButton(
                     onPressed: busy ? null : () => unblock(doc.id),
@@ -516,7 +477,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
     );
   }
 
-  Widget _saved(
+  Widget _savedRow(
     BuildContext context,
     QueryDocumentSnapshot<Map<String, dynamic>> d,
   ) => Padding(
@@ -555,6 +516,36 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
       ),
     ),
   );
+}
+
+/// Shows the selected tab's children inside a scrolling page.
+///
+/// `TabBarView` wants a bounded height, which a page that scrolls as a whole
+/// cannot give it. Keeping both subtrees alive and showing one preserves each
+/// tab's scroll position and its stream subscriptions.
+class _Tabs extends StatelessWidget {
+  const _Tabs({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DefaultTabController.of(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) => IndexedStack(
+        index: controller.index,
+        sizing: StackFit.loose,
+        children: [
+          for (final (i, child) in children.indexed)
+            Visibility(
+              visible: controller.index == i,
+              maintainState: true,
+              child: child,
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Avatar extends StatelessWidget {

@@ -110,16 +110,6 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: ResonSpace.md),
-                  OutlinedButton.icon(
-                    onPressed: () => context.go('/network'),
-                    icon: const Icon(Icons.hub_outlined),
-                    label: Text(
-                      Localizations.localeOf(context).languageCode == 'es'
-                          ? 'Mi red · Conexiones y chats'
-                          : 'My network · Connections and chats',
-                    ),
-                  ),
                   const SizedBox(height: ResonSpace.xl),
                   ResonReveal(
                     child: ResonPanel(

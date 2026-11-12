@@ -808,4 +808,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get connectionSoundNote =>
       'A soft Reson chime. You can turn it off at any time.';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navNetwork => 'Network';
+
+  @override
+  String get navMessages => 'Messages';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String get messagesSearch => 'Search a conversation';
+
+  @override
+  String get messagesClearSearch => 'Clear search';
+
+  @override
+  String get messagesEmptyTitle => 'No conversations yet';
+
+  @override
+  String get messagesEmptyBody =>
+      'Once you accept a connection you can write here.';
+
+  @override
+  String get messagesNoMatch => 'No conversation matches that search.';
+
+  @override
+  String get networkConnections => 'Connections';
+
+  @override
+  String get networkSaved => 'Saved';
 }

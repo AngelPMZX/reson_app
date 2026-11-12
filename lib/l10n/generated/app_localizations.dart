@@ -1597,6 +1597,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A soft Reson chime. You can turn it off at any time.'**
   String get connectionSoundNote;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get navNetwork;
+
+  /// No description provided for @navMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get navMessages;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @messagesSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a conversation'**
+  String get messagesSearch;
+
+  /// No description provided for @messagesClearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get messagesClearSearch;
+
+  /// No description provided for @messagesEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get messagesEmptyTitle;
+
+  /// No description provided for @messagesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Once you accept a connection you can write here.'**
+  String get messagesEmptyBody;
+
+  /// No description provided for @messagesNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversation matches that search.'**
+  String get messagesNoMatch;
+
+  /// No description provided for @networkConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections'**
+  String get networkConnections;
+
+  /// No description provided for @networkSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get networkSaved;
 }
 
 class _AppLocalizationsDelegate
