@@ -27,12 +27,18 @@ class ResonControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final spanish = Localizations.localeOf(context).languageCode == 'es';
+    // Cycles whatever the app supports instead of flipping between two fixed
+    // languages, so adding one to the ARB files is enough to reach it here.
+    final supported = AppLocalizations.supportedLocales;
+    final current = supported.indexWhere(
+      (l) => l.languageCode == Localizations.localeOf(context).languageCode,
+    );
+    final next = supported[(current + 1) % supported.length];
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Semantics(
-          label: spanish ? 'Cambiar tema' : 'Switch theme',
+          label: AppLocalizations.of(context)!.switchTheme,
           button: true,
           child: IconButton(
             key: const Key('themeToggle'),
@@ -62,10 +68,8 @@ class ResonControls extends ConsumerWidget {
               minimumSize: const Size(48, 40),
               textStyle: Theme.of(context).textTheme.labelSmall,
             ),
-            onPressed: () => ref
-                .read(localeProvider.notifier)
-                .set(Locale(spanish ? 'en' : 'es')),
-            child: Text(spanish ? 'EN' : 'ES'),
+            onPressed: () => ref.read(localeProvider.notifier).set(next),
+            child: Text(next.languageCode.toUpperCase()),
           ),
         ),
       ],

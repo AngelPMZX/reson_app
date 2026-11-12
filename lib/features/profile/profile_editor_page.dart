@@ -345,7 +345,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                         name: _fields['name']!.text,
                                         path: _uploadedPath ?? _photoPath,
                                         source: _photoSource,
-                                        googleUrl: user?.googlePhotoUrl,
+                                        imageUrl: user?.googlePhotoUrl,
                                         bytes: _photoBytes,
                                       ),
                                       const SizedBox(width: ResonSpace.lg),

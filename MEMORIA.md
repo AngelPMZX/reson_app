@@ -307,6 +307,20 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### Listo para un tercer idioma (12 de noviembre de 2026)
+
+El propietario avisó de que en el futuro habrá más idiomas. **Ya no queda ni un texto que elija idioma en código.**
+
+- Las **76 llamadas `tr(context, 'es', 'en')`** del módulo de red pasaron al ARB, más tres con condicionales dentro que hubo que reescribir a mano. El ayudante `tr()` se eliminó.
+- `networkError(error, bool es)` **ya no existe**: era el último sitio que decidía entre dos idiomas con un booleano, imposible de extender. Ahora `networkErrorCode(error)` solo devuelve el código y `networkErrorText(context, error)` lee el ARB.
+- El **arte de las credenciales también se tradujo**: «IDENTIDAD PROFESIONAL», «TALENTO INDEPENDIENTE», «CONEXIONES PERSONALES», «Tu nombre», «Tu nueva identidad» y la coletilla estaban en ternarios dentro de `card_preview.dart` y `credential_card.dart`. Los tamaños siguen a mano —eso es arte— pero el texto no es arte.
+- El conmutador de idioma de la cabecera **recorre `AppLocalizations.supportedLocales`** en vez de alternar es↔en. Añadir un idioma al ARB basta para alcanzarlo desde ahí.
+- ARB: **358 claves** en ES y EN, con exactamente las mismas en los dos archivos.
+
+**Para añadir un idioma** basta con: copiar `lib/l10n/app_es.arb` a `app_<código>.arb`, traducir los valores, y `flutter gen-l10n`. `supportedLocales` se genera solo. Lo que **no** cubre el ARB y habría que revisar: `functions/render.js` (la página pública acepta `?lang=en` y tiene dos idiomas a mano) y los correos de verificación, que reciben `languageCode` desde la app.
+
+`test/network_errors_test.dart` incluye una guarda que falla si algún archivo de `lib/features/network` vuelve a traer texto inline o a ramificar por idioma.
+
 ### Cartera de tarjetas recibidas (12 de noviembre de 2026)
 
 Idea del propietario: que las tarjetas que te pasan se guarden y se consulten en una cartera aparte con filtros. La mitad existía —`users/{uid}/received` y la pestaña Guardadas— pero **solo almacenaba `publicId`, `name`, `label` y `savedAt`**, así que no había con qué dibujar la credencial y la pestaña era una lista de dos líneas.
@@ -318,6 +332,16 @@ Idea del propietario: que las tarjetas que te pasan se guarden y se consulten en
 - Las cuentas que guardaron antes del cambio no tienen `snapshot`: la cartera las muestra como fila de nombre y etiqueta en lugar de quedarse en blanco. Hay prueba.
 
 **Decisión tomada, no olvido**: no se guarda automáticamente lo que solo miras. El propietario mencionó «o que has visto sus perfiles»; guardar sin pedirlo convierte la cartera en un historial ruidoso y registra a quién has mirado. El guardado sigue siendo explícito.
+
+### El perfil de otra persona (12 de noviembre de 2026)
+
+`/receive/:id` **lidera ahora con la persona, no con la tarjeta**. Antes una conexión era una credencial y nada más: sin cara, sin trayectoria, sin forma de ver con quién ibas a hablar.
+
+Reutiliza las piezas tal cual: `ProfileHero` con su foto pública, nombre, puesto · empresa y chips de ubicación/modalidad; «Sobre mí»; y `ProfessionalSummary` abierto, la misma presentación de trayectoria del perfil propio. La tarjeta sigue ahí, abajo, bajo «Su tarjeta»: ya no es el tema, es una parte.
+
+- `ProfileHero` ganó `imageUrl` (la copia pública de la foto) e `inset`, para cuando quien lo usa ya aporta su propio margen.
+- `ProfileAvatar.googleUrl` se renombró a **`imageUrl`**: la foto pública de Reson no es de Google y el nombre mentía.
+- `DigitalCard.withVisibleFields` y `withoutIdentityChips` evitan que ubicación y modalidad salgan dos veces, una regla que ahora comparten el perfil propio y el ajeno.
 
 ### El perfil pasó a ser un perfil (12 de noviembre de 2026)
 
@@ -412,7 +436,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **127 pruebas Flutter** (135 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **132 pruebas Flutter** (140 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **27 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 

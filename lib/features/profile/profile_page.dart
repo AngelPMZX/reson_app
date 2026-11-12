@@ -46,6 +46,10 @@ class ProfilePage extends ConsumerWidget {
   }
 }
 
+/// Drops the fields a profile already states above its career block.
+List<String> withoutIdentityChips(List<String> fields) =>
+    fields.where((f) => f != 'location' && f != 'workMode').toList();
+
 class _Profile extends ConsumerWidget {
   const _Profile({this.profile});
   final PersonalProfile? profile;
@@ -57,9 +61,7 @@ class _Profile extends ConsumerWidget {
     label: '',
     // Location and work mode are already identity chips under the name, so
     // the career block hides them rather than saying them twice.
-    visibleFields: DigitalCard.defaultFields
-        .where((f) => f != 'location' && f != 'workMode')
-        .toList(),
+    visibleFields: withoutIdentityChips(DigitalCard.defaultFields),
     displayName: p.value('name'),
     role: p.value('role'),
     company: p.value('company'),
@@ -115,7 +117,7 @@ class _Profile extends ConsumerWidget {
                     workMode: p.professional.workMode,
                     photoPath: p.photoPath,
                     photoSource: p.photoSource,
-                    googleUrl: user?.googlePhotoUrl,
+                    imageUrl: user?.googlePhotoUrl,
                     badge: _availabilityLabel(s, p.availability),
                     action: FilledButton.icon(
                       onPressed: () => context.go('/profile/edit'),
@@ -220,14 +222,22 @@ class ProfileHero extends StatelessWidget {
     this.workMode = '',
     this.photoPath = '',
     this.photoSource = 'none',
-    this.googleUrl,
+    this.imageUrl,
     this.badge,
     this.action,
+    this.inset = true,
   });
   final String name, role, company, location, workMode, photoPath, photoSource;
-  final String? googleUrl;
+
+  /// A remote picture: your provider's, or the public copy of a published
+  /// card when this is somebody else.
+  final String? imageUrl;
   final String? badge;
   final Widget? action;
+
+  /// Keeps the screen's own gutter. False where the caller already pads, as
+  /// the network shell does.
+  final bool inset;
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +249,7 @@ class ProfileHero extends StatelessWidget {
       children: [
         Container(
           height: 132,
-          margin: const EdgeInsets.symmetric(horizontal: ResonSpace.xl),
+          margin: EdgeInsets.symmetric(horizontal: inset ? ResonSpace.xl : 0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(ResonRadius.lg),
             gradient: const LinearGradient(
@@ -250,10 +260,10 @@ class ProfileHero extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(
-            ResonSpace.xl + ResonSpace.sm,
+          padding: EdgeInsets.fromLTRB(
+            inset ? ResonSpace.xl + ResonSpace.sm : ResonSpace.sm,
             96,
-            ResonSpace.xl + ResonSpace.sm,
+            inset ? ResonSpace.xl + ResonSpace.sm : ResonSpace.sm,
             0,
           ),
           child: Column(
@@ -268,8 +278,10 @@ class ProfileHero extends StatelessWidget {
                   name: name,
                   size: 88,
                   path: photoPath,
-                  source: photoSource,
-                  googleUrl: googleUrl,
+                  // A remote url is served over https either way, so the
+                  // avatar treats both the same.
+                  source: (imageUrl ?? '').isNotEmpty ? 'google' : photoSource,
+                  imageUrl: imageUrl,
                 ),
               ),
               const SizedBox(height: ResonSpace.md),

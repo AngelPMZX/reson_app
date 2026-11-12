@@ -79,7 +79,7 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                         size: 42,
                         path: profile?.photoPath ?? '',
                         source: profile?.photoSource ?? 'google',
-                        googleUrl: user.googlePhotoUrl,
+                        imageUrl: user.googlePhotoUrl,
                       ),
                       const SizedBox(width: ResonSpace.md),
                       Expanded(
@@ -402,12 +402,9 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                                                   size: 18,
                                                 ),
                                                 label: Text(
-                                                  Localizations.localeOf(
-                                                            context,
-                                                          ).languageCode ==
-                                                          'es'
-                                                      ? 'Compartir / QR'
-                                                      : 'Share / QR',
+                                                  AppLocalizations.of(
+                                                    context,
+                                                  )!.shareOrQr,
                                                 ),
                                               ),
                                               TextButton.icon(

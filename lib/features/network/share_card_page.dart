@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../cards/application/cards_providers.dart';
 import '../cards/domain/digital_card.dart';
 import '../cards/presentation/card_preview.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'network_service.dart';
 import 'network_widgets.dart';
 
@@ -46,21 +47,15 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
     final cards = ref.watch(cardsProvider);
     final publications = ref.watch(publicationsProvider);
     return NetworkShell(
-      title: tr(context, 'Compartir tu identidad', 'Share your identity'),
-      subtitle: tr(
-        context,
-        'Publica solo lo que quieras compartir. Cualquier persona con el enlace podrá verlo y reenviarlo.',
-        'Publish only what you want to share. Anyone with the link can view and forward it.',
-      ),
+      title: AppLocalizations.of(context)!.shareYourIdentity,
+      subtitle: AppLocalizations.of(context)!.publishOnlyWhatYouWant,
       child: cards.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Text(networkErrorText(context, e)),
         data: (items) {
           final card = items.where((c) => c.id == widget.cardId).firstOrNull;
           if (card == null) {
-            return Text(
-              tr(context, 'Tarjeta no disponible', 'Card unavailable'),
-            );
+            return Text(AppLocalizations.of(context)!.cardUnavailable);
           }
           fields ??= card.visibleFields.toSet();
           final pub = publications.asData?.value
@@ -71,23 +66,23 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
               ? 'https://reson-app.web.app/c/${pub!['id']}'
               : null;
           final labels = {
-            'photo': tr(context, 'Fotografía', 'Photo'),
-            'role': tr(context, 'Puesto', 'Role'),
-            'company': tr(context, 'Empresa', 'Company'),
-            'email': tr(context, 'Correo de contacto', 'Contact email'),
-            'phone': tr(context, 'Teléfono', 'Phone'),
-            'website': tr(context, 'Sitio web', 'Website'),
-            'bio': tr(context, 'Biografía', 'Bio'),
-            'location': tr(context, 'Ubicación', 'Location'),
+            'photo': AppLocalizations.of(context)!.photo,
+            'role': AppLocalizations.of(context)!.careerRole,
+            'company': AppLocalizations.of(context)!.company,
+            'email': AppLocalizations.of(context)!.contactEmail,
+            'phone': AppLocalizations.of(context)!.phone,
+            'website': AppLocalizations.of(context)!.website,
+            'bio': AppLocalizations.of(context)!.bio,
+            'location': AppLocalizations.of(context)!.location,
             'linkedin': 'LinkedIn',
-            'skills': tr(context, 'Habilidades', 'Skills'),
-            'experience': tr(context, 'Experiencia', 'Experience'),
-            'education': tr(context, 'Educación', 'Education'),
-            'sector': tr(context, 'Sector', 'Industry'),
-            'specialty': tr(context, 'Especialidades', 'Specialties'),
-            'workMode': tr(context, 'Modalidad', 'Work mode'),
-            'projects': tr(context, 'Proyectos', 'Projects'),
-            'certifications': tr(context, 'Certificaciones', 'Certifications'),
+            'skills': AppLocalizations.of(context)!.profileSkills,
+            'experience': AppLocalizations.of(context)!.experience2,
+            'education': AppLocalizations.of(context)!.education,
+            'sector': AppLocalizations.of(context)!.industry,
+            'specialty': AppLocalizations.of(context)!.specialties,
+            'workMode': AppLocalizations.of(context)!.workMode,
+            'projects': AppLocalizations.of(context)!.projects,
+            'certifications': AppLocalizations.of(context)!.certifications,
           };
           final preview = DigitalCard(
             id: card.id,
@@ -114,21 +109,13 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      tr(
-                        context,
-                        '1 · Elige los campos públicos',
-                        '1 · Choose public fields',
-                      ),
+                      AppLocalizations.of(context)!.net1ChoosePublicFields,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      tr(
-                        context,
-                        'El nombre y la etiqueta siempre aparecen. Los campos ocultos en tu tarjeta no se publican.',
-                        'Name and label always appear. Fields hidden on your card are not published.',
-                      ),
+                      AppLocalizations.of(context)!.nameAndLabelAlwaysAppear,
                     ),
                     const SizedBox(height: ResonSpace.md),
                     Wrap(
@@ -152,18 +139,12 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(
-                          tr(
-                            context,
-                            'Permitir contacto por WhatsApp',
-                            'Allow WhatsApp contact',
-                          ),
+                          AppLocalizations.of(context)!.allowWhatsappContact,
                         ),
                         subtitle: Text(
-                          tr(
+                          AppLocalizations.of(
                             context,
-                            'Usará el número publicado con código de país.',
-                            'Uses the published number including country code.',
-                          ),
+                          )!.usesThePublishedNumberIncluding,
                         ),
                         value: whatsapp,
                         onChanged: busy
@@ -174,11 +155,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                 ),
               ),
               Text(
-                tr(
-                  context,
-                  '2 · Vista previa de los datos',
-                  '2 · Data preview',
-                ),
+                AppLocalizations.of(context)!.net2DataPreview,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -186,13 +163,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
               const SizedBox(height: ResonSpace.md),
               CardPreview(card: preview, heroTag: cardHeroTag(widget.cardId)),
               const SizedBox(height: ResonSpace.lg),
-              Text(
-                tr(
-                  context,
-                  'La página pública adapta estos datos al navegador. Los cambios no se aplican al enlace hasta que publiques de nuevo.',
-                  'The public page adapts these details to the browser. Changes only reach your link when you publish again.',
-                ),
-              ),
+              Text(AppLocalizations.of(context)!.thePublicPageAdaptsThese),
               const SizedBox(height: ResonSpace.lg),
               if (error != null)
                 Padding(
@@ -214,15 +185,9 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                       )
                     : const Icon(Icons.publish_outlined),
                 label: Text(
-                  tr(
-                    context,
-                    url == null
-                        ? 'Publicar y crear QR'
-                        : 'Actualizar publicación',
-                    url == null
-                        ? 'Publish and create QR'
-                        : 'Update publication',
-                  ),
+                  url == null
+                      ? AppLocalizations.of(context)!.publishAndCreateQr
+                      : AppLocalizations.of(context)!.updatePublication,
                 ),
               ),
               if (url != null) ...[
@@ -231,11 +196,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                   child: Column(
                     children: [
                       Text(
-                        tr(
-                          context,
-                          'Tu enlace está activo',
-                          'Your link is live',
-                        ),
+                        AppLocalizations.of(context)!.yourLinkIsLive,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: ResonSpace.lg),
@@ -249,11 +210,9 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                           data: url,
                           size: 200,
                           backgroundColor: Colors.white,
-                          semanticsLabel: tr(
+                          semanticsLabel: AppLocalizations.of(
                             context,
-                            'QR de tu tarjeta pública',
-                            'Public card QR',
-                          ),
+                          )!.publicCardQr,
                         ),
                       ),
                       const SizedBox(height: ResonSpace.lg),
@@ -268,20 +227,14 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      tr(
-                                        context,
-                                        'Enlace copiado',
-                                        'Link copied',
-                                      ),
+                                      AppLocalizations.of(context)!.linkCopied,
                                     ),
                                   ),
                                 );
                               }
                             },
                             icon: const Icon(Icons.copy),
-                            label: Text(
-                              tr(context, 'Copiar enlace', 'Copy link'),
-                            ),
+                            label: Text(AppLocalizations.of(context)!.copyLink),
                           ),
                           TextButton.icon(
                             onPressed: () => launchUrl(
@@ -289,22 +242,20 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                               mode: LaunchMode.externalApplication,
                             ),
                             icon: const Icon(Icons.open_in_new),
-                            label: Text(tr(context, 'Abrir', 'Open')),
+                            label: Text(AppLocalizations.of(context)!.open),
                           ),
                         ],
                       ),
                       TextButton(
                         onPressed: busy ? null : () => act('unpublish'),
                         child: Text(
-                          tr(context, 'Despublicar tarjeta', 'Unpublish card'),
+                          AppLocalizations.of(context)!.unpublishCard,
                         ),
                       ),
                       Text(
-                        tr(
+                        AppLocalizations.of(
                           context,
-                          'Despublicar desactiva el enlace y el QR. No borra contactos descargados previamente.',
-                          'Unpublishing disables the link and QR. Previously downloaded contacts cannot be revoked.',
-                        ),
+                        )!.unpublishingDisablesTheLinkAnd,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],

@@ -3,6 +3,9 @@ import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../cards/presentation/card_preview.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../cards/presentation/professional_summary.dart';
+import '../profile/profile_page.dart';
 import 'network_service.dart';
 import 'network_widgets.dart';
 
@@ -28,15 +31,9 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
       });
       if (mounted) {
         setState(
-          () => feedback = tr(
-            context,
-            action == 'save'
-                ? 'Tarjeta guardada en tu red.'
-                : 'Solicitud enviada. Podrán conversar cuando sea aceptada.',
-            action == 'save'
-                ? 'Card saved in your network.'
-                : 'Request sent. Chat becomes available after acceptance.',
-          ),
+          () => feedback = action == 'save'
+              ? AppLocalizations.of(context)!.cardSavedInNetwork
+              : AppLocalizations.of(context)!.requestSentChatLater,
         );
       }
     } catch (e) {
@@ -53,12 +50,8 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
     final result = ref.watch(sharedCardProvider(widget.publicId));
     final publications = ref.watch(publicationsProvider);
     return NetworkShell(
-      title: tr(context, 'Una nueva conexión', 'A new connection'),
-      subtitle: tr(
-        context,
-        'Guarda esta tarjeta o presenta una de las tuyas para conectar.',
-        'Save this card or introduce yourself with one of yours.',
-      ),
+      title: AppLocalizations.of(context)!.aNewConnection,
+      subtitle: AppLocalizations.of(context)!.saveThisCardOrIntroduce,
       child: result.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => NetworkPanel(
@@ -68,13 +61,18 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
               TextButton(
                 onPressed: () =>
                     ref.invalidate(sharedCardProvider(widget.publicId)),
-                child: Text(tr(context, 'Reintentar', 'Retry')),
+                child: Text(AppLocalizations.of(context)!.retry2),
               ),
             ],
           ),
         ),
         data: (p) {
           final card = cardFromSnapshot(p, widget.publicId);
+          // Location and work mode are identity chips under the name, so the
+          // career block below hides them rather than repeating them.
+          final career = card.withVisibleFields(
+            withoutIdentityChips(card.visibleFields),
+          );
           final ownCards =
               publications.asData?.value
                   .where((v) => v.data()['active'] == true)
@@ -83,32 +81,49 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if ((p['photoUrl'] as String).isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: ResonSpace.lg),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(ResonRadius.lg),
-                      child: Image.network(
-                        p['photoUrl'] as String,
-                        width: 96,
-                        height: 96,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, e, st) =>
-                            const Icon(Icons.person, size: 60),
+              // Leads with the person, not with the artwork. A connection
+              // used to be a card and nothing else: no face, no career, no
+              // way to see who you were about to talk to.
+              ProfileHero(
+                name: card.displayName,
+                role: card.role,
+                company: card.company,
+                location: card.professional.location,
+                workMode: card.professional.workMode,
+                imageUrl: p['photoUrl'] as String?,
+                inset: false,
+              ),
+              const SizedBox(height: ResonSpace.xl),
+              if (card.bio.isNotEmpty) ...[
+                NetworkPanel(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.profileAbout,
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                    ),
+                      const SizedBox(height: ResonSpace.md),
+                      Text(card.bio, style: const TextStyle(height: 1.6)),
+                    ],
                   ),
                 ),
+              ],
+              // The same career presentation the profile uses, so looking at
+              // somebody else has the shape of looking at yourself.
+              ProfessionalSummary(card: career, open: true),
+              const SizedBox(height: ResonSpace.xl),
+              Text(
+                AppLocalizations.of(context)!.theirCard,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: ResonSpace.md),
               CardPreview(card: card),
               const SizedBox(height: ResonSpace.xl),
               FilledButton.icon(
                 onPressed: busy ? null : () => act('save'),
                 icon: const Icon(Icons.bookmark_add_outlined),
-                label: Text(
-                  tr(context, 'Guardar en mi red', 'Save to my network'),
-                ),
+                label: Text(AppLocalizations.of(context)!.saveToMyNetwork),
               ),
               const SizedBox(height: ResonSpace.md),
               OutlinedButton.icon(
@@ -117,13 +132,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                   mode: LaunchMode.externalApplication,
                 ),
                 icon: const Icon(Icons.open_in_new),
-                label: Text(
-                  tr(
-                    context,
-                    'Ver opciones de contacto',
-                    'View contact options',
-                  ),
-                ),
+                label: Text(AppLocalizations.of(context)!.viewContactOptions),
               ),
               const SizedBox(height: ResonSpace.xl),
               NetworkPanel(
@@ -131,32 +140,22 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      tr(context, 'Intercambiar tarjetas', 'Exchange cards'),
+                      AppLocalizations.of(context)!.exchangeCards,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: ResonSpace.md),
                     Text(
-                      tr(
-                        context,
-                        'Elige qué tarjeta publicada enviar. Tu perfil privado no se comparte.',
-                        'Choose which published card to send. Your private profile is not shared.',
-                      ),
+                      AppLocalizations.of(context)!.chooseWhichPublishedCardTo,
                     ),
                     const SizedBox(height: ResonSpace.lg),
                     if (ownCards.isEmpty)
-                      Text(
-                        tr(
-                          context,
-                          'Publica una tarjeta desde Mis tarjetas para solicitar conexiones.',
-                          'Publish a card from My cards to request connections.',
-                        ),
-                      )
+                      Text(AppLocalizations.of(context)!.publishACardFromMy)
                     else ...[
                       DropdownButtonFormField<String>(
                         isExpanded: true,
                         initialValue: own,
                         decoration: InputDecoration(
-                          labelText: tr(context, 'Tu tarjeta', 'Your card'),
+                          labelText: AppLocalizations.of(context)!.yourCard,
                         ),
                         items: [
                           for (final c in ownCards)
@@ -178,11 +177,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
                             : () => act('request'),
                         icon: const Icon(Icons.handshake_outlined),
                         label: Text(
-                          tr(
-                            context,
-                            'Solicitar conexión',
-                            'Request connection',
-                          ),
+                          AppLocalizations.of(context)!.requestConnection,
                         ),
                       ),
                     ],

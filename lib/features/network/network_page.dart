@@ -88,21 +88,13 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                 ),
                 const SizedBox(height: ResonSpace.xl),
                 Text(
-                  tr(
-                    ctx,
-                    'Una conexión con propósito',
-                    'A meaningful connection',
-                  ),
+                  AppLocalizations.of(ctx)!.aMeaningfulConnection,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: ResonSpace.md),
                 Text(
-                  tr(
-                    ctx,
-                    'Ya pueden conversar y explorar sus tarjetas.',
-                    'You can now chat and explore each other’s cards.',
-                  ),
+                  AppLocalizations.of(ctx)!.youCanNowChatAnd,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -113,7 +105,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                   Navigator.pop(ctx);
                   context.go('/chat/$id');
                 },
-                child: Text(tr(ctx, 'Abrir conversación', 'Open conversation')),
+                child: Text(AppLocalizations.of(ctx)!.openConversation),
               ),
             ],
           ),
@@ -155,11 +147,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
       child: NetworkShell(
         back: false,
         title: s.navNetwork,
-        subtitle: tr(
-          context,
-          'Personas que conoces. Tarjetas que guardaste.',
-          'People you know. Cards you kept.',
-        ),
+        subtitle: AppLocalizations.of(context)!.peopleYouKnowCardsYou,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -228,11 +216,9 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                 NetworkPanel(
                   child: ResonNotice(
                     icon: Icons.hub_outlined,
-                    text: tr(
+                    text: AppLocalizations.of(
                       context,
-                      'Todavía no hay conexiones. Comparte tu QR para empezar.',
-                      'No connections yet. Share your QR to get started.',
-                    ),
+                    )!.noConnectionsYetShareYour,
                   ),
                 )
               else
@@ -311,7 +297,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
             title: Text(memberName(d, other)),
             subtitle: Text(
               mine
-                  ? tr(context, 'Quiere conectar contigo', 'Wants to connect')
+                  ? AppLocalizations.of(context)!.wantsToConnect
                   : s.networkWaiting,
             ),
           ),
@@ -321,17 +307,17 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
               if (mine) ...[
                 FilledButton(
                   onPressed: busy ? null : () => respond(doc.id, 'accept'),
-                  child: Text(tr(context, 'Aceptar', 'Accept')),
+                  child: Text(AppLocalizations.of(context)!.accept),
                 ),
                 TextButton(
                   onPressed: busy ? null : () => respond(doc.id, 'decline'),
-                  child: Text(tr(context, 'Rechazar', 'Decline')),
+                  child: Text(AppLocalizations.of(context)!.decline),
                 ),
               ],
               TextButton(
                 onPressed: () =>
                     context.go('/receive/${(d['cards'] as Map)[other]}'),
-                child: Text(tr(context, 'Ver tarjeta', 'View card')),
+                child: Text(AppLocalizations.of(context)!.viewCard),
               ),
             ],
           ),
@@ -367,7 +353,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   Text(
-                    tr(context, 'Conexión aceptada', 'Connected'),
+                    AppLocalizations.of(context)!.connected,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -376,13 +362,13 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
               ),
             ),
             IconButton(
-              tooltip: tr(context, 'Ver tarjeta', 'View card'),
+              tooltip: AppLocalizations.of(context)!.viewCard,
               icon: const Icon(Icons.badge_outlined),
               onPressed: () =>
                   context.go('/receive/${(d['cards'] as Map)[other]}'),
             ),
             IconButton(
-              tooltip: tr(context, 'Conversar', 'Chat'),
+              tooltip: AppLocalizations.of(context)!.chat,
               icon: const Icon(Icons.forum_outlined),
               onPressed: () => context.go('/chat/${doc.id}'),
             ),
@@ -419,13 +405,9 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
               subtitle: Text(
                 isBlocked
                     ? (iBlocked
-                          ? tr(
-                              context,
-                              'Bloqueaste a esta persona',
-                              'You blocked this person',
-                            )
-                          : tr(context, 'Conexión bloqueada', 'Blocked'))
-                    : tr(context, 'Solicitud rechazada', 'Declined'),
+                          ? AppLocalizations.of(context)!.youBlockedThisPerson
+                          : AppLocalizations.of(context)!.blocked)
+                    : AppLocalizations.of(context)!.declined,
               ),
             ),
             Wrap(
@@ -436,9 +418,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                 if (!isBlocked && d['recipient'] == uid)
                   FilledButton(
                     onPressed: busy ? null : () => respond(doc.id, 'accept'),
-                    child: Text(
-                      tr(context, 'Aceptar ahora', 'Accept after all'),
-                    ),
+                    child: Text(AppLocalizations.of(context)!.acceptAfterAll),
                   ),
                 // Lifting a block is deliberate but it is a repair, not the
                 // main move on this screen, so it carries weight without
@@ -446,13 +426,13 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                 if (isBlocked && iBlocked)
                   OutlinedButton(
                     onPressed: busy ? null : () => unblock(doc.id),
-                    child: Text(tr(context, 'Desbloquear', 'Unblock')),
+                    child: Text(AppLocalizations.of(context)!.unblock),
                   ),
                 if (!isBlocked)
                   TextButton(
                     onPressed: () =>
                         context.go('/receive/${(d['cards'] as Map)[other]}'),
-                    child: Text(tr(context, 'Ver tarjeta', 'View card')),
+                    child: Text(AppLocalizations.of(context)!.viewCard),
                   ),
               ],
             ),

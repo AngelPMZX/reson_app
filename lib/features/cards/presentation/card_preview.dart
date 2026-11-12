@@ -1,3 +1,4 @@
+import '../../../l10n/generated/app_localizations.dart';
 import 'professional_summary.dart';
 import 'card_artwork.dart';
 import 'dart:typed_data';
@@ -78,7 +79,6 @@ class _ClassicCard extends StatelessWidget {
     final dark = Color.lerp(seed, skin.backdrop, skin.blend)!;
     final fg = skin.ink;
     final muted = skin.muted;
-    final es = Localizations.localeOf(context).languageCode == 'es';
     Widget line(String field, String text, IconData icon) =>
         card.shows(field) && text.isNotEmpty
         ? Padding(
@@ -168,9 +168,9 @@ class _ClassicCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             card.label.isEmpty
-                                ? (es
-                                      ? 'Tu nueva identidad'
-                                      : 'Your new identity')
+                                ? AppLocalizations.of(
+                                    context,
+                                  )!.cardYourNewIdentity
                                 : card.label,
                             style: const TextStyle(
                               fontSize: 12,
@@ -193,7 +193,7 @@ class _ClassicCard extends StatelessWidget {
                     ],
                     Text(
                       card.displayName.isEmpty
-                          ? (es ? 'Tu nombre' : 'Your name')
+                          ? AppLocalizations.of(context)!.cardYourName
                           : card.displayName,
                       style: TextStyle(
                         fontSize: bold ? 32 : 27,
@@ -232,7 +232,7 @@ class _ClassicCard extends StatelessWidget {
                     line('website', card.website, Icons.language),
                     const SizedBox(height: 20),
                     Text(
-                      'RESON  /  ${card.kind == 'work' ? (es ? 'PROFESIONAL' : 'PROFESSIONAL') : card.kind.toUpperCase()}',
+                      'RESON  /  ${card.kind == 'work' ? AppLocalizations.of(context)!.cardKindProfessional : card.kind.toUpperCase()}',
                       style: TextStyle(
                         fontSize: 9,
                         color: muted,
@@ -340,9 +340,8 @@ class _DesignedCard extends StatelessWidget {
     final subtle = skin.muted;
     final accent = Color.lerp(seed, Colors.white, .6)!;
     final dark = Color.lerp(seed, skin.backdrop, skin.blend)!;
-    final es = Localizations.localeOf(context).languageCode == 'es';
     final name = card.displayName.isEmpty
-        ? (es ? 'Tu nombre' : 'Your name')
+        ? AppLocalizations.of(context)!.cardYourName
         : card.displayName;
     final identity = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,7 +552,6 @@ class _PortfolioCard extends StatelessWidget {
     final skin = context.credentials.skin(card.layout);
     final fg = skin.ink;
     final minor = skin.muted;
-    final es = Localizations.localeOf(context).languageCode == 'es';
     return ClipRRect(
       borderRadius: BorderRadius.circular(studio ? 28 : 8),
       child: Container(
@@ -642,7 +640,7 @@ class _PortfolioCard extends StatelessWidget {
                       width: double.infinity,
                       child: Text(
                         card.displayName.isEmpty
-                            ? (es ? 'Tu nombre' : 'Your name')
+                            ? AppLocalizations.of(context)!.cardYourName
                             : card.displayName,
                         textAlign: studio ? TextAlign.center : TextAlign.left,
                         style: TextStyle(

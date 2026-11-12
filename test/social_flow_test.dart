@@ -26,6 +26,11 @@ class SocialDoc extends Fake
 }
 
 class SocialService extends NetworkService {
+  SocialService({this.card});
+
+  /// Overrides what a public card looks like, for screens that present the
+  /// person behind it rather than just the credential.
+  final Map<String, dynamic>? card;
   final calls = <Map<String, dynamic>>[];
   @override
   Future<Map<String, dynamic>> act(
@@ -37,23 +42,25 @@ class SocialService extends NetworkService {
   }
 
   @override
-  Future<Map<String, dynamic>> shared(String id) async => {
-    'id': id,
-    'label': 'Trabajo',
-    'name': 'Alex',
-    'role': 'Diseño',
-    'company': '',
-    'email': '',
-    'phone': '',
-    'website': '',
-    'color': '#C8102E',
-    'kind': 'work',
-    'layout': 'signature',
-    'bio': '',
-    'professional': <String, dynamic>{},
-    'visibleFields': <String>[],
-    'photoUrl': '',
-  };
+  Future<Map<String, dynamic>> shared(String id) async =>
+      card ??
+      {
+        'id': id,
+        'label': 'Trabajo',
+        'name': 'Alex',
+        'role': 'Diseño',
+        'company': '',
+        'email': '',
+        'phone': '',
+        'website': '',
+        'color': '#C8102E',
+        'kind': 'work',
+        'layout': 'signature',
+        'bio': '',
+        'professional': <String, dynamic>{},
+        'visibleFields': <String>[],
+        'photoUrl': '',
+      };
 }
 
 Future<void> captureSocial(WidgetTester tester, String name) async {

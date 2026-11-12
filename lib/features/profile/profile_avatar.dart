@@ -8,13 +8,16 @@ class ProfileAvatar extends ConsumerWidget {
     super.key,
     required this.name,
     this.path = '',
-    this.googleUrl,
+    this.imageUrl,
     this.source = 'google',
     this.bytes,
     this.size = 88,
   });
   final String name, path, source;
-  final String? googleUrl;
+
+  /// A remote picture: the provider's photo for your own account, or the
+  /// public copy of somebody else's published card.
+  final String? imageUrl;
   final Uint8List? bytes;
   final double size;
   @override
@@ -56,10 +59,10 @@ class ProfileAvatar extends ConsumerWidget {
             ),
           );
     } else if (source == 'google' &&
-        googleUrl != null &&
-        Uri.tryParse(googleUrl!)?.scheme == 'https') {
+        imageUrl != null &&
+        Uri.tryParse(imageUrl!)?.scheme == 'https') {
       content = Image.network(
-        googleUrl!,
+        imageUrl!,
         fit: BoxFit.cover,
         webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
         errorBuilder: (_, e, st) => fallback,

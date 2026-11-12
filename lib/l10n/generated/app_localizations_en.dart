@@ -877,4 +877,276 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletRemove => 'Remove from my wallet';
+
+  @override
+  String get messagesAndNewRequestsBetween =>
+      'Messages and new requests between these accounts will be stopped.';
+
+  @override
+  String get reason => 'Reason';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get reportRecorded => 'Report recorded.';
+
+  @override
+  String get thisConversationIsUnavailable =>
+      'This conversation is unavailable.';
+
+  @override
+  String get viewCard => 'View card';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get aGoodConversationStartsWith =>
+      'A good conversation starts with hello.';
+
+  @override
+  String get writeAMessage => 'Write a message…';
+
+  @override
+  String get sendMessage => 'Send message';
+
+  @override
+  String get aMeaningfulConnection => 'A meaningful connection';
+
+  @override
+  String get youCanNowChatAnd =>
+      'You can now chat and explore each other’s cards.';
+
+  @override
+  String get openConversation => 'Open conversation';
+
+  @override
+  String get peopleYouKnowCardsYou => 'People you know. Cards you kept.';
+
+  @override
+  String get noConnectionsYetShareYour =>
+      'No connections yet. Share your QR to get started.';
+
+  @override
+  String get wantsToConnect => 'Wants to connect';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
+
+  @override
+  String get connected => 'Connected';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get youBlockedThisPerson => 'You blocked this person';
+
+  @override
+  String get blocked => 'Blocked';
+
+  @override
+  String get declined => 'Declined';
+
+  @override
+  String get acceptAfterAll => 'Accept after all';
+
+  @override
+  String get unblock => 'Unblock';
+
+  @override
+  String get loadMore => 'Load more';
+
+  @override
+  String get aNewConnection => 'A new connection';
+
+  @override
+  String get saveThisCardOrIntroduce =>
+      'Save this card or introduce yourself with one of yours.';
+
+  @override
+  String get retry2 => 'Retry';
+
+  @override
+  String get saveToMyNetwork => 'Save to my network';
+
+  @override
+  String get viewContactOptions => 'View contact options';
+
+  @override
+  String get exchangeCards => 'Exchange cards';
+
+  @override
+  String get chooseWhichPublishedCardTo =>
+      'Choose which published card to send. Your private profile is not shared.';
+
+  @override
+  String get publishACardFromMy =>
+      'Publish a card from My cards to request connections.';
+
+  @override
+  String get yourCard => 'Your card';
+
+  @override
+  String get requestConnection => 'Request connection';
+
+  @override
+  String get shareYourIdentity => 'Share your identity';
+
+  @override
+  String get publishOnlyWhatYouWant =>
+      'Publish only what you want to share. Anyone with the link can view and forward it.';
+
+  @override
+  String get cardUnavailable => 'Card unavailable';
+
+  @override
+  String get photo => 'Photo';
+
+  @override
+  String get contactEmail => 'Contact email';
+
+  @override
+  String get bio => 'Bio';
+
+  @override
+  String get experience2 => 'Experience';
+
+  @override
+  String get industry => 'Industry';
+
+  @override
+  String get specialties => 'Specialties';
+
+  @override
+  String get workMode => 'Work mode';
+
+  @override
+  String get projects => 'Projects';
+
+  @override
+  String get certifications => 'Certifications';
+
+  @override
+  String get net1ChoosePublicFields => '1 · Choose public fields';
+
+  @override
+  String get nameAndLabelAlwaysAppear =>
+      'Name and label always appear. Fields hidden on your card are not published.';
+
+  @override
+  String get allowWhatsappContact => 'Allow WhatsApp contact';
+
+  @override
+  String get usesThePublishedNumberIncluding =>
+      'Uses the published number including country code.';
+
+  @override
+  String get net2DataPreview => '2 · Data preview';
+
+  @override
+  String get thePublicPageAdaptsThese =>
+      'The public page adapts these details to the browser. Changes only reach your link when you publish again.';
+
+  @override
+  String get yourLinkIsLive => 'Your link is live';
+
+  @override
+  String get publicCardQr => 'Public card QR';
+
+  @override
+  String get linkCopied => 'Link copied';
+
+  @override
+  String get copyLink => 'Copy link';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get unpublishCard => 'Unpublish card';
+
+  @override
+  String get unpublishingDisablesTheLinkAnd =>
+      'Unpublishing disables the link and QR. Previously downloaded contacts cannot be revoked.';
+
+  @override
+  String get blockConnection => 'Block connection';
+
+  @override
+  String get reportConnection => 'Report connection';
+
+  @override
+  String get cardSavedInNetwork => 'Card saved in your network.';
+
+  @override
+  String get requestSentChatLater =>
+      'Request sent. Chat becomes available after acceptance.';
+
+  @override
+  String get publishAndCreateQr => 'Publish and create QR';
+
+  @override
+  String get updatePublication => 'Update publication';
+
+  @override
+  String get netErrorNotFound => 'This card is no longer available.';
+
+  @override
+  String get netErrorRateLimited => 'Please wait before trying again.';
+
+  @override
+  String get netErrorPermission =>
+      'This action is unavailable for this connection.';
+
+  @override
+  String get netErrorUnauthenticated => 'Sign in and verify your email.';
+
+  @override
+  String get netErrorPrecondition =>
+      'Publish your card first. This connection may also have been closed.';
+
+  @override
+  String get netErrorGeneric =>
+      'We could not confirm the action. Check your connection and retry.';
+
+  @override
+  String get cardYourName => 'Your name';
+
+  @override
+  String get cardKindProfessional => 'PROFESSIONAL';
+
+  @override
+  String get credentialProfessionalIdentity => 'PROFESSIONAL IDENTITY';
+
+  @override
+  String get credentialIndependentTalent => 'INDEPENDENT TALENT';
+
+  @override
+  String get credentialPersonalConnections => 'PERSONAL CONNECTIONS';
+
+  @override
+  String get shareOrQr => 'Share / QR';
+
+  @override
+  String get switchTheme => 'Switch theme';
+
+  @override
+  String get credentialTagline => 'Your identity. Your essence.';
+
+  @override
+  String get cardYourNewIdentity => 'Your new identity';
+
+  @override
+  String get theirCard => 'Their card';
 }

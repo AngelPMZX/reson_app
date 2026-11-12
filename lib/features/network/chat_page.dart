@@ -91,38 +91,30 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          tr(
-            ctx,
-            action == 'block' ? 'Bloquear conexión' : 'Reportar conexión',
-            action == 'block' ? 'Block connection' : 'Report connection',
-          ),
+          action == 'block'
+              ? AppLocalizations.of(ctx)!.blockConnection
+              : AppLocalizations.of(ctx)!.reportConnection,
         ),
         content: action == 'block'
-            ? Text(
-                tr(
-                  ctx,
-                  'Se detendrán los mensajes y las nuevas solicitudes entre ambas cuentas.',
-                  'Messages and new requests between these accounts will be stopped.',
-                ),
-              )
+            ? Text(AppLocalizations.of(ctx)!.messagesAndNewRequestsBetween)
             : TextField(
                 controller: reason,
                 maxLength: 500,
                 decoration: InputDecoration(
-                  labelText: tr(ctx, 'Motivo', 'Reason'),
+                  labelText: AppLocalizations.of(ctx)!.reason,
                 ),
               ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(tr(ctx, 'Cancelar', 'Cancel')),
+            child: Text(AppLocalizations.of(ctx)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(
               ctx,
               action == 'block' ? 'block' : reason.text.trim(),
             ),
-            child: Text(tr(ctx, 'Confirmar', 'Confirm')),
+            child: Text(AppLocalizations.of(ctx)!.confirm),
           ),
         ],
       ),
@@ -143,9 +135,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                tr(context, 'Reporte registrado.', 'Report recorded.'),
-              ),
+              content: Text(AppLocalizations.of(context)!.reportRecorded),
             ),
           );
         }
@@ -210,11 +200,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                             if (d == null || d['status'] != 'accepted') {
                               return ResonNotice(
                                 icon: Icons.lock_outline,
-                                text: tr(
+                                text: AppLocalizations.of(
                                   context,
-                                  'La conversación no está habilitada.',
-                                  'This conversation is unavailable.',
-                                ),
+                                )!.thisConversationIsUnavailable,
                               );
                             }
                             return _conversation(context, d, uid);
@@ -290,11 +278,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           TextButton(
             onPressed: () =>
                 context.go('/receive/${(d['cards'] as Map)[other]}'),
-            child: Text(tr(context, 'Ver tarjeta', 'View card')),
+            child: Text(AppLocalizations.of(context)!.viewCard),
           ),
         PopupMenuButton<String>(
           enabled: !busy,
-          tooltip: tr(context, 'Más opciones', 'More options'),
+          tooltip: AppLocalizations.of(context)!.moreOptions,
           onSelected: (value) => value == 'card'
               ? context.go('/receive/${(d['cards'] as Map)[other]}')
               : moderate(value),
@@ -302,15 +290,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             if (compact)
               PopupMenuItem(
                 value: 'card',
-                child: Text(tr(context, 'Ver tarjeta', 'View card')),
+                child: Text(AppLocalizations.of(context)!.viewCard),
               ),
             PopupMenuItem(
               value: 'block',
-              child: Text(tr(context, 'Bloquear', 'Block')),
+              child: Text(AppLocalizations.of(context)!.block),
             ),
             PopupMenuItem(
               value: 'report',
-              child: Text(tr(context, 'Reportar', 'Report')),
+              child: Text(AppLocalizations.of(context)!.report),
             ),
           ],
         ),
@@ -332,11 +320,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             if (docs.isEmpty) {
               return ResonNotice(
                 icon: Icons.waving_hand_outlined,
-                text: tr(
-                  context,
-                  'Una buena conversación empieza con un hola.',
-                  'A good conversation starts with hello.',
-                ),
+                text: AppLocalizations.of(context)!.aGoodConversationStartsWith,
               );
             }
             return ListView.builder(
@@ -422,14 +406,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             maxLines: 4,
             maxLength: 2000,
             decoration: InputDecoration(
-              hintText: tr(context, 'Escribe un mensaje…', 'Write a message…'),
+              hintText: AppLocalizations.of(context)!.writeAMessage,
               counterText: '',
             ),
           ),
         ),
         const SizedBox(width: ResonSpace.md),
         IconButton.filled(
-          tooltip: tr(context, 'Enviar mensaje', 'Send message'),
+          tooltip: AppLocalizations.of(context)!.sendMessage,
           onPressed: busy ? null : send,
           icon: busy
               ? const SizedBox(

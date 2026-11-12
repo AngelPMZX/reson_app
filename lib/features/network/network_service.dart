@@ -213,36 +213,14 @@ final blockedProvider = StreamProvider.autoDispose<Set<String>>((ref) {
       .snapshots()
       .map((s) => s.docs.map((d) => d.id).toSet());
 });
-String networkError(Object error, bool es) {
-  final code = error is FirebaseFunctionsException
-      ? error.code
-      : error is FirebaseException
-      ? error.code
-      : '';
-  return switch (code) {
-    'not-found' =>
-      es
-          ? 'La tarjeta ya no está disponible.'
-          : 'This card is no longer available.',
-    'resource-exhausted' =>
-      es
-          ? 'Espera un momento antes de volver a intentarlo.'
-          : 'Please wait before trying again.',
-    'permission-denied' =>
-      es
-          ? 'Esta acción no está disponible para esta conexión.'
-          : 'This action is unavailable for this connection.',
-    'unauthenticated' =>
-      es
-          ? 'Inicia sesión y verifica tu correo.'
-          : 'Sign in and verify your email.',
-    'failed-precondition' =>
-      es
-          ? 'Publica tu tarjeta primero. La conexión también puede haber sido cerrada.'
-          : 'Publish your card first. This connection may also have been closed.',
-    _ =>
-      es
-          ? 'No pudimos confirmar la operación. Revisa tu conexión e inténtalo de nuevo.'
-          : 'We could not confirm the action. Check your connection and retry.',
-  };
-}
+
+/// The backend code behind a failure, or an empty string.
+///
+/// The wording lives in the ARB files; this only says which message to read.
+/// It used to pick between two hardcoded languages with a boolean, which made
+/// a third language impossible without touching Dart.
+String networkErrorCode(Object error) => error is FirebaseFunctionsException
+    ? error.code
+    : error is FirebaseException
+    ? error.code
+    : '';

@@ -8,7 +8,6 @@ class _CredentialCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final es = Localizations.localeOf(context).languageCode == 'es';
     final work = card.kind == 'work';
     final freelance = card.kind == 'freelance';
     final seed = cardColor(card.primaryHex);
@@ -17,17 +16,17 @@ class _CredentialCard extends StatelessWidget {
     final accent = Color.lerp(seed, Colors.black, .3)!;
     final wash = Color.lerp(seed, Colors.white, .91)!;
     final title = work
-        ? (es ? 'IDENTIDAD PROFESIONAL' : 'PROFESSIONAL IDENTITY')
+        ? AppLocalizations.of(context)!.credentialProfessionalIdentity
         : freelance
-        ? (es ? 'TALENTO INDEPENDIENTE' : 'INDEPENDENT TALENT')
-        : (es ? 'CONEXIONES PERSONALES' : 'PERSONAL CONNECTIONS');
+        ? AppLocalizations.of(context)!.credentialIndependentTalent
+        : AppLocalizations.of(context)!.credentialPersonalConnections;
     final icon = work
         ? Icons.badge_outlined
         : freelance
         ? Icons.auto_awesome_outlined
         : Icons.favorite_border_rounded;
     final name = card.displayName.isEmpty
-        ? (es ? 'Tu nombre' : 'Your name')
+        ? AppLocalizations.of(context)!.cardYourName
         : card.displayName;
     final identity = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,9 +221,7 @@ class _CredentialCard extends StatelessWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    es
-                        ? 'Una identidad. Tu esencia.'
-                        : 'Your identity. Your essence.',
+                    AppLocalizations.of(context)!.credentialTagline,
                     textAlign: TextAlign.end,
                     style: TextStyle(color: accent, fontSize: 10),
                   ),

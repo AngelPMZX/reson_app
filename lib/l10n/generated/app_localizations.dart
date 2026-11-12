@@ -1729,6 +1729,516 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove from my wallet'**
   String get walletRemove;
+
+  /// No description provided for @messagesAndNewRequestsBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages and new requests between these accounts will be stopped.'**
+  String get messagesAndNewRequestsBetween;
+
+  /// No description provided for @reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reason;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @reportRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Report recorded.'**
+  String get reportRecorded;
+
+  /// No description provided for @thisConversationIsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation is unavailable.'**
+  String get thisConversationIsUnavailable;
+
+  /// No description provided for @viewCard.
+  ///
+  /// In en, this message translates to:
+  /// **'View card'**
+  String get viewCard;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More options'**
+  String get moreOptions;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @report.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get report;
+
+  /// No description provided for @aGoodConversationStartsWith.
+  ///
+  /// In en, this message translates to:
+  /// **'A good conversation starts with hello.'**
+  String get aGoodConversationStartsWith;
+
+  /// No description provided for @writeAMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a message…'**
+  String get writeAMessage;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send message'**
+  String get sendMessage;
+
+  /// No description provided for @aMeaningfulConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'A meaningful connection'**
+  String get aMeaningfulConnection;
+
+  /// No description provided for @youCanNowChatAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'You can now chat and explore each other’s cards.'**
+  String get youCanNowChatAnd;
+
+  /// No description provided for @openConversation.
+  ///
+  /// In en, this message translates to:
+  /// **'Open conversation'**
+  String get openConversation;
+
+  /// No description provided for @peopleYouKnowCardsYou.
+  ///
+  /// In en, this message translates to:
+  /// **'People you know. Cards you kept.'**
+  String get peopleYouKnowCardsYou;
+
+  /// No description provided for @noConnectionsYetShareYour.
+  ///
+  /// In en, this message translates to:
+  /// **'No connections yet. Share your QR to get started.'**
+  String get noConnectionsYetShareYour;
+
+  /// No description provided for @wantsToConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Wants to connect'**
+  String get wantsToConnect;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @decline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get decline;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chat;
+
+  /// No description provided for @youBlockedThisPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'You blocked this person'**
+  String get youBlockedThisPerson;
+
+  /// No description provided for @blocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked'**
+  String get blocked;
+
+  /// No description provided for @declined.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get declined;
+
+  /// No description provided for @acceptAfterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept after all'**
+  String get acceptAfterAll;
+
+  /// No description provided for @unblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblock;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
+
+  /// No description provided for @aNewConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'A new connection'**
+  String get aNewConnection;
+
+  /// No description provided for @saveThisCardOrIntroduce.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this card or introduce yourself with one of yours.'**
+  String get saveThisCardOrIntroduce;
+
+  /// No description provided for @retry2.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry2;
+
+  /// No description provided for @saveToMyNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to my network'**
+  String get saveToMyNetwork;
+
+  /// No description provided for @viewContactOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'View contact options'**
+  String get viewContactOptions;
+
+  /// No description provided for @exchangeCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange cards'**
+  String get exchangeCards;
+
+  /// No description provided for @chooseWhichPublishedCardTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which published card to send. Your private profile is not shared.'**
+  String get chooseWhichPublishedCardTo;
+
+  /// No description provided for @publishACardFromMy.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish a card from My cards to request connections.'**
+  String get publishACardFromMy;
+
+  /// No description provided for @yourCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Your card'**
+  String get yourCard;
+
+  /// No description provided for @requestConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Request connection'**
+  String get requestConnection;
+
+  /// No description provided for @shareYourIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your identity'**
+  String get shareYourIdentity;
+
+  /// No description provided for @publishOnlyWhatYouWant.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish only what you want to share. Anyone with the link can view and forward it.'**
+  String get publishOnlyWhatYouWant;
+
+  /// No description provided for @cardUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Card unavailable'**
+  String get cardUnavailable;
+
+  /// No description provided for @photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get photo;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact email'**
+  String get contactEmail;
+
+  /// No description provided for @bio.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get bio;
+
+  /// No description provided for @experience2.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get experience2;
+
+  /// No description provided for @industry.
+  ///
+  /// In en, this message translates to:
+  /// **'Industry'**
+  String get industry;
+
+  /// No description provided for @specialties.
+  ///
+  /// In en, this message translates to:
+  /// **'Specialties'**
+  String get specialties;
+
+  /// No description provided for @workMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Work mode'**
+  String get workMode;
+
+  /// No description provided for @projects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get projects;
+
+  /// No description provided for @certifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Certifications'**
+  String get certifications;
+
+  /// No description provided for @net1ChoosePublicFields.
+  ///
+  /// In en, this message translates to:
+  /// **'1 · Choose public fields'**
+  String get net1ChoosePublicFields;
+
+  /// No description provided for @nameAndLabelAlwaysAppear.
+  ///
+  /// In en, this message translates to:
+  /// **'Name and label always appear. Fields hidden on your card are not published.'**
+  String get nameAndLabelAlwaysAppear;
+
+  /// No description provided for @allowWhatsappContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow WhatsApp contact'**
+  String get allowWhatsappContact;
+
+  /// No description provided for @usesThePublishedNumberIncluding.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the published number including country code.'**
+  String get usesThePublishedNumberIncluding;
+
+  /// No description provided for @net2DataPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'2 · Data preview'**
+  String get net2DataPreview;
+
+  /// No description provided for @thePublicPageAdaptsThese.
+  ///
+  /// In en, this message translates to:
+  /// **'The public page adapts these details to the browser. Changes only reach your link when you publish again.'**
+  String get thePublicPageAdaptsThese;
+
+  /// No description provided for @yourLinkIsLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Your link is live'**
+  String get yourLinkIsLive;
+
+  /// No description provided for @publicCardQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Public card QR'**
+  String get publicCardQr;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get linkCopied;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get copyLink;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @unpublishCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpublish card'**
+  String get unpublishCard;
+
+  /// No description provided for @unpublishingDisablesTheLinkAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpublishing disables the link and QR. Previously downloaded contacts cannot be revoked.'**
+  String get unpublishingDisablesTheLinkAnd;
+
+  /// No description provided for @blockConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Block connection'**
+  String get blockConnection;
+
+  /// No description provided for @reportConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Report connection'**
+  String get reportConnection;
+
+  /// No description provided for @cardSavedInNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Card saved in your network.'**
+  String get cardSavedInNetwork;
+
+  /// No description provided for @requestSentChatLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent. Chat becomes available after acceptance.'**
+  String get requestSentChatLater;
+
+  /// No description provided for @publishAndCreateQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish and create QR'**
+  String get publishAndCreateQr;
+
+  /// No description provided for @updatePublication.
+  ///
+  /// In en, this message translates to:
+  /// **'Update publication'**
+  String get updatePublication;
+
+  /// No description provided for @netErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This card is no longer available.'**
+  String get netErrorNotFound;
+
+  /// No description provided for @netErrorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait before trying again.'**
+  String get netErrorRateLimited;
+
+  /// No description provided for @netErrorPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is unavailable for this connection.'**
+  String get netErrorPermission;
+
+  /// No description provided for @netErrorUnauthenticated.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in and verify your email.'**
+  String get netErrorUnauthenticated;
+
+  /// No description provided for @netErrorPrecondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish your card first. This connection may also have been closed.'**
+  String get netErrorPrecondition;
+
+  /// No description provided for @netErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not confirm the action. Check your connection and retry.'**
+  String get netErrorGeneric;
+
+  /// No description provided for @cardYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name'**
+  String get cardYourName;
+
+  /// No description provided for @cardKindProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFESSIONAL'**
+  String get cardKindProfessional;
+
+  /// No description provided for @credentialProfessionalIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'PROFESSIONAL IDENTITY'**
+  String get credentialProfessionalIdentity;
+
+  /// No description provided for @credentialIndependentTalent.
+  ///
+  /// In en, this message translates to:
+  /// **'INDEPENDENT TALENT'**
+  String get credentialIndependentTalent;
+
+  /// No description provided for @credentialPersonalConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONAL CONNECTIONS'**
+  String get credentialPersonalConnections;
+
+  /// No description provided for @shareOrQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Share / QR'**
+  String get shareOrQr;
+
+  /// No description provided for @switchTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch theme'**
+  String get switchTheme;
+
+  /// No description provided for @credentialTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity. Your essence.'**
+  String get credentialTagline;
+
+  /// No description provided for @cardYourNewIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your new identity'**
+  String get cardYourNewIdentity;
+
+  /// No description provided for @theirCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Their card'**
+  String get theirCard;
 }
 
 class _AppLocalizationsDelegate

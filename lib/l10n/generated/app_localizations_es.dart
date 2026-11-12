@@ -886,4 +886,277 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get walletRemove => 'Quitar de mi cartera';
+
+  @override
+  String get messagesAndNewRequestsBetween =>
+      'Se detendrán los mensajes y las nuevas solicitudes entre ambas cuentas.';
+
+  @override
+  String get reason => 'Motivo';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get reportRecorded => 'Reporte registrado.';
+
+  @override
+  String get thisConversationIsUnavailable =>
+      'La conversación no está habilitada.';
+
+  @override
+  String get viewCard => 'Ver tarjeta';
+
+  @override
+  String get moreOptions => 'Más opciones';
+
+  @override
+  String get block => 'Bloquear';
+
+  @override
+  String get report => 'Reportar';
+
+  @override
+  String get aGoodConversationStartsWith =>
+      'Una buena conversación empieza con un hola.';
+
+  @override
+  String get writeAMessage => 'Escribe un mensaje…';
+
+  @override
+  String get sendMessage => 'Enviar mensaje';
+
+  @override
+  String get aMeaningfulConnection => 'Una conexión con propósito';
+
+  @override
+  String get youCanNowChatAnd => 'Ya pueden conversar y explorar sus tarjetas.';
+
+  @override
+  String get openConversation => 'Abrir conversación';
+
+  @override
+  String get peopleYouKnowCardsYou =>
+      'Personas que conoces. Tarjetas que guardaste.';
+
+  @override
+  String get noConnectionsYetShareYour =>
+      'Todavía no hay conexiones. Comparte tu QR para empezar.';
+
+  @override
+  String get wantsToConnect => 'Quiere conectar contigo';
+
+  @override
+  String get accept => 'Aceptar';
+
+  @override
+  String get decline => 'Rechazar';
+
+  @override
+  String get connected => 'Conexión aceptada';
+
+  @override
+  String get chat => 'Conversar';
+
+  @override
+  String get youBlockedThisPerson => 'Bloqueaste a esta persona';
+
+  @override
+  String get blocked => 'Conexión bloqueada';
+
+  @override
+  String get declined => 'Solicitud rechazada';
+
+  @override
+  String get acceptAfterAll => 'Aceptar ahora';
+
+  @override
+  String get unblock => 'Desbloquear';
+
+  @override
+  String get loadMore => 'Ver más';
+
+  @override
+  String get aNewConnection => 'Una nueva conexión';
+
+  @override
+  String get saveThisCardOrIntroduce =>
+      'Guarda esta tarjeta o presenta una de las tuyas para conectar.';
+
+  @override
+  String get retry2 => 'Reintentar';
+
+  @override
+  String get saveToMyNetwork => 'Guardar en mi red';
+
+  @override
+  String get viewContactOptions => 'Ver opciones de contacto';
+
+  @override
+  String get exchangeCards => 'Intercambiar tarjetas';
+
+  @override
+  String get chooseWhichPublishedCardTo =>
+      'Elige qué tarjeta publicada enviar. Tu perfil privado no se comparte.';
+
+  @override
+  String get publishACardFromMy =>
+      'Publica una tarjeta desde Mis tarjetas para solicitar conexiones.';
+
+  @override
+  String get yourCard => 'Tu tarjeta';
+
+  @override
+  String get requestConnection => 'Solicitar conexión';
+
+  @override
+  String get shareYourIdentity => 'Compartir tu identidad';
+
+  @override
+  String get publishOnlyWhatYouWant =>
+      'Publica solo lo que quieras compartir. Cualquier persona con el enlace podrá verlo y reenviarlo.';
+
+  @override
+  String get cardUnavailable => 'Tarjeta no disponible';
+
+  @override
+  String get photo => 'Fotografía';
+
+  @override
+  String get contactEmail => 'Correo de contacto';
+
+  @override
+  String get bio => 'Biografía';
+
+  @override
+  String get experience2 => 'Experiencia';
+
+  @override
+  String get industry => 'Sector';
+
+  @override
+  String get specialties => 'Especialidades';
+
+  @override
+  String get workMode => 'Modalidad';
+
+  @override
+  String get projects => 'Proyectos';
+
+  @override
+  String get certifications => 'Certificaciones';
+
+  @override
+  String get net1ChoosePublicFields => '1 · Elige los campos públicos';
+
+  @override
+  String get nameAndLabelAlwaysAppear =>
+      'El nombre y la etiqueta siempre aparecen. Los campos ocultos en tu tarjeta no se publican.';
+
+  @override
+  String get allowWhatsappContact => 'Permitir contacto por WhatsApp';
+
+  @override
+  String get usesThePublishedNumberIncluding =>
+      'Usará el número publicado con código de país.';
+
+  @override
+  String get net2DataPreview => '2 · Vista previa de los datos';
+
+  @override
+  String get thePublicPageAdaptsThese =>
+      'La página pública adapta estos datos al navegador. Los cambios no se aplican al enlace hasta que publiques de nuevo.';
+
+  @override
+  String get yourLinkIsLive => 'Tu enlace está activo';
+
+  @override
+  String get publicCardQr => 'QR de tu tarjeta pública';
+
+  @override
+  String get linkCopied => 'Enlace copiado';
+
+  @override
+  String get copyLink => 'Copiar enlace';
+
+  @override
+  String get open => 'Abrir';
+
+  @override
+  String get unpublishCard => 'Despublicar tarjeta';
+
+  @override
+  String get unpublishingDisablesTheLinkAnd =>
+      'Despublicar desactiva el enlace y el QR. No borra contactos descargados previamente.';
+
+  @override
+  String get blockConnection => 'Bloquear conexión';
+
+  @override
+  String get reportConnection => 'Reportar conexión';
+
+  @override
+  String get cardSavedInNetwork => 'Tarjeta guardada en tu red.';
+
+  @override
+  String get requestSentChatLater =>
+      'Solicitud enviada. Podrán conversar cuando sea aceptada.';
+
+  @override
+  String get publishAndCreateQr => 'Publicar y crear QR';
+
+  @override
+  String get updatePublication => 'Actualizar publicación';
+
+  @override
+  String get netErrorNotFound => 'La tarjeta ya no está disponible.';
+
+  @override
+  String get netErrorRateLimited =>
+      'Espera un momento antes de volver a intentarlo.';
+
+  @override
+  String get netErrorPermission =>
+      'Esta acción no está disponible para esta conexión.';
+
+  @override
+  String get netErrorUnauthenticated => 'Inicia sesión y verifica tu correo.';
+
+  @override
+  String get netErrorPrecondition =>
+      'Publica tu tarjeta primero. La conexión también puede haber sido cerrada.';
+
+  @override
+  String get netErrorGeneric =>
+      'No pudimos confirmar la operación. Revisa tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get cardYourName => 'Tu nombre';
+
+  @override
+  String get cardKindProfessional => 'PROFESIONAL';
+
+  @override
+  String get credentialProfessionalIdentity => 'IDENTIDAD PROFESIONAL';
+
+  @override
+  String get credentialIndependentTalent => 'TALENTO INDEPENDIENTE';
+
+  @override
+  String get credentialPersonalConnections => 'CONEXIONES PERSONALES';
+
+  @override
+  String get shareOrQr => 'Compartir / QR';
+
+  @override
+  String get switchTheme => 'Cambiar tema';
+
+  @override
+  String get credentialTagline => 'Una identidad. Tu esencia.';
+
+  @override
+  String get cardYourNewIdentity => 'Tu nueva identidad';
+
+  @override
+  String get theirCard => 'Su tarjeta';
 }

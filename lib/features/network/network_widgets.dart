@@ -6,9 +6,6 @@ import '../../core/theme/reson_motion.dart';
 import '../../core/theme/reson_surfaces.dart';
 import 'network_service.dart';
 
-String tr(BuildContext context, String es, String en) =>
-    Localizations.localeOf(context).languageCode == 'es' ? es : en;
-
 /// How long ago, in as few characters as a list row can spare.
 ///
 /// Days are kept relative for a week, which is the span where "3 d" means
@@ -24,10 +21,20 @@ String shortMoment(BuildContext context, DateTime at) {
 
 /// Resolves a backend failure into the reader's language.
 ///
-/// Always prefer this over calling [networkError] with a literal flag: passing
-/// a hardcoded `true` pinned eight call sites to Spanish for every reader.
-String networkErrorText(BuildContext context, Object error) =>
-    networkError(error, Localizations.localeOf(context).languageCode == 'es');
+/// Every screen goes through here: eight call sites once passed a hardcoded
+/// flag and showed Spanish to everybody. The wording comes from the ARB, so a
+/// new language is a translation rather than a code change.
+String networkErrorText(BuildContext context, Object error) {
+  final s = AppLocalizations.of(context)!;
+  return switch (networkErrorCode(error)) {
+    'not-found' => s.netErrorNotFound,
+    'resource-exhausted' => s.netErrorRateLimited,
+    'permission-denied' => s.netErrorPermission,
+    'unauthenticated' => s.netErrorUnauthenticated,
+    'failed-precondition' => s.netErrorPrecondition,
+    _ => s.netErrorGeneric,
+  };
+}
 
 class NetworkShell extends StatelessWidget {
   const NetworkShell({
@@ -63,7 +70,7 @@ class NetworkShell extends StatelessWidget {
                   TextButton.icon(
                     onPressed: () => context.go('/home'),
                     icon: const Icon(Icons.arrow_back),
-                    label: Text(tr(context, 'Mis tarjetas', 'My cards')),
+                    label: Text(AppLocalizations.of(context)!.myCards),
                   ),
                   const SizedBox(height: ResonSpace.md),
                 ],
@@ -118,7 +125,7 @@ class NetworkMore extends StatelessWidget {
           child: TextButton.icon(
             onPressed: onPressed,
             icon: const Icon(Icons.expand_more),
-            label: Text(tr(context, 'Ver más', 'Load more')),
+            label: Text(AppLocalizations.of(context)!.loadMore),
           ),
         )
       : const SizedBox.shrink();
