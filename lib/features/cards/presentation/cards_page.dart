@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_chrome.dart';
 import '../../../core/theme/reson_palette.dart';
 import '../../profile/personal_profile.dart';
 import '../../profile/profile_avatar.dart';
@@ -59,18 +60,17 @@ class _CardsPageState extends ConsumerState<CardsPage> {
         (displayName?.isNotEmpty == true ? displayName! : user.name ?? '')
             .split(RegExp(r'\s+'))
             .first;
-    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 28, 22, 48),
+          padding: ResonSpace.screen,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ResonLogo(dark: dark),
+                  const ResonHeader(),
                   const SizedBox(height: ResonSpace.xl),
                   Row(
                     children: [
@@ -290,53 +290,30 @@ class _CardsPageState extends ConsumerState<CardsPage> {
                           )
                           .toList();
                       if (visible.isEmpty) {
-                        return Container(
-                          width: double.infinity,
+                        return ResonPanel(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 26,
-                            vertical: 36,
+                            horizontal: ResonSpace.xl,
+                            vertical: ResonSpace.xxl,
                           ),
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(
-                              context.surfaces.panelRadius,
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ResonNotice(
+                              icon: Icons.style_outlined,
+                              tone: scheme.primary,
+                              title: cards.isEmpty
+                                  ? s.cardEmptyTitle
+                                  : s.homeFilterEmpty,
+                              text: cards.isEmpty
+                                  ? s.cardEmptyBody
+                                  : s.homeFilterHint,
+                              action: cards.isEmpty
+                                  ? null
+                                  : TextButton(
+                                      onPressed: () =>
+                                          setState(() => _filter = 'all'),
+                                      child: Text(s.homeAll),
+                                    ),
                             ),
-                            boxShadow: context.surfaces.resting,
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.style_outlined,
-                                color: scheme.primary,
-                                size: 42,
-                              ),
-                              const SizedBox(height: ResonSpace.lg),
-                              Text(
-                                cards.isEmpty
-                                    ? s.cardEmptyTitle
-                                    : s.homeFilterEmpty,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: ResonSpace.md),
-                              Text(
-                                cards.isEmpty
-                                    ? s.cardEmptyBody
-                                    : s.homeFilterHint,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: scheme.onSurfaceVariant,
-                                  height: 1.6,
-                                ),
-                              ),
-                              if (cards.isNotEmpty)
-                                TextButton(
-                                  onPressed: () =>
-                                      setState(() => _filter = 'all'),
-                                  child: Text(s.homeAll),
-                                ),
-                            ],
                           ),
                         );
                       }
@@ -617,7 +594,7 @@ class _CountBadge extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(ResonRadius.xl),
       ),
       child: TweenAnimationBuilder<double>(
         tween: Tween(end: count.toDouble()),

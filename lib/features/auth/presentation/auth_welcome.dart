@@ -20,7 +20,7 @@ class _AuthWelcomeState extends State<AuthWelcome> {
       width: double.infinity,
       padding: EdgeInsets.all(widget.compact ? 20 : 28),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(ResonRadius.xl),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -85,7 +85,7 @@ class _AuthWelcomeState extends State<AuthWelcome> {
                   (Icons.lock_outline, s.authBenefit3),
                 ])
                   Padding(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: ResonSpace.sm),
                     child: Row(
                       children: [
                         Icon(item.$1, color: ResonPalette.white, size: 17),

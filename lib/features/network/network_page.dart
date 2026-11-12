@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_skeleton.dart';
 import '../../core/theme/reson_surfaces.dart';
 import '../../core/theme/reson_motion.dart';
 import '../../core/theme/reson_tokens.dart';
@@ -65,7 +66,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           context: context,
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(ResonRadius.xl),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -117,13 +118,24 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
       }
     } catch (e) {
       if (mounted) {
-        setState(
-          () => error = networkError(
-            e,
-            Localizations.localeOf(context).languageCode == 'es',
-          ),
-        );
+        setState(() => error = networkErrorText(context, e));
       }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> unblock(String id) async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      await ref.read(networkServiceProvider).act('unblock', {
+        'connectionId': id,
+      });
+    } catch (e) {
+      if (mounted) setState(() => error = networkErrorText(context, e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -134,6 +146,10 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
     final uid = ref.watch(authSessionProvider).asData?.value?.uid;
     final connections = ref.watch(connectionsProvider),
         received = ref.watch(receivedProvider);
+    // Only the member who placed a block may lift it, so the screen offers the
+    // undo from the account's own block list rather than from the connection.
+    final blocked =
+        ref.watch(blockedProvider).asData?.value ?? const <String>{};
     return NetworkShell(
       title: tr(context, 'Tu red', 'Your network'),
       subtitle: tr(
@@ -183,13 +199,17 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           ),
           const SizedBox(height: ResonSpace.lg),
           connections.when(
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text(networkError(e, true)),
+            loading: () => const ResonCardSkeleton(),
+            error: (e, _) => ResonNotice(
+              icon: Icons.cloud_off_outlined,
+              text: networkErrorText(context, e),
+            ),
             data: (docs) {
               if (docs.isEmpty) {
                 return NetworkPanel(
-                  child: Text(
-                    tr(
+                  child: ResonNotice(
+                    icon: Icons.hub_outlined,
+                    text: tr(
                       context,
                       'Todavía no hay conexiones. Comparte tu QR para empezar.',
                       'No connections yet. Share your QR to get started.',
@@ -236,11 +256,17 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                                             'Pending request',
                                           )
                                         : status == 'blocked'
-                                        ? tr(
-                                            context,
-                                            'Conexión bloqueada',
-                                            'Blocked',
-                                          )
+                                        ? (blocked.contains(other)
+                                              ? tr(
+                                                  context,
+                                                  'Bloqueaste a esta persona',
+                                                  'You blocked this person',
+                                                )
+                                              : tr(
+                                                  context,
+                                                  'Conexión bloqueada',
+                                                  'Blocked',
+                                                ))
                                         : tr(
                                             context,
                                             'Solicitud rechazada',
@@ -284,6 +310,35 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                                         ),
                                       ),
                                     ],
+                                    // A refusal is the recipient's own, so they
+                                    // can still accept it after a wrong tap.
+                                    if (status == 'declined' &&
+                                        d['recipient'] == uid)
+                                      FilledButton(
+                                        onPressed: busy
+                                            ? null
+                                            : () => respond(doc.id, 'accept'),
+                                        child: Text(
+                                          tr(
+                                            context,
+                                            'Aceptar ahora',
+                                            'Accept after all',
+                                          ),
+                                        ),
+                                      ),
+                                    // Lifting a block is deliberate but it is a
+                                    // repair, not the main move on this screen,
+                                    // so it carries weight without shouting.
+                                    if (status == 'blocked' &&
+                                        blocked.contains(other))
+                                      OutlinedButton(
+                                        onPressed: busy
+                                            ? null
+                                            : () => unblock(doc.id),
+                                        child: Text(
+                                          tr(context, 'Desbloquear', 'Unblock'),
+                                        ),
+                                      ),
                                     if (status != 'blocked')
                                       TextButton(
                                         onPressed: () => context.go(
@@ -305,6 +360,11 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                         },
                       ),
                     ),
+                  NetworkMore(
+                    visible: docs.length >= ref.watch(connectionsPageProvider),
+                    onPressed: () =>
+                        ref.read(connectionsPageProvider.notifier).grow(),
+                  ),
                 ],
               );
             },
@@ -316,12 +376,16 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           ),
           const SizedBox(height: ResonSpace.lg),
           received.when(
-            loading: () => const LinearProgressIndicator(),
-            error: (e, _) => Text(networkError(e, true)),
+            loading: () => const ResonCardSkeleton(),
+            error: (e, _) => ResonNotice(
+              icon: Icons.cloud_off_outlined,
+              text: networkErrorText(context, e),
+            ),
             data: (docs) => docs.isEmpty
                 ? NetworkPanel(
-                    child: Text(
-                      tr(
+                    child: ResonNotice(
+                      icon: Icons.bookmark_border,
+                      text: tr(
                         context,
                         'Aquí estarán las tarjetas que guardes.',
                         'Cards you save will appear here.',
@@ -361,8 +425,10 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                                         } catch (e) {
                                           if (mounted) {
                                             setState(
-                                              () =>
-                                                  error = networkError(e, true),
+                                              () => error = networkErrorText(
+                                                context,
+                                                e,
+                                              ),
                                             );
                                           }
                                         } finally {
@@ -375,6 +441,11 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
                             ),
                           ),
                         ),
+                      NetworkMore(
+                        visible: docs.length >= ref.watch(receivedPageProvider),
+                        onPressed: () =>
+                            ref.read(receivedPageProvider.notifier).grow(),
+                      ),
                     ],
                   ),
           ),

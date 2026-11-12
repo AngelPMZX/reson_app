@@ -54,6 +54,21 @@ final appearanceProvider = NotifierProvider<Appearance, ThemeMode>(
   Appearance.new,
 );
 
+/// Chosen language, or null to follow the device.
+///
+/// It sits beside [appearanceProvider] because both are app-wide presentation
+/// choices driven by the same header control; keeping it here lets that header
+/// live in core instead of reaching back into the app layer.
+class LocaleController extends Notifier<Locale?> {
+  @override
+  Locale? build() => null;
+  void set(Locale locale) => state = locale;
+}
+
+final localeProvider = NotifierProvider<LocaleController, Locale?>(
+  LocaleController.new,
+);
+
 abstract final class ResonTheme {
   static const ink = ResonPalette.coal;
   static const muted = ResonPalette.grey;
@@ -97,7 +112,7 @@ abstract final class ResonTheme {
           outlineVariant: dark ? ResonPalette.darkBorder : ResonPalette.silver,
         );
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(ResonRadius.md),
       borderSide: BorderSide(
         color: dark ? ResonPalette.darkBorder : ResonPalette.silver,
       ),
@@ -121,43 +136,88 @@ abstract final class ResonTheme {
         selectedColor: scheme.primaryContainer,
         side: BorderSide.none,
         shape: const StadiumBorder(),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-        labelStyle: TextStyle(
-          color: scheme.onSurface,
-          fontSize: 13,
-          fontFamily: 'Roboto',
+        padding: const EdgeInsets.symmetric(
+          horizontal: ResonSpace.md,
+          vertical: ResonSpace.sm,
         ),
+        labelStyle: ResonType.of(scheme).labelLarge,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: dark ? ResonPalette.graphite : ResonPalette.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 19,
+          horizontal: ResonSpace.lg,
+          vertical: ResonSpace.xl - 5,
         ),
         border: border,
         enabledBorder: border,
         focusedBorder: border.copyWith(
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
+        disabledBorder: border.copyWith(
+          borderSide: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: .5),
+          ),
+        ),
+        errorBorder: border.copyWith(
+          borderSide: BorderSide(color: scheme.error),
+        ),
+        focusedErrorBorder: border.copyWith(
+          borderSide: BorderSide(color: scheme.error, width: 2),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, 54),
-          backgroundColor: ResonPalette.carmine,
-          foregroundColor: ResonPalette.white,
+          // Reads the scheme instead of pinning carmine, so dark mode gets its
+          // brighter red and FilledButton.tonal stops being indistinguishable
+          // from a primary action.
+          backgroundColor: scheme.primary,
+          foregroundColor: scheme.onPrimary,
+          disabledBackgroundColor: scheme.onSurface.withValues(alpha: .12),
+          disabledForegroundColor: scheme.onSurface.withValues(alpha: .38),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(ResonRadius.md),
           ),
-          textStyle: const TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
+          textStyle: ResonType.of(scheme).labelLarge,
+        ),
+      ),
+      // An outlined button is the repair move: real weight, no shouting.
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 48),
+          foregroundColor: scheme.primary,
+          disabledForegroundColor: scheme.onSurface.withValues(alpha: .38),
+          side: BorderSide(color: scheme.outlineVariant),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ResonRadius.md),
           ),
+          textStyle: ResonType.of(scheme).labelLarge,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+        style: TextButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          foregroundColor: scheme.primary,
+          disabledForegroundColor: scheme.onSurface.withValues(alpha: .38),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ResonRadius.sm),
+          ),
+        ),
+      ),
+      // Keyboard focus was invisible everywhere: Material's default ring is
+      // drawn from the unthemed primary and vanished against the carmine.
+      focusColor: scheme.primary.withValues(alpha: .12),
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ResonRadius.xl),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ResonRadius.sm),
+        ),
       ),
     );
   }

@@ -112,7 +112,7 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
   }) {
     final s = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: ResonSpace.lg),
       child: TextFormField(
         key: field == null ? null : Key('professional_$field'),
         controller: c,
@@ -176,7 +176,7 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
       children: [
         if (!widget.showVisibility)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: ResonSpace.lg),
             child: Text(
               title,
               style: const TextStyle(fontWeight: FontWeight.w600),
@@ -197,11 +197,11 @@ class _ProfessionalEditorState extends State<ProfessionalEditor> {
         for (final entry in list)
           Container(
             key: entry.key,
-            margin: const EdgeInsets.only(bottom: 14),
-            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.only(bottom: ResonSpace.lg),
+            padding: const EdgeInsets.all(ResonSpace.lg),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(ResonRadius.md),
             ),
             child: Column(
               children: [

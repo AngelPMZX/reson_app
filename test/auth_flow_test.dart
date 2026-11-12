@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reson/app/reson_app.dart';
+import 'package:reson/core/theme/reson_theme.dart';
 import 'package:reson/core/firebase/firebase_bootstrap.dart';
 import 'package:reson/features/auth/domain/auth_repository.dart';
 import 'package:reson/features/cards/domain/digital_card.dart';

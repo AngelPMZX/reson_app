@@ -42,24 +42,43 @@ final publicationsProvider =
           .snapshots()
           .map((s) => s.docs);
     });
+
+/// How many connections or saved cards one page of the network screen holds.
+///
+/// Both lists used to stream the whole collection and sort it on the device, so
+/// opening the screen cost one read per contact the account had ever made. They
+/// now grow a page at a time and the screen offers to load the next one.
+const networkPageSize = 25;
+
+/// How much of a network list the screen currently asks for.
+class NetworkPageSize extends Notifier<int> {
+  @override
+  int build() => networkPageSize;
+  void grow() => state += networkPageSize;
+}
+
+final connectionsPageProvider = NotifierProvider<NetworkPageSize, int>(
+  NetworkPageSize.new,
+);
+final receivedPageProvider = NotifierProvider<NetworkPageSize, int>(
+  NetworkPageSize.new,
+);
+
 final connectionsProvider =
     StreamProvider.autoDispose<
       List<QueryDocumentSnapshot<Map<String, dynamic>>>
     >((ref) {
       final uid = ref.watch(authSessionProvider).asData?.value?.uid;
       if (uid == null) return Stream.value([]);
+      // Ordering server-side needs the composite index in
+      // firestore.indexes.json; deploy firestore:indexes alongside this build.
       return FirebaseFirestore.instance
           .collection('connections')
           .where('members', arrayContains: uid)
+          .orderBy('updatedAt', descending: true)
+          .limit(ref.watch(connectionsPageProvider))
           .snapshots()
-          .map(
-            (s) => s.docs
-              ..sort(
-                (a, b) => (b.data()['updatedAt'] as Timestamp).compareTo(
-                  a.data()['updatedAt'] as Timestamp,
-                ),
-              ),
-          );
+          .map((s) => s.docs);
     });
 final receivedProvider =
     StreamProvider.autoDispose<
@@ -70,9 +89,63 @@ final receivedProvider =
       return FirebaseFirestore.instance
           .collection('users/$uid/received')
           .orderBy('savedAt', descending: true)
+          .limit(ref.watch(receivedPageProvider))
           .snapshots()
           .map((s) => s.docs);
     });
+
+/// One conversation's state.
+final connectionProvider = StreamProvider.autoDispose
+    .family<DocumentSnapshot<Map<String, dynamic>>, String>(
+      (ref, id) =>
+          FirebaseFirestore.instance.doc('connections/$id').snapshots(),
+    );
+
+const chatPageSize = 50;
+
+/// How many messages of a conversation are on screen.
+class MessagesPageSize extends Notifier<int> {
+  MessagesPageSize(this.connectionId);
+  final String connectionId;
+  @override
+  int build() => chatPageSize;
+  void grow() => state += chatPageSize;
+}
+
+final messagesPageProvider =
+    NotifierProvider.family<MessagesPageSize, int, String>(
+      MessagesPageSize.new,
+    );
+
+/// A conversation's newest messages, newest first.
+///
+/// The chat used to hold its own Firestore handles and rebuild the stream from
+/// `setState`, which left it impossible to drive from a test. Reading them
+/// through providers matches the rest of the module and makes the screen
+/// testable without a backend.
+final messagesProvider = StreamProvider.autoDispose
+    .family<List<QueryDocumentSnapshot<Map<String, dynamic>>>, String>((
+      ref,
+      id,
+    ) {
+      return FirebaseFirestore.instance
+          .collection('connections/$id/messages')
+          .orderBy('createdAt', descending: true)
+          .limit(ref.watch(messagesPageProvider(id)))
+          .snapshots()
+          .map((s) => s.docs);
+    });
+
+/// Saved cards the account has blocked, so the screen can offer to undo its own
+/// block without the connection ever recording who blocked whom.
+final blockedProvider = StreamProvider.autoDispose<Set<String>>((ref) {
+  final uid = ref.watch(authSessionProvider).asData?.value?.uid;
+  if (uid == null) return Stream.value(const {});
+  return FirebaseFirestore.instance
+      .collection('users/$uid/blocks')
+      .snapshots()
+      .map((s) => s.docs.map((d) => d.id).toSet());
+});
 String networkError(Object error, bool es) {
   final code = error is FirebaseFunctionsException
       ? error.code

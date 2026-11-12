@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_chrome.dart';
 import '../../../core/theme/reson_palette.dart';
 import 'auth_welcome.dart';
 import '../../../core/theme/reson_motion.dart';
@@ -120,12 +121,13 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // On the wide layout the wordmark already shows on
+                        // the branded panel, so the form carries only controls.
+                        ResonHeader(
+                          leading: wide ? const SizedBox.shrink() : null,
+                        ),
+                        const SizedBox(height: ResonSpace.xxl),
                         if (!wide) ...[
-                          ResonLogo(
-                            dark:
-                                Theme.of(context).brightness == Brightness.dark,
-                          ),
-                          const SizedBox(height: ResonSpace.xxl),
                           if (!_reset) ...[
                             const AuthWelcome(compact: true),
                             const SizedBox(height: ResonSpace.xl),
@@ -208,7 +210,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                               const Expanded(child: Divider()),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
+                                  horizontal: ResonSpace.lg,
                                 ),
                                 child: Text(
                                   s.orEmail,
@@ -496,11 +498,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                     child: BrandBackground(
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: const EdgeInsets.all(48),
+                          padding: const EdgeInsets.all(ResonSpace.huge),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const ResonLogo(),
+                              const ResonWordmark(),
                               const SizedBox(height: ResonSpace.huge),
                               Text(
                                 s.authPromise,
@@ -542,7 +544,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(
                       horizontal: wide ? 48 : 24,
-                      vertical: 32,
+                      vertical: ResonSpace.xxl,
                     ),
                     child: ResonReveal(child: form),
                   ),
@@ -556,7 +558,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _label(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.only(bottom: ResonSpace.sm),
     child: Text(
       text,
       style: Theme.of(

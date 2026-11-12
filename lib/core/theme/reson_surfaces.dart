@@ -31,6 +31,39 @@ abstract final class ResonSpace {
 
   /// The breathing room above a hero, and nothing smaller.
   static const hero = 64.0;
+
+  /// What every screen keeps between its content and the edge of the display.
+  ///
+  /// Each screen used to pick its own: 22 on home and the network shell, 24 in
+  /// the editor and the profile, 20 inside an expanded section. Nobody can see
+  /// two pixels, but moving between screens whose text starts in a slightly
+  /// different place is felt even when it is not noticed.
+  static const EdgeInsets screen = EdgeInsets.fromLTRB(xl, xl, xl, huge);
+}
+
+/// Corner radii.
+///
+/// The chrome had grown eleven of them — 8, 11, 12, 18, 20, 22, 23, 24, 25, 28
+/// and 30 — and the middle of that run is indistinguishable by eye while being
+/// obviously unplanned in code. Four steps say everything the app needs. The
+/// credentials keep their own radii in [ResonCredentials]: those are artwork.
+abstract final class ResonRadius {
+  /// Chips, badges, inline markers.
+  static const sm = 12.0;
+
+  /// Buttons, inputs, list tiles. Matches the component themes.
+  static const md = 18.0;
+
+  /// Panels and cards: anything that holds other content.
+  static const lg = 24.0;
+
+  /// Dialogs and sheets, the only things allowed to be rounder than a panel.
+  static const xl = 28.0;
+
+  static BorderRadius get small => BorderRadius.circular(sm);
+  static BorderRadius get medium => BorderRadius.circular(md);
+  static BorderRadius get large => BorderRadius.circular(lg);
+  static BorderRadius get extraLarge => BorderRadius.circular(xl);
 }
 
 /// Depth tokens.

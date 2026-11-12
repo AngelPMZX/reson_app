@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_chrome.dart';
 import '../../../core/theme/reson_palette.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/reson_surfaces.dart';
@@ -33,7 +34,7 @@ class IntroPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const ResonLogo(),
+                          const ResonHeader(onBrand: true),
                           SizedBox(height: wide ? 70 : 44),
                           Flex(
                             direction: wide ? Axis.horizontal : Axis.vertical,
@@ -97,7 +98,9 @@ class IntroPage extends StatelessWidget {
                                               color: ResonPalette.white,
                                               size: 23,
                                             ),
-                                            const SizedBox(width: 13),
+                                            const SizedBox(
+                                              width: ResonSpace.md,
+                                            ),
                                             Expanded(
                                               child: Column(
                                                 crossAxisAlignment:
@@ -200,7 +203,7 @@ class _IntroCopy extends StatelessWidget {
         FilledButton(
           onPressed: () => context.go('/register'),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: ResonSpace.md),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

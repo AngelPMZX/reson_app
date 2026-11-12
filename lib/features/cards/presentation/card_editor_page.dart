@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_chrome.dart';
 import '../../profile/personal_profile.dart';
 import '../../../core/theme/reson_motion.dart';
 import '../domain/professional_profile.dart';
@@ -375,16 +376,14 @@ class _EditorState extends ConsumerState<_Editor> {
       child: Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+            padding: ResonSpace.screen,
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1000),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ResonLogo(
-                      dark: Theme.of(context).brightness == Brightness.dark,
-                    ),
+                    const ResonHeader(),
                     const SizedBox(height: ResonSpace.xl),
                     TextButton.icon(
                       onPressed: _busy ? null : _back,
@@ -395,7 +394,7 @@ class _EditorState extends ConsumerState<_Editor> {
                     ResonReveal(
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(22),
+                        padding: const EdgeInsets.all(ResonSpace.xl),
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
@@ -687,12 +686,12 @@ class _EditorState extends ConsumerState<_Editor> {
         ),
         const SizedBox(height: ResonSpace.lg),
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(ResonSpace.lg),
           decoration: BoxDecoration(
             color: Theme.of(
               context,
             ).colorScheme.primaryContainer.withValues(alpha: .4),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(ResonRadius.md),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -761,7 +760,7 @@ class _EditorState extends ConsumerState<_Editor> {
         ),
         if (!photoUploadsEnabled)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: ResonSpace.sm),
             child: Text(AppLocalizations.of(context)!.photoUploadsUnavailable),
           ),
         SwitchListTile.adaptive(
@@ -804,7 +803,7 @@ class _EditorState extends ConsumerState<_Editor> {
   }) {
     final s = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.only(bottom: ResonSpace.lg),
       child: TextFormField(
         key: Key('card_$key'),
         controller: _fields[key],

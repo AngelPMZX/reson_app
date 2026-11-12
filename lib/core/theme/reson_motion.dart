@@ -51,6 +51,74 @@ class ResonPanel extends StatelessWidget {
   }
 }
 
+/// Nothing here, nothing loaded, or nothing working.
+///
+/// These three moments were each improvised per screen: a bare centred string
+/// for an empty list, a raw `Text` in error red for a failure, a spinner for a
+/// wait. Saying them in one shape means an empty screen still looks designed
+/// and a failure does not look like a crash.
+class ResonNotice extends StatelessWidget {
+  const ResonNotice({
+    super.key,
+    required this.text,
+    this.title,
+    this.icon,
+    this.action,
+    this.tone,
+  });
+  final String text;
+
+  /// A headline above [text], for the emptiness a whole screen is about.
+  final String? title;
+  final IconData? icon;
+  final Widget? action;
+
+  /// Colours the icon. Defaults to muted; pass the brand for an invitation
+  /// rather than a dead end.
+  final Color? tone;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(ResonSpace.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 34, color: tone ?? scheme.onSurfaceVariant),
+              const SizedBox(height: ResonSpace.md),
+            ],
+            if (title != null) ...[
+              Text(
+                title!,
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: ResonSpace.sm),
+            ],
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+                height: 1.6,
+              ),
+            ),
+            if (action != null) ...[
+              const SizedBox(height: ResonSpace.lg),
+              action!,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// One-shot entrance; respects the device's reduced-motion preference.
 class ResonReveal extends StatelessWidget {
   const ResonReveal({super.key, required this.child, this.distance = 18});

@@ -43,12 +43,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
       }
     } catch (e) {
       if (mounted) {
-        setState(
-          () => feedback = networkError(
-            e,
-            Localizations.localeOf(context).languageCode == 'es',
-          ),
-        );
+        setState(() => feedback = networkErrorText(context, e));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -71,12 +66,7 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
         error: (e, _) => NetworkPanel(
           child: Column(
             children: [
-              Text(
-                networkError(
-                  e,
-                  Localizations.localeOf(context).languageCode == 'es',
-                ),
-              ),
+              Text(networkErrorText(context, e)),
               TextButton(
                 onPressed: () =>
                     ref.invalidate(sharedCardProvider(widget.publicId)),
@@ -115,11 +105,11 @@ class _ReceiveCardPageState extends ConsumerState<ReceiveCardPage> {
             children: [
               if ((p['photoUrl'] as String).isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: ResonSpace.lg),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(ResonRadius.lg),
                       child: Image.network(
                         p['photoUrl'] as String,
                         width: 96,

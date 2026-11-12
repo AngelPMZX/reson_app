@@ -191,6 +191,7 @@ void main() {
             networkServiceProvider.overrideWithValue(service),
             connectionsProvider.overrideWith((ref) => Stream.value([doc])),
             receivedProvider.overrideWith((ref) => Stream.value([])),
+            blockedProvider.overrideWith((ref) => Stream.value(const {})),
           ],
           child: const RepaintBoundary(
             key: ValueKey('socialCapture'),
@@ -212,4 +213,97 @@ void main() {
     await captureSocial(tester, 'connection-success');
     expect(tester.takeException(), isNull);
   });
+
+  /// Opens /network with a single connection in [status], where the account
+  /// blocks the other member when [iBlocked] is set.
+  Future<SocialService> openNetwork(
+    WidgetTester tester, {
+    required String status,
+    bool iBlocked = false,
+    Size size = const Size(390, 1000),
+  }) async {
+    final auth = verified.session();
+    addTearDown(auth.dispose);
+    final c = await support.launch(tester, repository: auth, size: size);
+    final service = SocialService();
+    final doc = SocialDoc('connection', {
+      'members': ['owner', 'other'],
+      'requester': 'other',
+      'recipient': 'owner',
+      'names': {'other': 'María', 'owner': 'Alex'},
+      'cards': {'other': 'shared'},
+      'status': status,
+      'updatedAt': Timestamp.now(),
+    });
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: c,
+        child: ProviderScope(
+          overrides: [
+            networkServiceProvider.overrideWithValue(service),
+            connectionsProvider.overrideWith((ref) => Stream.value([doc])),
+            receivedProvider.overrideWith((ref) => Stream.value([])),
+            blockedProvider.overrideWith(
+              (ref) => Stream.value(iBlocked ? const {'other'} : const {}),
+            ),
+          ],
+          child: const RepaintBoundary(
+            key: ValueKey('socialCapture'),
+            child: ResonApp(),
+          ),
+        ),
+      ),
+    );
+    c.read(routerProvider).go('/network');
+    await tester.pumpAndSettle();
+    return service;
+  }
+
+  testWidgets('A decline can be taken back by the recipient', (tester) async {
+    final service = await openNetwork(tester, status: 'declined');
+    expect(find.text('Solicitud rechazada'), findsOneWidget);
+    await captureSocial(tester, 'network-declined');
+    final accept = find.widgetWithText(FilledButton, 'Aceptar ahora');
+    await tester.ensureVisible(accept);
+    await tester.tap(accept);
+    await tester.pumpAndSettle();
+    expect(service.calls.single['action'], 'respond');
+    expect(service.calls.single['decision'], 'accept');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Only the member who blocked is offered the undo', (
+    tester,
+  ) async {
+    final mine = await openNetwork(tester, status: 'blocked', iBlocked: true);
+    expect(find.text('Bloqueaste a esta persona'), findsOneWidget);
+    await captureSocial(tester, 'network-blocked-by-me');
+    final undo = find.widgetWithText(OutlinedButton, 'Desbloquear');
+    await tester.ensureVisible(undo);
+    await tester.tap(undo);
+    await tester.pumpAndSettle();
+    expect(mine.calls.single['action'], 'unblock');
+    expect(tester.takeException(), isNull);
+
+    final theirs = await openNetwork(tester, status: 'blocked');
+    expect(find.text('Conexión bloqueada'), findsOneWidget);
+    await captureSocial(tester, 'network-blocked-by-them');
+    expect(find.text('Desbloquear'), findsNothing);
+    expect(theirs.calls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  for (final width in [320.0, 390.0]) {
+    testWidgets('The network screen fits $width with recovery actions', (
+      tester,
+    ) async {
+      await openNetwork(
+        tester,
+        status: 'blocked',
+        iBlocked: true,
+        size: Size(width, 900),
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

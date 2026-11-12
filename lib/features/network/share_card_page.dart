@@ -34,12 +34,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
       });
     } catch (e) {
       if (mounted) {
-        setState(
-          () => error = networkError(
-            e,
-            Localizations.localeOf(context).languageCode == 'es',
-          ),
-        );
+        setState(() => error = networkErrorText(context, e));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -59,7 +54,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
       ),
       child: cards.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Text(networkError(e, true)),
+        error: (e, _) => Text(networkErrorText(context, e)),
         data: (items) {
           final card = items.where((c) => c.id == widget.cardId).firstOrNull;
           if (card == null) {
@@ -201,7 +196,7 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
               const SizedBox(height: ResonSpace.lg),
               if (error != null)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: ResonSpace.md),
                   child: Text(
                     error!,
                     style: TextStyle(
@@ -245,10 +240,10 @@ class _ShareCardPageState extends ConsumerState<ShareCardPage> {
                       ),
                       const SizedBox(height: ResonSpace.lg),
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(ResonSpace.md),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(ResonRadius.lg),
                         ),
                         child: QrImageView(
                           data: url,

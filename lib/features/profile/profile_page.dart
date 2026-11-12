@@ -1,3 +1,4 @@
+import '../../core/theme/reson_chrome.dart';
 import '../../core/theme/reson_palette.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -285,13 +286,20 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
       child: Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 80, 24, 40),
+            padding: const EdgeInsets.fromLTRB(
+              ResonSpace.xl,
+              ResonSpace.xl,
+              ResonSpace.xl,
+              ResonSpace.huge,
+            ),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 680),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const ResonHeader(),
+                    const SizedBox(height: ResonSpace.lg),
                     TextButton.icon(
                       onPressed: _busy ? null : _back,
                       icon: const Icon(Icons.arrow_back),
@@ -316,7 +324,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                   ],
                                 ),
                               ),
-                              padding: const EdgeInsets.all(20),
+                              padding: const EdgeInsets.all(ResonSpace.xl),
                               child: Text(
                                 s.profileStudio,
                                 style: Theme.of(context).textTheme.labelSmall
@@ -328,7 +336,7 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.all(22),
+                              padding: const EdgeInsets.all(ResonSpace.xl),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -483,7 +491,9 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                         children: [
                           for (final entry in labels.entries)
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.only(
+                                bottom: ResonSpace.lg,
+                              ),
                               child: TextFormField(
                                 key: ValueKey('profile_${entry.key}'),
                                 controller: _fields[entry.key],

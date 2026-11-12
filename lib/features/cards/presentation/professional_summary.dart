@@ -67,9 +67,9 @@ class ProfessionalSummary extends StatelessWidget {
             ),
             for (final e in values)
               Padding(
-                padding: const EdgeInsets.only(top: 16, left: 8),
+                padding: const EdgeInsets.only(top: ResonSpace.lg, left: 8),
                 child: Container(
-                  padding: const EdgeInsets.only(left: 16),
+                  padding: const EdgeInsets.only(left: ResonSpace.lg),
                   decoration: BoxDecoration(
                     border: Border(
                       left: BorderSide(color: scheme.outlineVariant, width: 2),
@@ -94,7 +94,7 @@ class ProfessionalSummary extends StatelessWidget {
                         ),
                       if (e.details.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 6),
+                          padding: const EdgeInsets.only(top: ResonSpace.sm),
                           child: Text(
                             e.details,
                             style: const TextStyle(height: 1.5),
@@ -107,7 +107,7 @@ class ProfessionalSummary extends StatelessWidget {
           ],
         );
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: ResonSpace.lg),
       child: Container(
         decoration: BoxDecoration(
           color: scheme.surfaceContainer,
@@ -126,7 +126,12 @@ class ProfessionalSummary extends StatelessWidget {
             s.exploreProfile,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            ResonSpace.xl,
+            0,
+            ResonSpace.xl,
+            ResonSpace.xl,
+          ),
           children: [
             Align(
               alignment: Alignment.centerLeft,
@@ -169,7 +174,7 @@ class ProfessionalSummary extends StatelessWidget {
                     ),
                   if (hasSkills)
                     Padding(
-                      padding: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.only(top: ResonSpace.md),
                       child: Wrap(
                         spacing: 6,
                         runSpacing: 6,

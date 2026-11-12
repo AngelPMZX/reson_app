@@ -1,6 +1,6 @@
 # Memoria de Reson
 
-Actualizada: **20 de septiembre de 2026**. Referencia de continuidad para el propietario y para nuevos chats de desarrollo. Describe el estado del código al preparar el commit que incluye este archivo; no contiene contraseñas, tokens ni claves administrativas.
+Actualizada: **11 de noviembre de 2026**. Referencia de continuidad para el propietario y para nuevos chats de desarrollo. Describe el estado del código al preparar el commit que incluye este archivo; no contiene contraseñas, tokens ni claves administrativas.
 
 ## 1. Qué estamos construyendo
 
@@ -64,8 +64,12 @@ lib/
     firebase/firebase_bootstrap.dart Inicialización y providers de Firebase
     firebase/google_oauth_config.dart IDs OAuth públicos vía dart-define
     theme/reson_palette.dart        Paleta central
-    theme/reson_theme.dart          Temas claro/oscuro
-    theme/reson_motion.dart         Movimiento reutilizable
+    theme/reson_theme.dart          Temas claro/oscuro, apariencia e idioma
+    theme/reson_chrome.dart         Cabecera compartida y controles globales
+    theme/reson_tokens.dart         ResonMotion y ResonCredentials
+    theme/reson_surfaces.dart       ResonType, ResonSpace, ResonRadius, ResonSurfaces
+    theme/reson_motion.dart         ResonPanel, ResonNotice, ResonReveal, ResonStagger
+    theme/reson_skeleton.dart       Esqueletos de carga
   features/
     auth/
       domain/auth_repository.dart
@@ -101,6 +105,8 @@ firebase.json                       Rules, Functions y Hosting
 firebase.emulators.json             Configuración aislada de pruebas
 android/ ios/ web/ ...              Plataformas Flutter
 ```
+
+**El backend JavaScript está formateado desde el 11/11/2026.** Estaba escrito como si fuera código minificado: `index.js` tenía 98 líneas con una de 496 caracteres, `domain.js` 15 líneas con una de 628 y `render.js` 12 con una de 1884 — y es el código crítico de seguridad del proyecto. Ahora pasa por Prettier (`functions/.prettierrc.json`, ancho 100): `npm run format` y `npm run format:check` dentro de `functions/`. Las líneas largas que quedan en `render.js` son el literal HTML/CSS de la página pública y deben seguir compactas. El reformateo se demostró sin cambio de comportamiento comparando el hash SHA-256 de 25 salidas reales (snapshot, vCard, HTML en ES y EN, safeUrl, connectionId, escapeHtml) antes y después: idéntico.
 
 La arquitectura es por funcionalidades, con contratos/repositorios en auth y cards. Profile y network todavía agrupan parte de datos/presentación en menos archivos: es una base modular, no una arquitectura limpia exhaustiva. Mantener seguridad y lógica de publicación en backend; no moverlas al widget.
 
@@ -191,11 +197,26 @@ La página pública tiene su propia composición; no pretende reproducir idénti
 
 Guardar una tarjeta y solicitar conexión son acciones distintas. Guardar no envía mensajes. Para solicitar conexión se elige una tarjeta propia ya publicada. El backend impide conectarse consigo mismo, valida ambos titulares y revisa bloqueos.
 
-ID de conexión determinista: SHA-256 del par de UIDs ordenados. Estados pending, accepted, declined, blocked. Solo destinatario puede aceptar/rechazar la solicitud pendiente. Solicitudes existentes no generan duplicados; la versión actual no permite reenviar tras rechazo/bloqueo.
+ID de conexión determinista: SHA-256 del par de UIDs ordenados. Estados pending, accepted, declined, blocked. Solo destinatario puede aceptar/rechazar la solicitud pendiente. Solicitudes existentes no generan duplicados.
+
+**Rechazo y bloqueo dejaron de ser definitivos (11/11/2026).** Antes, un «Rechazar» tocado por error cerraba ese par de cuentas para siempre y `unblock` no existía en ninguna capa. Ahora:
+
+- **El destinatario puede aceptar una solicitud que él mismo rechazó**, sin espera. Es la salida al toque accidental y no abre superficie de abuso: deshace su propia decisión.
+- **El solicitante puede volver a pedir tras un rechazo**, pasado `RECONNECT_AFTER_MS` (**7 días**, constante en `functions/index.js`; cambiarla ahí). Evita insistencia inmediata sin convertir la negativa en permanente.
+- **`unblock`** retira el bloqueo propio. Autoriza **tener** el bloqueo (`users/{uid}/blocks/{other}`), no un campo en la conexión: así nadie levanta un bloqueo ajeno y la conexión nunca registra quién bloqueó. Con bloqueo mutuo el par sigue cerrado hasta que ambos lo retiren.
+- Reactivar conserva historia: `createdAt`, el hilo de mensajes y `lastMessageAt` sobreviven. `respondedAt` marca la última respuesta y alimenta la espera.
+
+La máquina de estados vive como **política pura** en `functions/domain.js` (`requestOutcome`, `respondOutcome`), no dentro de las transacciones. Por eso se prueba sin emulador: 8 de las 12 pruebas de backend cubren sus ramas. Al cambiar reglas de conexión, cambiar esas funciones y sus pruebas, no el cuerpo de la transacción.
+
+En la UI, `blockedProvider` lee la colección de bloqueos propia para ofrecer «Desbloquear» solo a quien bloqueó; a la otra parte le muestra «Conexión bloqueada» sin botón. Desbloquear es `OutlinedButton` a propósito: es una reparación, no la acción principal de la pantalla.
 
 Chat de texto en tiempo real, habilitado tras aceptación. Mensajes de 1 a 2000 caracteres, ID cliente reutilizado en reintentos para evitar duplicados. Lectura descendente con 50 mensajes inicialmente y botón para aumentar el límite. Conexiones se filtran por membresía; escritura exclusivamente por callable. Límites: 40 acciones sociales/minuto/usuario y mínimo de 700 ms entre mensajes de la conexión. Errores conservan el borrador.
 
 Bloquear detiene mensajes y nuevas solicitudes. Reportar registra motivo para revisión administrativa. No existe aún UI de desbloqueo, consola de moderación ni respuesta automática a reportes. El chat no ofrece todavía adjuntos, indicadores de escritura, leído/no leído, push o cifrado de extremo a extremo.
+
+**Listas acotadas (11/11/2026).** Conexiones y recibidas se traían enteras y se ordenaban en el dispositivo: abrir Mi red costaba una lectura por cada contacto acumulado. Ahora piden **25 por página** (`networkPageSize`) y la pantalla ofrece «Ver más» (`NetworkMore`) cuando la página vuelve llena, para que acotar no esconda datos. El orden de conexiones pasó al servidor, lo que **exige el índice compuesto** de `firestore.indexes.json` — ver sección 14; sin desplegarlo, Mi red falla.
+
+Sigue pendiente el **cursor real del chat**: hoy `limit += 50` recrea el stream, así que ver mensajes antiguos vuelve a leer los anteriores. Es una ventana acotada, no un desbordamiento, pero el coste por página crece. Conviene abordarlo junto al rediseño del chat.
 
 Mi red muestra solicitudes, estados y tarjetas recibidas. Al aceptar hay una animación y diálogo de éxito; sonido original opcional (`assets/sounds/connected.wav`, 0.65 s), desactivado por defecto y almacenado como `connectionSound`. El navegador puede impedir reproducir audio; eso no invalida la conexión.
 
@@ -220,6 +241,32 @@ Animaciones de entrada, cartera, selección, expansiones, formularios y conexió
 
 Las credenciales ya **no conservan neutros lavanda**: los ocho layouts usan neutros cálidos derivados del carmín, nombrados en `ResonPalette` (`roseVeil`, `roseMist`, `wineInk`, `wineGrey`, `wineShadow`, `nightWine`, `duskWine`, `parchment`, `studioInk`…). No quedan colores crudos en `card_preview.dart` ni en `credential_card.dart`. Los **17 presets de color que ofrece el editor siguen siendo variados a propósito**: son la elección del titular, no la marca.
 
+### Repolish y cabecera compartida (11 de noviembre de 2026)
+
+Refinamiento **dentro** del carmín/grafito, decidido con el propietario: no se tocaron paleta, cartera, física del mazo, los ocho layouts ni la tipografía de las credenciales.
+
+**`lib/core/theme/reson_chrome.dart`** es la pieza central. Los controles de tema e idioma **ya no flotan**: eran dos `Positioned` en un `Stack` dentro de `MaterialApp.builder`, con `right: 76` y `right: 18`, y cada pantalla tenía que dejarles hueco a mano — 132px de acción vacía en el `AppBar` del chat, 80px de padding superior en el perfil, y un acuerdo tácito en el resto. Ahora son layout:
+
+- `ResonControls`: los dos botones, una sola vez en el código.
+- `ResonHeader`: la banda superior de toda pantalla; `leading` sustituye la marca (el chat pone ahí su enlace de vuelta), `onBrand` la dibuja en blanco sobre los fondos oscuros de intro y acceso.
+- `ResonWordmark`: la marca. Reemplaza a `ResonLogo`, que se eliminó de `brand_widgets.dart`.
+- `resonCompact(context)`: **un solo umbral (360px)** para toda la app. Por debajo, la marca suelta la palabra, el chat deja el volver en icono y «Ver tarjeta» se pliega al menú. Sin esto la cabecera desbordaba 27px a 320.
+
+Por eso `localeProvider` se movió de `app/reson_app.dart` a `core/theme/reson_theme.dart`, junto a `appearanceProvider`: así la cabecera vive en `core` y no importa hacia la capa `app`.
+
+**El chat entró al sistema.** Mantiene `Scaffold` propio y no `NetworkShell` —su cabecera y su redactor deben quedarse fijos mientras solo ruedan los mensajes— pero comparte cabecera, ancho y ritmo. Perdió el `AppBar`; bloquear y reportar están ahora junto a la persona a la que afectan. Las burbujas usan `surfaceContainerHigh` (mist) y no `surfaceContainerHighest` (silver, frío junto al blush), tienen la esquina inferior cuadrada del lado de quien escribe, y la hora va al 62% de opacidad: es una nota al pie, no una segunda frase.
+
+Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `messagesPageProvider`): antes guardaba sus propios handles de Firestore y recreaba el stream desde `setState`, lo que lo hacía **imposible de probar**. Ahora hay `test/chat_design_test.dart` con 7 pruebas y capturas en claro y oscuro.
+
+**Tokens nuevos** en `reson_surfaces.dart`:
+
+- `ResonRadius` (`sm` 12, `md` 18, `lg` 24, `xl` 28). Había once radios: 8, 11, 12, 18, 20, 22, 23, 24, 25, 28 y 30. El centro de esa serie es indistinguible a ojo y evidentemente no planificado en código.
+- `ResonSpace.screen`: el margen que toda pantalla guarda con el borde. Cada una elegía el suyo (22, 24, 20).
+
+**`ResonNotice`** (en `reson_motion.dart`) unifica vacío, error y «nada aún», con icono, título, cuerpo y acción opcionales. Antes cada pantalla improvisaba: un `Text` centrado, un `Text` en rojo de error, un spinner. La carga usa `ResonSkeleton`/`ResonCardSkeleton`, no `LinearProgressIndicator`.
+
+**Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
+
 ### Fundamentos visuales (noviembre 2026)
 
 `lib/core/theme/reson_surfaces.dart` añade tres piezas más al sistema:
@@ -234,7 +281,16 @@ Widgets nuevos: `ResonPanel` (superficie elevada, sustituye al `Container` con b
 
 El tema arranca en **`ThemeMode.system`** y solo fija un lado cuando el usuario toca el conmutador; la elección se guarda en `darkMode`. El icono debe leer `Theme.of(context).brightness`, no el `ThemeMode`, porque con `system` el modo no dice qué se está viendo.
 
-La migración está **completa en el cromo**: cero `fontSize` y cero separaciones crudas fuera del arte. Lo que conserva valores a mano es deliberado y no debe migrarse: `card_preview.dart`, `credential_card.dart`, `animated_wallet.dart`, `home_identity_art.dart` y la tarjeta de muestra de `brand_widgets.dart`. Esa última vive en un lienzo de alto fijo (250px): ajustar sus gaps al ritmo la desborda.
+La migración **sí está terminada ahora** (repolish del 11/11/2026). Medido fuera de los archivos de arte: **0 separaciones crudas** (eran 46), **0 radios crudos** (eran 11) y **4 `fontSize`**, los cuatro responsivos o proporcionales y correctos: `wide ? 56 : 42` en intro, `wide ? 40 : null` en cards, `compact ? 27 : 36` en `auth_welcome` y `size * .36` en `profile_avatar`. No migrarlos: dependen del ancho o del tamaño del avatar, no son valores sueltos.
+
+Una versión anterior de esta memoria ya afirmaba «cero» cuando quedaban 46. Si se vuelve a tocar el tema, **medir antes de afirmar**:
+
+```sh
+grep -ro "SizedBox(height: [0-9]\|EdgeInsets.all([0-9]\|fromLTRB([0-9]\|horizontal: [0-9]\|vertical: [0-9]\|BorderRadius.circular([0-9]" lib --include=*.dart \
+  | grep -vE "card_preview|credential_card|animated_wallet|home_identity_art|brand_widgets|reson_chrome|/generated/" | wc -l
+```
+
+Lo que conserva valores a mano es deliberado y no debe migrarse: `card_preview.dart`, `credential_card.dart`, `animated_wallet.dart`, `home_identity_art.dart` y la tarjeta de muestra de `brand_widgets.dart`. Esa última vive en un lienzo de alto fijo (250px): ajustar sus gaps al ritmo la desborda.
 
 Los filtros de inicio se probaron como carril horizontal y **se revirtió a `Wrap`**: con solo cuatro, un carril deja el cuarto fuera de pantalla. La fila huérfana es preferible a esconder un filtro.
 
@@ -285,7 +341,22 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 ## 14. Verificación y despliegue
 
-Última entrega: **80 pruebas Flutter**, **17 pruebas backend/reglas**, analyze sin incidencias, build web release correcto. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
+Estado al 11/11/2026, todo ejecutado y en verde:
+
+- **94 pruebas Flutter** (102 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **25 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
+- `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
+
+**Java para el emulador: no hace falta instalarlo.** Android Studio trae OpenJDK 21 en `C:\Program Files\Android\Android Studio\jbr`. Basta ponerlo en PATH para el comando; la nota antigua sobre un JRE en `.tools` ya no aplica:
+
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+```
+
+La prueba `publish → save → request → accept → chat → block → revoke` cubre ahora también el desbloqueo y la reconexión: que solo desbloquee quien bloqueó, que el bloqueo se borre, que el estado pase a `declined`, que el solicitante siga esperando la cuarentena y que el destinatario pueda aceptar en el acto.
+
+Entrega anterior: 80 pruebas Flutter y 17 backend/reglas. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
 
 ```powershell
 flutter analyze
@@ -303,10 +374,10 @@ Pruebas de backend y reglas (Node compatible y Java 21 en PATH):
 
 Prueba contra producción: `tools/social-live-smoke.cjs`, optativa con `RESON_LIVE_SMOKE=1`, sesión CLI y permisos administrativos. Crea tres cuentas verificadas temporales, publicaciones, foto y mensajes; borra sus propios recursos en finally. No ejecutarla automáticamente en cada build. Tokens se usan en memoria, no se imprimen. Las pruebas Flutter normales usan repositorios falsos y no envían emails.
 
-Desplegar tras revisar cambios y pruebas:
+Desplegar tras revisar cambios y pruebas. **`firestore:indexes` ya se desplegó el 11/11/2026** y el índice de `connections` (`members` CONTAINS + `updatedAt` DESC) está creado en `reson-app`: Mi red puede ordenar en el servidor. Mantenerlo en el comando para que futuros índices no se queden atrás, y recordar que un índice nuevo **se despliega antes o a la vez que el hosting**, porque la consulta falla hasta que termina de construirse. Antes de este archivo el proyecto no tenía ningún índice compuesto, así que desplegarlos es aditivo; si algún día Console muestra índices creados a mano, añadirlos aquí antes de desplegar o la CLI ofrecerá borrarlos.
 
 ```powershell
-.\tools\firestore-tests\node_modules\.bin\firebase.cmd deploy --only functions,firestore:rules,storage,hosting --project reson-app
+.\tools\firestore-tests\node_modules\.bin\firebase.cmd deploy --only functions,firestore:rules,firestore:indexes,storage,hosting --project reson-app
 ```
 
 Para solo frontend, construir web y usar `--only hosting`. Subir un commit no despliega Firebase. No hay CI/CD configurado que lo haga automáticamente. Conservar sincronizados esquema, reglas y backend al cambiar campos.
@@ -317,6 +388,31 @@ Los logs y capturas de esta sesión viven en `build/` (ignorados): social-final-
 
 ## 15. Pendientes y siguiente trabajo recomendado
 
+### Qué se cerró el 11 de noviembre de 2026
+
+Una sola sesión, en este orden. Sirve para no volver a abrir nada de esto:
+
+1. **Los errores ya no salen siempre en español.** De las 13 llamadas a `networkError`, ocho pasaban un `true` literal, así que un lector en inglés veía español al fallar al aceptar, bloquear, reportar o cargar la lista. Todas pasan ahora por `networkErrorText(context, error)`. `test/network_errors_test.dart` incluye una guarda de código fuente que falla si una pantalla vuelve a fijar el idioma.
+2. **Rechazar y bloquear dejaron de ser definitivos** (sección 10). Era el hueco funcional de verdad: un toque accidental cerraba ese par de cuentas para siempre y `unblock` no existía en ninguna capa.
+3. **El backend se formateó** (sección 4), demostrando con hash que no cambió ni un byte de comportamiento.
+4. **Conexiones y recibidas se acotaron** con paginación y «Ver más»; el índice compuesto quedó desplegado en producción (secciones 10 y 14).
+5. **Repolish de diseño** dentro del carmín/grafito (sección 11): cabecera compartida, chat dentro del sistema, `ResonRadius`, `ResonSpace.screen`, `ResonNotice`, estados del tema y arreglo del modo oscuro en los botones.
+
+Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
+
+### Lo que sigue abierto, por prioridad
+
+**Ahora mismo, antes que nada:** el código de esta entrega está en `main` pero **no desplegado**. Falta `functions`, `firestore:rules`, `storage` y `hosting`; el índice sí está. Hasta que se despliegue, `unblock` no existe en el backend real y la app publicada sigue siendo la anterior. Ver sección 14.
+
+**Corto plazo, barato y verificable aquí:**
+
+- Pasar los **82 `tr(context, 'es', 'en')`** y los 6 pares de `networkError` al ARB. Hoy añadir un tercer idioma obliga a editar Dart.
+- `/cards/:id/share` es la única pantalla sin pruebas de pantalla.
+- Los estados de foco con teclado se definieron en el tema pero no hay prueba que los capture; hay que mirarlos en Chrome.
+- El **cursor real del chat**: sigue creciendo el límite y releyendo lo anterior.
+
+**Requiere decisiones de producto o acceso que no está en el repositorio:** todo lo de las dos listas siguientes.
+
 ### Antes de lanzamiento móvil
 
 - Completar OAuth Google Android/iOS y validar dispositivos reales, cámara/galería, teclado, accesibilidad, tamaños, audio y deep links.
@@ -324,14 +420,16 @@ Los logs y capturas de esta sesión viven en `build/` (ignorados): social-final-
 - Notificaciones push con FCM, permiso contextual, manejo foreground/background, tokens por dispositivo, baja de tokens y preferencias del usuario.
 - Universal Links/App Links para que enlaces abran app instalada conservando fallback web.
 - Privacidad/términos/soporte, eliminación de cuenta y datos, retención de mensajes y archivos, exportación de datos; no están implementados como flujo completo.
-- Proceso de moderación, revisión de reportes, desbloqueo y política frente a abuso. Evaluar App Check y controles adicionales; no afirmar que están habilitados.
+- Proceso de moderación y revisión de reportes: `reports/` se escribe pero **nadie lo lee**; no hay consola ni respuesta automática. El desbloqueo por parte del usuario ya existe (sección 10); lo que falta es la moderación del lado del equipo. Evaluar App Check y controles adicionales; no afirmar que están habilitados.
 - Monitorización, alertas de errores y presupuesto/cuotas Blaze. Límites de instancias no son un límite monetario absoluto.
 
 ### Escalabilidad/mantenimiento
 
-- Paginar conexiones y recibidas; actualmente conexiones se cargan por membresía y ordenan en cliente. Chat aumenta el límite en lugar de usar cursor persistente.
+- Conexiones y recibidas ya están acotadas con paginación y «Ver más» (sección 10). Queda el **cursor del chat**, que todavía crece el límite y reelee lo anterior.
+- `/cards/:id/share` sigue **sin pruebas de pantalla**; `/chat/:id` ya tiene siete.
+- Revisar los estados de foco con teclado en un navegador real: se definieron en el tema pero no hay prueba automática que los capture.
 - Definir migraciones de schemaVersion, limpieza de fotos antiguas sin referencias y ciclo de vida al borrar tarjetas/cuentas.
-- Unificar strings nuevos de network (helper `tr`) en ARB si crece la localización; revisar errores que todavía fuerzan español.
+- Unificar strings de network (helper `tr`) en ARB: siguen **82 `tr(context, 'es', 'en')`** más 6 pares en `networkError` escritos en Dart, frente a 228 claves en ARB. Añadir un tercer idioma hoy obliga a editar Dart, no a traducir. Los errores que forzaban español **ya están corregidos**: todas las pantallas pasan por `networkErrorText(context, error)`, que lee el locale, y `test/network_errors_test.dart` impide que vuelva un indicador de idioma fijo.
 - Mantener o fortalecer cobertura de Storage Emulator, fallos de red, concurrencia de publicación y pruebas de extremo a extremo móviles.
 - Separar configuración staging/producción y CI para pruebas/build/deploy con permisos mínimos. Hoy demo-reson se usa para emulador, no como staging publicado.
 - Quitar override firebase_core_web solamente tras actualizar y probar; revisar dependencias por compatibilidad.
@@ -357,6 +455,6 @@ Prioridad razonable: estabilizar experiencia móvil/seguridad operativa -> notif
 
 Para comenzar otro chat, copiar:
 
-> Estamos trabajando en Reson. Lee MEMORIA.md, README.md y el estado actual de Git antes de cambiar nada. Conserva el diseño carmín/grafito y cartera aceptado. El proyecto Firebase es reson-app y ya está publicado en https://reson-app.web.app. Auth, perfil, tarjetas, QR público, vCard, conexiones y chat están implementados; revisa los pendientes documentados y no asumas que Google móvil o push ya funcionan. Continúa con: [objetivo concreto].
+> Estamos trabajando en Reson. Lee MEMORIA.md, README.md y el estado actual de Git antes de cambiar nada. Conserva el diseño carmín/grafito, la cartera y el sistema de tokens: están aceptados y la migración del cromo está terminada, así que no introduzcas valores sueltos de espaciado, radio ni tamaño de letra fuera de los archivos de arte. El proyecto Firebase es reson-app y está publicado en https://reson-app.web.app, pero comprueba qué se ha desplegado: subir un commit no despliega nada. Auth, perfil, tarjetas, QR público, vCard, conexiones, chat, desbloqueo y reconexión están implementados; revisa los pendientes de la sección 15 y no asumas que Google móvil o push ya funcionan. Continúa con: [objetivo concreto].
 
 Antes de trabajar desde otra PC: `git pull --ff-only` con árbol limpio. Al terminar: revisar diff, probar lo necesario, commit y push. No usar force push ni sobrescribir cambios del usuario para sincronizar. Actualizar esta memoria cuando cambien decisiones, arquitectura, despliegues o pendientes.

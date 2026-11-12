@@ -1,3 +1,4 @@
+import '../../../core/theme/reson_chrome.dart';
 import '../../../core/theme/reson_palette.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -104,22 +105,23 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          padding: const EdgeInsets.symmetric(
+            horizontal: ResonSpace.xl,
+            vertical: ResonSpace.huge,
+          ),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ResonLogo(
-                    dark: Theme.of(context).brightness == Brightness.dark,
-                  ),
+                  const ResonHeader(),
                   const SizedBox(height: ResonSpace.hero),
                   Container(
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.all(ResonSpace.lg),
                     decoration: BoxDecoration(
                       color: ResonPalette.white,
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: BorderRadius.circular(ResonRadius.lg),
                     ),
                     child: const Icon(
                       Icons.mark_email_unread_outlined,
@@ -153,12 +155,12 @@ class _VerificationPageState extends ConsumerState<VerificationPage> {
                   if (_sent) FeedbackMessage(text: s.verificationSent),
                   if (_stillPending)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.only(top: ResonSpace.lg),
                       child: FeedbackMessage(text: s.verifyPending),
                     ),
                   if (_error != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.only(top: ResonSpace.lg),
                       child: FeedbackMessage(
                         text: authErrorMessage(_error!, s),
                         error: true,

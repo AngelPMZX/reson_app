@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../../core/theme/reson_chrome.dart';
+import '../../core/theme/reson_motion.dart';
+import '../../core/theme/reson_skeleton.dart';
 import '../../core/theme/reson_surfaces.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,25 +21,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   final text = TextEditingController();
   bool busy = false;
   String? error, lastBody, lastId;
-  int limit = 50;
-  late final DocumentReference<Map<String, dynamic>> connection;
-  late final Stream<DocumentSnapshot<Map<String, dynamic>>> status;
-  late Stream<QuerySnapshot<Map<String, dynamic>>> messages;
-  @override
-  void initState() {
-    super.initState();
-    connection = FirebaseFirestore.instance.doc(
-      'connections/${widget.connectionId}',
-    );
-    status = connection.snapshots();
-    messages = _messages();
-  }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> _messages() => connection
-      .collection('messages')
-      .orderBy('createdAt', descending: true)
-      .limit(limit)
-      .snapshots();
   @override
   void dispose() {
     text.dispose();
@@ -47,7 +32,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final body = text.text.trim();
     if (body.isEmpty || body.length > 2000 || busy) return;
     if (lastBody != body) {
-      lastId = connection.collection('messages').doc().id;
+      // A stable id per draft, so a retry cannot post the message twice.
+      lastId = FirebaseFirestore.instance
+          .collection('connections/${widget.connectionId}/messages')
+          .doc()
+          .id;
       lastBody = body;
     }
     setState(() {
@@ -67,12 +56,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       }
     } catch (e) {
       if (mounted) {
-        setState(
-          () => error = networkError(
-            e,
-            Localizations.localeOf(context).languageCode == 'es',
-          ),
-        );
+        setState(() => error = networkErrorText(context, e));
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -143,7 +127,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         }
       }
     } catch (e) {
-      if (mounted) setState(() => error = networkError(e, true));
+      if (mounted) setState(() => error = networkErrorText(context, e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -152,289 +136,282 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final uid = ref.watch(authSessionProvider).asData?.value?.uid;
+    // The chat keeps its own scaffold instead of NetworkShell, because its
+    // header and composer must stay put while only the messages scroll. It
+    // borrows the shell's header, width and rhythm so it still reads as the
+    // same app: this was the one screen built from raw values, down to 132
+    // logical pixels of empty AppBar reserving room for the global controls.
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => context.go('/network'),
-          icon: const Icon(Icons.arrow_back),
-        ),
-        title: Text(
-          tr(context, 'Conversación', 'Conversation'),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            enabled: !busy,
-            onSelected: moderate,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'block',
-                child: Text(tr(context, 'Bloquear', 'Block')),
-              ),
-              PopupMenuItem(
-                value: 'report',
-                child: Text(tr(context, 'Reportar', 'Report')),
-              ),
-            ],
-          ),
-          // Reserve space for the app-wide theme and language controls.
-          const SizedBox(width: 132),
-        ],
-      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 760),
-            child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              stream: status,
-              builder: (context, state) {
-                if (state.hasError) {
-                  return Center(child: Text(networkError(state.error!, true)));
-                }
-                if (!state.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final d = state.data!.data();
-                if (d == null) {
-                  return Center(
-                    child: Text(
-                      tr(
-                        context,
-                        'Conversación no disponible',
-                        'Conversation unavailable',
-                      ),
-                    ),
-                  );
-                }
-                final other = (d['members'] as List)
-                    .where((v) => v != uid)
-                    .firstOrNull;
-                final name = (d['names'] as Map)[other] as String? ?? 'Reson';
-                if (d['status'] != 'accepted') {
-                  return Center(
-                    child: Text(
-                      tr(
-                        context,
-                        'La conversación no está habilitada.',
-                        'This conversation is unavailable.',
-                      ),
-                    ),
-                  );
-                }
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            child: Text(name.characters.firstOrNull ?? 'R'),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: ResonSpace.xl),
+              child: Column(
+                children: [
+                  const SizedBox(height: ResonSpace.xl),
+                  ResonHeader(
+                    leading: resonCompact(context)
+                        ? IconButton(
+                            onPressed: () => context.go('/network'),
+                            tooltip: tr(context, 'Mi red', 'My network'),
+                            icon: const Icon(Icons.arrow_back),
+                          )
+                        : TextButton.icon(
+                            onPressed: () => context.go('/network'),
+                            icon: const Icon(Icons.arrow_back),
+                            label: Text(tr(context, 'Mi red', 'My network')),
                           ),
-                          const SizedBox(width: ResonSpace.md),
-                          Expanded(
-                            child: Text(
-                              name,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
+                  ),
+                  const SizedBox(height: ResonSpace.lg),
+                  Expanded(
+                    child: ref
+                        .watch(connectionProvider(widget.connectionId))
+                        .when(
+                          loading: () => const Padding(
+                            padding: EdgeInsets.only(top: ResonSpace.xl),
+                            child: ResonSkeleton(height: 96),
                           ),
-                          TextButton(
-                            onPressed: () => context.go(
-                              '/receive/${(d['cards'] as Map)[other]}',
-                            ),
-                            child: Text(
-                              tr(context, 'Ver tarjeta', 'View card'),
-                            ),
+                          error: (e, _) => ResonNotice(
+                            icon: Icons.cloud_off_outlined,
+                            text: networkErrorText(context, e),
                           ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                        stream: messages,
-                        builder: (context, s) {
-                          if (s.hasError) {
-                            return Center(
-                              child: Text(networkError(s.error!, true)),
-                            );
-                          }
-                          if (!s.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          final docs = s.data!.docs;
-                          if (docs.isEmpty) {
-                            return Center(
-                              child: Text(
-                                tr(
+                          data: (snapshot) {
+                            final d = snapshot.data();
+                            if (d == null || d['status'] != 'accepted') {
+                              return ResonNotice(
+                                icon: Icons.lock_outline,
+                                text: tr(
                                   context,
-                                  'Una buena conversación empieza con un hola.',
-                                  'A good conversation starts with hello.',
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            );
-                          }
-                          return ListView.builder(
-                            reverse: true,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 10,
-                            ),
-                            itemCount: docs.length + 1,
-                            itemBuilder: (context, i) {
-                              if (i == docs.length) {
-                                return docs.length < limit
-                                    ? const SizedBox.shrink()
-                                    : TextButton(
-                                        onPressed: () => setState(() {
-                                          limit += 50;
-                                          messages = _messages();
-                                        }),
-                                        child: Text(
-                                          tr(
-                                            context,
-                                            'Cargar anteriores',
-                                            'Load older messages',
-                                          ),
-                                        ),
-                                      );
-                              }
-                              final m = docs[i].data();
-                              final mine = m['sender'] == uid;
-                              final date = (m['createdAt'] as Timestamp?)
-                                  ?.toDate();
-                              return Align(
-                                alignment: mine
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                child: Container(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 460,
-                                  ),
-                                  margin: const EdgeInsets.only(bottom: 10),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: mine
-                                        ? Theme.of(
-                                            context,
-                                          ).colorScheme.primaryContainer
-                                        : Theme.of(
-                                            context,
-                                          ).colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SelectableText(
-                                        m['text'] as String,
-                                        style: TextStyle(
-                                          color: mine
-                                              ? Theme.of(
-                                                  context,
-                                                ).colorScheme.onPrimaryContainer
-                                              : Theme.of(
-                                                  context,
-                                                ).colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      if (date != null)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 6,
-                                          ),
-                                          child: Text(
-                                            '${date.day}/${date.month} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelSmall
-                                                ?.copyWith(
-                                                  color: mine
-                                                      ? Theme.of(context)
-                                                            .colorScheme
-                                                            .onPrimaryContainer
-                                                      : Theme.of(context)
-                                                            .colorScheme
-                                                            .onSurfaceVariant,
-                                                ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                  'La conversación no está habilitada.',
+                                  'This conversation is unavailable.',
                                 ),
                               );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    if (error != null)
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Text(
-                          error!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                            }
+                            return _conversation(context, d, uid);
+                          },
                         ),
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: text,
-                              enabled: !busy,
-                              minLines: 1,
-                              maxLines: 4,
-                              maxLength: 2000,
-                              decoration: InputDecoration(
-                                hintText: tr(
-                                  context,
-                                  'Escribe un mensaje…',
-                                  'Write a message…',
-                                ),
-                                counterText: '',
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: ResonSpace.md),
-                          IconButton.filled(
-                            tooltip: tr(
-                              context,
-                              'Enviar mensaje',
-                              'Send message',
-                            ),
-                            onPressed: busy ? null : send,
-                            icon: busy
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.arrow_upward),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget _conversation(
+    BuildContext context,
+    Map<String, dynamic> d,
+    String? uid,
+  ) {
+    final other = (d['members'] as List).where((v) => v != uid).firstOrNull;
+    final name = (d['names'] as Map)[other] as String? ?? 'Reson';
+    return Column(
+      children: [
+        _header(context, d, name, other, compact: resonCompact(context)),
+        const SizedBox(height: ResonSpace.lg),
+        Expanded(child: _messageList(context, uid)),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: ResonSpace.sm),
+            child: Text(
+              error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        _composer(context),
+      ],
+    );
+  }
+
+  /// Who you are talking to, and what you can do about it.
+  ///
+  /// Blocking and reporting used to hide behind an overflow menu in the app
+  /// bar; they belong beside the person they act on.
+  Widget _header(
+    BuildContext context,
+    Map<String, dynamic> d,
+    String name,
+    Object? other, {
+    required bool compact,
+  }) => ResonPanel(
+    padding: const EdgeInsets.symmetric(
+      horizontal: ResonSpace.lg,
+      vertical: ResonSpace.md,
+    ),
+    child: Row(
+      children: [
+        CircleAvatar(child: Text(name.characters.firstOrNull ?? 'R')),
+        const SizedBox(width: ResonSpace.md),
+        Expanded(
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
+        // On a narrow phone the card link folds into the menu rather than
+        // squeezing the name it sits beside.
+        if (!compact)
+          TextButton(
+            onPressed: () =>
+                context.go('/receive/${(d['cards'] as Map)[other]}'),
+            child: Text(tr(context, 'Ver tarjeta', 'View card')),
+          ),
+        PopupMenuButton<String>(
+          enabled: !busy,
+          tooltip: tr(context, 'Más opciones', 'More options'),
+          onSelected: (value) => value == 'card'
+              ? context.go('/receive/${(d['cards'] as Map)[other]}')
+              : moderate(value),
+          itemBuilder: (context) => [
+            if (compact)
+              PopupMenuItem(
+                value: 'card',
+                child: Text(tr(context, 'Ver tarjeta', 'View card')),
+              ),
+            PopupMenuItem(
+              value: 'block',
+              child: Text(tr(context, 'Bloquear', 'Block')),
+            ),
+            PopupMenuItem(
+              value: 'report',
+              child: Text(tr(context, 'Reportar', 'Report')),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+
+  Widget _messageList(BuildContext context, String? uid) {
+    final id = widget.connectionId;
+    return ref
+        .watch(messagesProvider(id))
+        .when(
+          loading: () => const ResonSkeleton(height: 72),
+          error: (e, _) => ResonNotice(
+            icon: Icons.cloud_off_outlined,
+            text: networkErrorText(context, e),
+          ),
+          data: (docs) {
+            if (docs.isEmpty) {
+              return ResonNotice(
+                icon: Icons.waving_hand_outlined,
+                text: tr(
+                  context,
+                  'Una buena conversación empieza con un hola.',
+                  'A good conversation starts with hello.',
+                ),
+              );
+            }
+            return ListView.builder(
+              reverse: true,
+              padding: const EdgeInsets.symmetric(vertical: ResonSpace.sm),
+              itemCount: docs.length + 1,
+              itemBuilder: (context, i) => i == docs.length
+                  ? NetworkMore(
+                      visible:
+                          docs.length >= ref.watch(messagesPageProvider(id)),
+                      onPressed: () =>
+                          ref.read(messagesPageProvider(id).notifier).grow(),
+                    )
+                  : _bubble(context, docs[i].data(), uid),
+            );
+          },
+        );
+  }
+
+  Widget _bubble(BuildContext context, Map<String, dynamic> m, String? uid) {
+    final scheme = Theme.of(context).colorScheme;
+    final mine = m['sender'] == uid;
+    final date = (m['createdAt'] as Timestamp?)?.toDate();
+    final ink = mine ? scheme.onPrimaryContainer : scheme.onSurface;
+    return Align(
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 460),
+        margin: const EdgeInsets.only(bottom: ResonSpace.sm),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ResonSpace.lg,
+          vertical: ResonSpace.md,
+        ),
+        decoration: BoxDecoration(
+          // surfaceContainerHighest is the heavy silver; beside the warm
+          // blush of an outgoing bubble it reads cold. One step down is mist.
+          color: mine ? scheme.primaryContainer : scheme.surfaceContainerHigh,
+          // Square off the corner nearest the sender, so a bubble points at
+          // whoever wrote it instead of floating between the two columns.
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(ResonRadius.lg),
+            topRight: const Radius.circular(ResonRadius.lg),
+            bottomLeft: Radius.circular(mine ? ResonRadius.lg : ResonRadius.sm),
+            bottomRight: Radius.circular(
+              mine ? ResonRadius.sm : ResonRadius.lg,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(m['text'] as String, style: TextStyle(color: ink)),
+            if (date != null)
+              Padding(
+                padding: const EdgeInsets.only(top: ResonSpace.xs),
+                child: Text(
+                  '${date.day}/${date.month} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                  // The hour is a footnote, not a second sentence: it keeps
+                  // the bubble's ink but steps well back from the message.
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: (mine ? ink : scheme.onSurfaceVariant).withValues(
+                      alpha: .62,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _composer(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: ResonSpace.md),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: TextField(
+            controller: text,
+            enabled: !busy,
+            minLines: 1,
+            maxLines: 4,
+            maxLength: 2000,
+            decoration: InputDecoration(
+              hintText: tr(context, 'Escribe un mensaje…', 'Write a message…'),
+              counterText: '',
+            ),
+          ),
+        ),
+        const SizedBox(width: ResonSpace.md),
+        IconButton.filled(
+          tooltip: tr(context, 'Enviar mensaje', 'Send message'),
+          onPressed: busy ? null : send,
+          icon: busy
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.arrow_upward),
+        ),
+      ],
+    ),
+  );
 }

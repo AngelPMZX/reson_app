@@ -5,40 +5,6 @@ import '../../../core/theme/reson_surfaces.dart';
 import '../../../core/theme/reson_theme.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
-class ResonLogo extends StatelessWidget {
-  const ResonLogo({super.key, this.dark = true});
-  final bool dark;
-  @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: ResonTheme.brand,
-          borderRadius: BorderRadius.circular(11),
-        ),
-        child: const Icon(
-          Icons.graphic_eq_rounded,
-          color: Colors.white,
-          size: 25,
-        ),
-      ),
-      const SizedBox(width: ResonSpace.md),
-      Text(
-        'reson',
-        style: TextStyle(
-          fontSize: 28,
-          letterSpacing: -1.2,
-          fontWeight: FontWeight.w700,
-          color: dark ? Colors.white : ResonTheme.ink,
-        ),
-      ),
-    ],
-  );
-}
-
 class BrandBackground extends StatelessWidget {
   const BrandBackground({super.key, required this.child});
   final Widget child;

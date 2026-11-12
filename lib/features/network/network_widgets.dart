@@ -1,11 +1,19 @@
+import '../../core/theme/reson_chrome.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/reson_motion.dart';
 import '../../core/theme/reson_surfaces.dart';
-import '../auth/presentation/brand_widgets.dart';
+import 'network_service.dart';
 
 String tr(BuildContext context, String es, String en) =>
     Localizations.localeOf(context).languageCode == 'es' ? es : en;
+
+/// Resolves a backend failure into the reader's language.
+///
+/// Always prefer this over calling [networkError] with a literal flag: passing
+/// a hardcoded `true` pinned eight call sites to Spanish for every reader.
+String networkErrorText(BuildContext context, Object error) =>
+    networkError(error, Localizations.localeOf(context).languageCode == 'es');
 
 class NetworkShell extends StatelessWidget {
   const NetworkShell({
@@ -21,16 +29,14 @@ class NetworkShell extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(22, 24, 22, 40),
+        padding: ResonSpace.screen,
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 720),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ResonLogo(
-                  dark: Theme.of(context).brightness == Brightness.dark,
-                ),
+                const ResonHeader(),
                 const SizedBox(height: ResonSpace.xxl),
                 TextButton.icon(
                   onPressed: () => context.go('/home'),
@@ -46,7 +52,10 @@ class NetworkShell extends StatelessWidget {
                 ),
                 if (subtitle != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 20),
+                    padding: const EdgeInsets.only(
+                      top: ResonSpace.md,
+                      bottom: 20,
+                    ),
                     child: Text(
                       subtitle!,
                       style: TextStyle(
@@ -64,6 +73,32 @@ class NetworkShell extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Offers the next page of a bounded list.
+///
+/// The network lists ask Firestore for one page at a time, so a page that comes
+/// back full means there may be more behind it. Without this the cap would hide
+/// older connections instead of merely deferring them.
+class NetworkMore extends StatelessWidget {
+  const NetworkMore({
+    super.key,
+    required this.visible,
+    required this.onPressed,
+  });
+  final bool visible;
+  final VoidCallback onPressed;
+  @override
+  Widget build(BuildContext context) => visible
+      ? Padding(
+          padding: const EdgeInsets.only(top: ResonSpace.sm),
+          child: TextButton.icon(
+            onPressed: onPressed,
+            icon: const Icon(Icons.expand_more),
+            label: Text(tr(context, 'Ver más', 'Load more')),
+          ),
+        )
+      : const SizedBox.shrink();
 }
 
 class NetworkPanel extends StatelessWidget {

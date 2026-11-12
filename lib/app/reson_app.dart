@@ -16,16 +16,6 @@ import '../features/auth/presentation/intro_page.dart';
 import '../features/auth/presentation/verification_page.dart';
 import '../l10n/generated/app_localizations.dart';
 
-class LocaleController extends Notifier<Locale?> {
-  @override
-  Locale? build() => null;
-  void set(Locale locale) => state = locale;
-}
-
-final localeProvider = NotifierProvider<LocaleController, Locale?>(
-  LocaleController.new,
-);
-
 class _RouterRefresh extends ChangeNotifier {
   void refresh() => notifyListeners();
 }
@@ -145,77 +135,6 @@ class ResonApp extends ConsumerWidget {
       ),
       themeMode: ref.watch(appearanceProvider),
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => Stack(
-        children: [
-          child ?? const SizedBox.shrink(),
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 16,
-            right: 76,
-            child: Material(
-              color: Colors.transparent,
-              child: Semantics(
-                label: Localizations.localeOf(context).languageCode == 'es'
-                    ? 'Cambiar tema'
-                    : 'Switch theme',
-                child: IconButton(
-                  key: const Key('themeToggle'),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  ),
-                  onPressed: () =>
-                      ref.read(appearanceProvider.notifier).toggle(),
-                  // Reads the brightness actually on screen: under
-                  // ThemeMode.system the mode alone does not say which.
-                  icon: Icon(
-                    Theme.of(context).brightness == Brightness.dark
-                        ? Icons.light_mode_outlined
-                        : Icons.dark_mode_outlined,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 16,
-            right: 18,
-            child: Semantics(
-              label: AppLocalizations.of(context)!.language,
-              child: Material(
-                color: Colors.transparent,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    minimumSize: const Size(48, 40),
-                  ),
-                  onPressed: () {
-                    final current = Localizations.localeOf(
-                      context,
-                    ).languageCode;
-                    ref
-                        .read(localeProvider.notifier)
-                        .set(Locale(current == 'es' ? 'en' : 'es'));
-                  },
-                  child: Text(
-                    Localizations.localeOf(context).languageCode == 'es'
-                        ? 'EN'
-                        : 'ES',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

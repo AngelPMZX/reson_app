@@ -1,12 +1,38 @@
 'use strict';
-const {escapeHtml:e}=require('./domain');
-module.exports=function render(p,id,origin,english=false){
- const t=(es,en)=>english?en:es;const base=origin+'/c/'+id;const phone=p.phone.replace(/[^+0-9]/g,'');
- const actions=[[base+'/contact.vcf',t('Guardar contacto','Save contact')],p.email&&['mailto:'+encodeURIComponent(p.email),t('Enviar correo','Email')],phone&&['tel:'+phone,t('Llamar','Call')],p.whatsapp&&phone&&['https://wa.me/'+phone.replace(/\D/g,''),'WhatsApp'],p.website&&[p.website,t('Ver sitio web','Visit website')],[origin+'/#/receive/'+id,t('Guardar en Reson · Conectar','Save in Reson · Connect')]].filter(Boolean);
- const pro=p.professional;let extra='';for(const [key,label] of [['sector',t('Sector','Industry')],['specialty',t('Especialidades','Specialties')],['workMode',t('Modalidad','Work mode')],['location',t('Ubicación','Location')],['skills',t('Habilidades','Skills')]])if(pro[key])extra+=`<section><h2>${label}</h2><p>${e(pro[key])}</p></section>`;
- for(const[key,label]of [['experience',t('Experiencia','Experience')],['education',t('Educación','Education')],['projects',t('Proyectos','Projects')],['certifications',t('Certificaciones','Certifications')]])if(pro[key]?.length)extra+=`<section><h2>${label}</h2>${pro[key].map(v=>`<article><h3>${e(v.title)}</h3><p>${e(v.organization)}</p><small>${e(v.period)}</small><p>${e(v.details)}</p></article>`).join('')}</section>`;
- if(pro.linkedin)extra+=`<a class="button secondary" href="${e(pro.linkedin)}" rel="noopener noreferrer">LinkedIn ↗</a>`;
- return `<!doctype html><html lang="${english?'en':'es'}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${e(p.name)} · Reson</title><meta name="description" content="${e(p.role||p.label)}"><style>
- :root{color-scheme:light dark;--accent:#c8102e}*{box-sizing:border-box}body{margin:0;background:#101012;color:#faf9f7;font:16px/1.55 system-ui,sans-serif}main{max-width:580px;margin:auto;padding:28px 20px 60px}.brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.brand strong{font-size:25px;letter-spacing:-1px}.brand a{color:#c6c1c4}header{border:1px solid #454045;border-radius:28px;overflow:hidden;background:#1d1d20;animation:enter .6s ease-out}.ribbon{background:linear-gradient(135deg,${/^#[0-9A-F]{6}$/.test(p.color)?p.color:'#650D1B'},#300b12);padding:22px;font-size:13px;letter-spacing:1px}.identity{padding:26px}img,.initial{width:94px;height:94px;border-radius:24px;object-fit:cover;border:3px solid #fff}.initial{display:grid;place-items:center;background:#650d1b;font-size:32px}h1{font-size:34px;line-height:1.15;letter-spacing:-1px;margin:20px 0 10px}h2{font-size:18px}h3{margin-bottom:0}p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;color:#c6c1c4}nav{display:grid;gap:10px;margin:22px 0}.button{display:block;text-align:center;padding:15px 18px;border-radius:16px;color:white;background:#c8102e;text-decoration:none;font-weight:650;transition:transform .18s}.button:hover{transform:translateY(-2px)}.secondary{background:#29292d}section{padding:20px 0;border-bottom:1px solid #454045}article{border-left:2px solid #c8102e;padding-left:16px;margin:20px 0}small,footer{color:#c6c1c4}footer{margin-top:30px;font-size:12px;text-align:center}@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}@media(prefers-color-scheme:light){body{background:#faf9f7;color:#101012}header{background:white;border-color:#dad7d3}p,small,footer{color:#6c686b}.ribbon{color:white}.secondary{background:#29292d}}
- </style><main><div class="brand"><strong>reson</strong><a href="${base}?lang=${english?'es':'en'}">${english?'Español':'English'}</a></div><header><div class="ribbon">${e(p.label)}</div><div class="identity">${p.photo?`<img src="${base}/photo" alt="${e(p.name)}">`:`<div class="initial">${e([...p.name][0]||'R')}</div>`}<h1>${e(p.name)}</h1><p>${e(p.role)}</p><p>${e(p.company)}</p><p>${e(p.bio)}</p></div></header><nav>${actions.map(([url,label],i)=>`<a class="button ${i?'secondary':''}" href="${e(url)}" rel="noopener noreferrer">${label}</a>`).join('')}</nav>${extra}<footer>${t('Tarjeta compartida por su titular. Guardar no envía ningún mensaje.','Shared by its owner. Saving does not send a message.')}<br>RESON · THEDARKINGSTUDIOS</footer></main></html>`;
+const { escapeHtml: e } = require('./domain');
+module.exports = function render(p, id, origin, english = false) {
+  const t = (es, en) => (english ? en : es);
+  const base = origin + '/c/' + id;
+  const phone = p.phone.replace(/[^+0-9]/g, '');
+  const actions = [
+    [base + '/contact.vcf', t('Guardar contacto', 'Save contact')],
+    p.email && ['mailto:' + encodeURIComponent(p.email), t('Enviar correo', 'Email')],
+    phone && ['tel:' + phone, t('Llamar', 'Call')],
+    p.whatsapp && phone && ['https://wa.me/' + phone.replace(/\D/g, ''), 'WhatsApp'],
+    p.website && [p.website, t('Ver sitio web', 'Visit website')],
+    [origin + '/#/receive/' + id, t('Guardar en Reson · Conectar', 'Save in Reson · Connect')],
+  ].filter(Boolean);
+  const pro = p.professional;
+  let extra = '';
+  for (const [key, label] of [
+    ['sector', t('Sector', 'Industry')],
+    ['specialty', t('Especialidades', 'Specialties')],
+    ['workMode', t('Modalidad', 'Work mode')],
+    ['location', t('Ubicación', 'Location')],
+    ['skills', t('Habilidades', 'Skills')],
+  ])
+    if (pro[key]) extra += `<section><h2>${label}</h2><p>${e(pro[key])}</p></section>`;
+  for (const [key, label] of [
+    ['experience', t('Experiencia', 'Experience')],
+    ['education', t('Educación', 'Education')],
+    ['projects', t('Proyectos', 'Projects')],
+    ['certifications', t('Certificaciones', 'Certifications')],
+  ])
+    if (pro[key]?.length)
+      extra += `<section><h2>${label}</h2>${pro[key].map(v => `<article><h3>${e(v.title)}</h3><p>${e(v.organization)}</p><small>${e(v.period)}</small><p>${e(v.details)}</p></article>`).join('')}</section>`;
+  if (pro.linkedin)
+    extra += `<a class="button secondary" href="${e(pro.linkedin)}" rel="noopener noreferrer">LinkedIn ↗</a>`;
+  return `<!doctype html><html lang="${english ? 'en' : 'es'}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${e(p.name)} · Reson</title><meta name="description" content="${e(p.role || p.label)}"><style>
+ :root{color-scheme:light dark;--accent:#c8102e}*{box-sizing:border-box}body{margin:0;background:#101012;color:#faf9f7;font:16px/1.55 system-ui,sans-serif}main{max-width:580px;margin:auto;padding:28px 20px 60px}.brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.brand strong{font-size:25px;letter-spacing:-1px}.brand a{color:#c6c1c4}header{border:1px solid #454045;border-radius:28px;overflow:hidden;background:#1d1d20;animation:enter .6s ease-out}.ribbon{background:linear-gradient(135deg,${/^#[0-9A-F]{6}$/.test(p.color) ? p.color : '#650D1B'},#300b12);padding:22px;font-size:13px;letter-spacing:1px}.identity{padding:26px}img,.initial{width:94px;height:94px;border-radius:24px;object-fit:cover;border:3px solid #fff}.initial{display:grid;place-items:center;background:#650d1b;font-size:32px}h1{font-size:34px;line-height:1.15;letter-spacing:-1px;margin:20px 0 10px}h2{font-size:18px}h3{margin-bottom:0}p{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;color:#c6c1c4}nav{display:grid;gap:10px;margin:22px 0}.button{display:block;text-align:center;padding:15px 18px;border-radius:16px;color:white;background:#c8102e;text-decoration:none;font-weight:650;transition:transform .18s}.button:hover{transform:translateY(-2px)}.secondary{background:#29292d}section{padding:20px 0;border-bottom:1px solid #454045}article{border-left:2px solid #c8102e;padding-left:16px;margin:20px 0}small,footer{color:#c6c1c4}footer{margin-top:30px;font-size:12px;text-align:center}@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}@media(prefers-color-scheme:light){body{background:#faf9f7;color:#101012}header{background:white;border-color:#dad7d3}p,small,footer{color:#6c686b}.ribbon{color:white}.secondary{background:#29292d}}
+ </style><main><div class="brand"><strong>reson</strong><a href="${base}?lang=${english ? 'es' : 'en'}">${english ? 'Español' : 'English'}</a></div><header><div class="ribbon">${e(p.label)}</div><div class="identity">${p.photo ? `<img src="${base}/photo" alt="${e(p.name)}">` : `<div class="initial">${e([...p.name][0] || 'R')}</div>`}<h1>${e(p.name)}</h1><p>${e(p.role)}</p><p>${e(p.company)}</p><p>${e(p.bio)}</p></div></header><nav>${actions.map(([url, label], i) => `<a class="button ${i ? 'secondary' : ''}" href="${e(url)}" rel="noopener noreferrer">${label}</a>`).join('')}</nav>${extra}<footer>${t('Tarjeta compartida por su titular. Guardar no envía ningún mensaje.', 'Shared by its owner. Saving does not send a message.')}<br>RESON · THEDARKINGSTUDIOS</footer></main></html>`;
 };
