@@ -579,6 +579,9 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                       ),
                     ),
                     const SizedBox(height: ResonSpace.lg),
+                    // Signing out moved to Settings: it is a preference about
+                    // the app, not a field of your identity, and here it was
+                    // tangled with the unsaved-changes guard of this form.
                     TextButton.icon(
                       onPressed: _busy
                           ? null
@@ -587,23 +590,10 @@ class _ProfileFormState extends ConsumerState<_ProfileForm> {
                                 await _back();
                                 return;
                               }
-                              setState(() => _busy = true);
-                              try {
-                                await (await ref.read(
-                                  authRepositoryProvider.future,
-                                ))?.signOut();
-                              } catch (_) {
-                                if (mounted) {
-                                  setState(() {
-                                    _busy = false;
-                                    _failed = true;
-                                    _message = s.cardSaveError;
-                                  });
-                                }
-                              }
+                              if (mounted) context.go('/settings');
                             },
-                      icon: const Icon(Icons.logout),
-                      label: Text(s.logout),
+                      icon: const Icon(Icons.tune),
+                      label: Text(s.openSettings),
                     ),
                   ],
                 ),

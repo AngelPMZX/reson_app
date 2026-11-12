@@ -272,7 +272,9 @@ void main() {
       repo.errorCode = null;
       await submit(tester);
       expect(find.text('Mis tarjetas'), findsOneWidget);
-      container.read(routerProvider).go('/profile');
+      // Signing out lives in Settings now: it is a preference about the app,
+      // not a field of the profile form it used to hang off.
+      container.read(routerProvider).go('/settings');
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Cerrar sesión'));
       await tester.tap(find.text('Cerrar sesión'));

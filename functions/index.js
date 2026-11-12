@@ -4,7 +4,14 @@ const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestor
 const { getStorage } = require('firebase-admin/storage');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { randomBytes } = require('node:crypto');
-const { snapshot, connectionId, vcard, requestOutcome, respondOutcome } = require('./domain');
+const {
+  snapshot,
+  connectionId,
+  vcard,
+  requestOutcome,
+  respondOutcome,
+  preview,
+} = require('./domain');
 const render = require('./render');
 initializeApp({ storageBucket: 'reson-app.firebasestorage.app' });
 const db = getFirestore(),
@@ -265,7 +272,25 @@ async function social(uid, data) {
       }
       if (Date.now() - d.lastMessageAt.toMillis() < 700) fail('resource-exhausted', 'Please wait');
       t.create(message, { sender: uid, text, createdAt: now() });
-      t.update(ref, { lastMessageAt: now(), updatedAt: now() });
+      // The network list reads this instead of opening every conversation to
+      // find out whether anything was said. Without it a thread with fifty
+      // messages looks exactly like an empty one.
+      t.update(ref, {
+        lastMessageAt: now(),
+        updatedAt: now(),
+        lastMessage: { text: preview(text), sender: uid },
+      });
+    });
+    return { ok: true };
+  }
+  if (action === 'markRead') {
+    const ref = db.doc('connections/' + id(data.connectionId));
+    await db.runTransaction(async t => {
+      const d = (await t.get(ref)).data();
+      if (!d?.members.includes(uid)) fail('permission-denied', 'Not a member');
+      // Only the reader's own marker moves, and `updatedAt` stays put so
+      // reading a thread does not reorder somebody else's list.
+      t.update(ref, { [`reads.${uid}`]: now() });
     });
     return { ok: true };
   }

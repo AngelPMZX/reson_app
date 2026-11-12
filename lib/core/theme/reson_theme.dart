@@ -16,10 +16,21 @@ class Appearance extends Notifier<ThemeMode> {
     Future<void>(() async {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final stored = prefs.getBool('darkMode');
-        if (ref.mounted && !_changed && stored != null) {
-          state = stored ? ThemeMode.dark : ThemeMode.light;
-        }
+        // `themeMode` can also say 'system', which the old boolean could not
+        // express: once you had tapped the toggle there was no way back to
+        // following the device. The boolean is still read for accounts that
+        // saved one before.
+        final mode = switch (prefs.getString('themeMode')) {
+          'light' => ThemeMode.light,
+          'dark' => ThemeMode.dark,
+          'system' => ThemeMode.system,
+          _ => switch (prefs.getBool('darkMode')) {
+            true => ThemeMode.dark,
+            false => ThemeMode.light,
+            null => null,
+          },
+        };
+        if (ref.mounted && !_changed && mode != null) state = mode;
       } catch (_) {
         /* Device preferences are optional. */
       }
@@ -31,22 +42,29 @@ class Appearance extends Notifier<ThemeMode> {
   bool get _deviceIsDark =>
       PlatformDispatcher.instance.platformBrightness == Brightness.dark;
 
+  Future<void> set(ThemeMode mode) async {
+    _changed = true;
+    state = mode;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('themeMode', mode.name);
+      if (mode == ThemeMode.system) {
+        await prefs.remove('darkMode');
+      } else {
+        await prefs.setBool('darkMode', mode == ThemeMode.dark);
+      }
+    } catch (_) {}
+  }
+
   /// Switches away from whatever is on screen right now, which is not the same
   /// as negating [state] while that state is [ThemeMode.system].
   Future<void> toggle() async {
-    _changed = true;
     final showingDark = switch (state) {
       ThemeMode.dark => true,
       ThemeMode.light => false,
       ThemeMode.system => _deviceIsDark,
     };
-    state = showingDark ? ThemeMode.light : ThemeMode.dark;
-    try {
-      await (await SharedPreferences.getInstance()).setBool(
-        'darkMode',
-        state == ThemeMode.dark,
-      );
-    } catch (_) {}
+    await set(showingDark ? ThemeMode.light : ThemeMode.dark);
   }
 }
 
@@ -60,9 +78,46 @@ final appearanceProvider = NotifierProvider<Appearance, ThemeMode>(
 /// choices driven by the same header control; keeping it here lets that header
 /// live in core instead of reaching back into the app layer.
 class LocaleController extends Notifier<Locale?> {
+  bool _changed = false;
+
   @override
-  Locale? build() => null;
-  void set(Locale locale) => state = locale;
+  Locale? build() {
+    // The choice used to live only in memory, so the app forgot it on every
+    // restart and silently went back to the device language.
+    Future<void>(() async {
+      try {
+        final stored = (await SharedPreferences.getInstance()).getString(
+          'locale',
+        );
+        if (ref.mounted && !_changed && stored != null) {
+          state = Locale(stored);
+        }
+      } catch (_) {
+        /* Device preferences are optional. */
+      }
+    });
+    return null;
+  }
+
+  Future<void> set(Locale locale) async {
+    _changed = true;
+    state = locale;
+    try {
+      await (await SharedPreferences.getInstance()).setString(
+        'locale',
+        locale.languageCode,
+      );
+    } catch (_) {}
+  }
+
+  /// Goes back to whatever language the device is in.
+  Future<void> follow() async {
+    _changed = true;
+    state = null;
+    try {
+      await (await SharedPreferences.getInstance()).remove('locale');
+    } catch (_) {}
+  }
 }
 
 final localeProvider = NotifierProvider<LocaleController, Locale?>(

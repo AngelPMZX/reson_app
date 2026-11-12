@@ -50,6 +50,18 @@ test('publish → save → request → accept → chat → block → revoke', { 
   await call('alice', 'message', { connectionId: request.id, messageId: 'first', text: 'hello' });
   await call('alice', 'message', { connectionId: request.id, messageId: 'first', text: 'hello' });
   assert.equal((await db.collection('connections/' + request.id + '/messages').get()).size, 1);
+  // The list reads the trace of the last message instead of opening the thread.
+  const afterFirst = (await db.doc('connections/' + request.id).get()).data();
+  assert.equal(afterFirst.lastMessage.text, 'hello');
+  assert.equal(afterFirst.lastMessage.sender, 'alice');
+  // Bob has not read it, so his marker is missing and the row counts as unread.
+  assert.ok(!afterFirst.reads?.bob);
+  await call('bob', 'markRead', { connectionId: request.id });
+  const afterRead = (await db.doc('connections/' + request.id).get()).data();
+  assert.ok(afterRead.reads.bob.toMillis() >= afterRead.lastMessageAt.toMillis());
+  // Reading must not reorder the other member's list.
+  assert.equal(afterRead.updatedAt.toMillis(), afterFirst.updatedAt.toMillis());
+  await assert.rejects(() => call('eve', 'markRead', { connectionId: request.id }));
   await assert.rejects(() =>
     call('eve', 'message', { connectionId: request.id, messageId: 'evil', text: 'hello' }),
   );

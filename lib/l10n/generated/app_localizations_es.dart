@@ -745,4 +745,75 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addCareerItem => 'Añadir entrada';
+
+  @override
+  String get settings => 'Ajustes';
+
+  @override
+  String get settingsSubtitle =>
+      'Cómo se ve y suena Reson en este dispositivo.';
+
+  @override
+  String get settingsAppearance => 'Apariencia';
+
+  @override
+  String get settingsAppearanceNote =>
+      'Elige un lado o deja que Reson siga a tu dispositivo.';
+
+  @override
+  String get settingsLanguage => 'Idioma';
+
+  @override
+  String get settingsLanguageNote =>
+      'Tu tarjeta pública se muestra en el idioma de quien la abre.';
+
+  @override
+  String get settingsFollowSystem => 'Sistema';
+
+  @override
+  String get settingsLight => 'Claro';
+
+  @override
+  String get settingsDark => 'Oscuro';
+
+  @override
+  String get settingsSound => 'Sonido';
+
+  @override
+  String get settingsAccount => 'Cuenta';
+
+  @override
+  String get openSettings => 'Ajustes';
+
+  @override
+  String get networkRequests => 'Solicitudes';
+
+  @override
+  String get networkConversations => 'Conversaciones';
+
+  @override
+  String get networkPaused => 'En pausa';
+
+  @override
+  String get networkWaiting => 'Esperando respuesta';
+
+  @override
+  String get networkNoConversations =>
+      'Cuando aceptes una conexión, la conversación aparecerá aquí.';
+
+  @override
+  String get networkNoMessages => 'Sin mensajes todavía';
+
+  @override
+  String get networkYouPrefix => 'Tú: ';
+
+  @override
+  String get timeNow => 'ahora';
+
+  @override
+  String get connectionSound => 'Sonido al aceptar una conexión';
+
+  @override
+  String get connectionSoundNote =>
+      'Tono suave de Reson. Puedes desactivarlo cuando quieras.';
 }

@@ -17,7 +17,6 @@ La última versión fue aceptada visualmente por el usuario. El último pedido e
 - Rama actual: `main`.
 - Último commit de esta entrega: `4945c25` (`Let a refusal be undone, and settle the chrome into the system`), ya en `origin/main`. La versión vieja se sustituyó hace tiempo en `75b85ee`; no hace falta borrar ni forzar historia.
 - Carpeta en esta PC: `C:\Proyectos\reson_app`.
-eson_app`.
 - Windows, PowerShell, VS Code con Flutter/Dart.
 - Flutter local: `C:\flutter-sdk\flutter`; versión usada **3.41.6**, Dart **3.11.4**.
 - Desarrollo web: **http://127.0.0.1:5211**. Un servidor local puede no seguir ejecutándose después de cerrar la sesión: comprobarlo, no asumirlo.
@@ -87,8 +86,9 @@ lib/
       network_widgets.dart          Shell y paneles compartidos
       share_card_page.dart          Selección de campos, publicar, QR, despublicar
       receive_card_page.dart        Recibir, guardar, solicitar conexión
-      network_page.dart             Mi red, solicitudes, tarjetas guardadas, sonido
+      network_page.dart             Solicitudes, conversaciones, guardadas, en pausa
       chat_page.dart                Conversación, paginación, bloquear, reportar
+    settings/settings_page.dart     Apariencia, idioma, sonido y cerrar sesión
   l10n/                             ARB ES/EN y código generado
 functions/
   index.js                          Tres Cloud Functions y validaciones de acciones
@@ -138,11 +138,11 @@ Intro antes del login, registro email/contraseña, recuperación de contraseña 
 
 Firebase **sí crea el usuario de Authentication antes de verificar el correo**. La solución aplicada no promete lo contrario: bloquea acceso a funciones privadas con router, repositorios y reglas hasta `emailVerified` y claim `email_verified`. Verificación tiene envío, reenvío con espera, recarga del usuario y renovación de token. Un correo ya verificado no requiere otra verificación en cada login.
 
-Rutas: `/`, `/login`, `/register`, `/reset-password`, `/session`, `/verify-email`, `/home`, `/profile`, `/cards/new`, `/cards/:id/edit`, `/cards/:id/share`, `/network`, `/receive/:id`, `/chat/:id`.
+Rutas: `/`, `/login`, `/register`, `/reset-password`, `/session`, `/verify-email`, `/home`, `/profile`, `/settings`, `/cards/new`, `/cards/:id/edit`, `/cards/:id/share`, `/network`, `/receive/:id`, `/chat/:id`.
 
 Al entrar por `/receive/:id` sin sesión se guarda el destino en memoria del router y se retoma después de login/verificación. El destino pendiente no es un sistema de deep links persistente entre cierres completos. Se quitaron redirecciones imperativas a home tras email login/registro para no perderlo.
 
-Cerrar sesión está en opciones del perfil, no como acción principal del inicio.
+Cerrar sesión vive en **`/settings`** desde el 11/11/2026, no en el perfil ni como acción principal del inicio. En el perfil quedó un enlace a Ajustes: allí estaba enredado con la guardia de cambios sin guardar del formulario.
 
 Google Android/iOS todavía necesita completar OAuth y pruebas reales: SHA-1/SHA-256, archivos Firebase renovados, client IDs y URL scheme iOS. `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_IOS_CLIENT_ID`, `GOOGLE_IOS_READY=true` son dart-defines; no habilitar la guardia iOS antes de configurar REVERSED_CLIENT_ID en Info.plist. No se han validado builds nativos ni se debe asumir que Google móvil funciona por funcionar en web.
 
@@ -169,7 +169,7 @@ Información profesional: sector, especialidad, modalidad, ubicación, LinkedIn,
 | `users/{uid}/received/{publicId}` | Tarjetas guardadas; propietario lee, servidor escribe |
 | `users/{uid}/blocks/{otherUid}` | Bloqueos; servidor administra |
 | `publicCards/{publicId}` | Instantánea publicada y metadatos internos; sin acceso directo del cliente |
-| `connections/{connectionId}` | Dos miembros, requester/recipient, estado, nombres, tarjetas, timestamps |
+| `connections/{connectionId}` | Dos miembros, requester/recipient, estado, nombres, tarjetas, timestamps, `respondedAt`, `lastMessage {text, sender}` y `reads {uid: timestamp}` |
 | `connections/{connectionId}/messages/{messageId}` | sender, text, createdAt; lectura solo miembros aceptados, escritura servidor |
 | `reports/{connectionId_uid}` | Reportes para administración; no lectura pública |
 | `socialLimits/{uid}` | Límite de frecuencia backend |
@@ -219,6 +219,23 @@ Bloquear detiene mensajes y nuevas solicitudes. Reportar registra motivo para re
 
 Sigue pendiente el **cursor real del chat**: hoy `limit += 50` recrea el stream, así que ver mensajes antiguos vuelve a leer los anteriores. Es una ventana acotada, no un desbordamiento, pero el coste por página crece. Conviene abordarlo junto al rediseño del chat.
 
+### Una conversación se ve (11 de noviembre de 2026)
+
+El propietario reportó que los mensajes «parecían no funcionar». **No había nada roto: faltaba todo el feedback.** No existía ningún indicador de mensajes en ninguna parte —ni no leídos, ni vista previa, ni hora— y `lastMessageAt`, que el backend ya guardaba, no se mostraba nunca. Enviabas un mensaje, volvías atrás y la fila decía «Conexión aceptada» junto a un iconito, exactamente igual que si no hubieras escrito nada.
+
+- La acción `message` guarda ahora `lastMessage {text, sender}` en la conexión, recortado por `preview()` en `domain.js`: una línea, sin saltos, máximo 120 caracteres.
+- Nueva acción **`markRead`**: mueve solo `reads.{uid}` del que lee y **no toca `updatedAt`**, para que leer un hilo no reordene la lista del otro. El chat la llama al abrirse y traga el error en silencio: un punto de no leído no merece un mensaje de error.
+- No leído = hay `lastMessage`, no lo mandé yo, y `reads[uid]` falta o es anterior a `lastMessageAt`.
+
+**Mi red se reorganizó en secciones.** Antes era un scroll único con un ajuste de sonido arriba, luego las cuatro clases de conexión mezcladas en una lista y al final las tarjetas. Ahora:
+
+- **Solicitudes**, solo si las hay, separando «quiere conectar contigo» de «esperando respuesta».
+- **Conversaciones**: la fila entera abre el chat, con avatar, último mensaje, hora relativa (`shortMoment`) y punto de no leído. Ya no es un icono de 24px.
+- **Tarjetas recibidas**.
+- **En pausa**, al final y solo si hay algo: rechazadas y bloqueadas, con su botón de recuperación.
+
+El ajuste de sonido se fue a `/settings`; estaba por encima de las solicitudes de otras personas.
+
 Mi red muestra solicitudes, estados y tarjetas recibidas. Al aceptar hay una animación y diálogo de éxito; sonido original opcional (`assets/sounds/connected.wav`, 0.65 s), desactivado por defecto y almacenado como `connectionSound`. El navegador puede impedir reproducir audio; eso no invalida la conexión.
 
 ## 11. Diseño vigente
@@ -267,6 +284,14 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 **`ResonNotice`** (en `reson_motion.dart`) unifica vacío, error y «nada aún», con icono, título, cuerpo y acción opcionales. Antes cada pantalla improvisaba: un `Text` centrado, un `Text` en rojo de error, un spinner. La carga usa `ResonSkeleton`/`ResonCardSkeleton`, no `LinearProgressIndicator`.
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
+
+### Ajustes (11 de noviembre de 2026)
+
+`lib/features/settings/settings_page.dart`, ruta `/settings`. Reúne lo que estaba disperso —el sonido vivía en Mi red, cerrar sesión al fondo del formulario de perfil— y **añade algo que antes era imposible: volver a seguir al dispositivo.** Un conmutador de dos estados no puede decir «lo que tenga mi teléfono», así que una vez tocabas el de la cabecera te quedabas fijado para siempre.
+
+- `Appearance.set(ThemeMode)` guarda `themeMode` (`system`/`light`/`dark`) y sigue leyendo el `darkMode` booleano antiguo para cuentas que ya lo tenían.
+- `LocaleController` **persiste el idioma** en `locale` y tiene `follow()` para soltarlo. Antes vivía solo en memoria: la app olvidaba la elección en cada arranque.
+- Los chips llevan clave `grupo-id` (`appearance-dark`, `language-en`). «Sistema» aparece en dos filas, así que una etiqueta no basta para identificar cuál es.
 
 ### Fundamentos visuales (noviembre 2026)
 
@@ -344,8 +369,8 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **94 pruebas Flutter** (102 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
-- **25 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
+- **106 pruebas Flutter** (114 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **27 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
 **Java para el emulador: no hace falta instalarlo.** Android Studio trae OpenJDK 21 en `C:\Program Files\Android\Android Studio\jbr`. Basta ponerlo en PATH para el comando; la nota antigua sobre un JRE en `.tools` ya no aplica:
@@ -403,14 +428,16 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 
 ### Lo que sigue abierto, por prioridad
 
-**Ahora mismo, antes que nada:** el código de esta entrega está en `main` pero **no desplegado**. Falta `functions`, `firestore:rules`, `storage` y `hosting`; el índice sí está. Hasta que se despliegue, `unblock` no existe en el backend real y la app publicada sigue siendo la anterior. Ver sección 14.
+**Ahora mismo, antes que nada:** el código está en `main` pero **no desplegado**. Falta `functions`, `firestore:rules`, `storage` y `hosting`; el índice sí está. Hasta que se despliegue, `unblock` y `markRead` no existen en el backend real y la app publicada sigue siendo la anterior. La interfaz aguanta mientras tanto —una conexión sin `lastMessage` dice «Sin mensajes todavía» y `markRead` falla en silencio— pero nadie verá vistas previas ni no leídos hasta desplegar Functions. Ver sección 14.
 
 **Corto plazo, barato y verificable aquí:**
 
-- Pasar los **82 `tr(context, 'es', 'en')`** y los 6 pares de `networkError` al ARB. Hoy añadir un tercer idioma obliga a editar Dart.
+- Terminar de pasar los `tr(context, 'es', 'en')` al ARB. Los de ajustes y las secciones nuevas de Mi red ya están en claves; el resto del módulo `network` sigue en Dart, así que añadir un tercer idioma aún obliga a editar código.
 - `/cards/:id/share` es la única pantalla sin pruebas de pantalla.
 - Los estados de foco con teclado se definieron en el tema pero no hay prueba que los capture; hay que mirarlos en Chrome.
 - El **cursor real del chat**: sigue creciendo el límite y releyendo lo anterior.
+- Los no leídos se calculan por conexión, no por mensaje: no hay contador de cuántos, solo un punto. Suficiente por ahora; un contador exige contar en backend.
+- `reads` es visible para ambos miembros, así que la base ya permite acuses de lectura. La interfaz **no los muestra** y esa es una decisión de producto, no un olvido.
 
 **Requiere decisiones de producto o acceso que no está en el repositorio:** todo lo de las dos listas siguientes.
 

@@ -221,11 +221,16 @@ void main() {
     required String status,
     bool iBlocked = false,
     Size size = const Size(390, 1000),
+    Map<String, dynamic>? lastMessage,
+    Timestamp? readAt,
   }) async {
     final auth = verified.session();
     addTearDown(auth.dispose);
     final c = await support.launch(tester, repository: auth, size: size);
     final service = SocialService();
+    final sentAt = Timestamp.fromDate(
+      DateTime.now().subtract(const Duration(minutes: 5)),
+    );
     final doc = SocialDoc('connection', {
       'members': ['owner', 'other'],
       'requester': 'other',
@@ -234,6 +239,11 @@ void main() {
       'cards': {'other': 'shared'},
       'status': status,
       'updatedAt': Timestamp.now(),
+      if (lastMessage != null) ...{
+        'lastMessage': lastMessage,
+        'lastMessageAt': sentAt,
+      },
+      if (readAt != null) 'reads': {'owner': readAt},
     });
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -290,6 +300,54 @@ void main() {
     await captureSocial(tester, 'network-blocked-by-them');
     expect(find.text('Desbloquear'), findsNothing);
     expect(theirs.calls, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('A conversation shows its last message and unread mark', (
+    tester,
+  ) async {
+    await openNetwork(
+      tester,
+      status: 'accepted',
+      lastMessage: {'text': '¿Nos vemos el jueves?', 'sender': 'other'},
+    );
+    // Sending a message and coming back used to look exactly like sending
+    // nothing: the row said only "Conexión aceptada" beside a chat icon.
+    expect(find.text('¿Nos vemos el jueves?'), findsOneWidget);
+    expect(find.text('5 min'), findsOneWidget);
+    expect(find.text('Conversaciones'), findsOneWidget);
+    await captureSocial(tester, 'network-conversation');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Your own last message is marked as yours and reads as read', (
+    tester,
+  ) async {
+    await openNetwork(
+      tester,
+      status: 'accepted',
+      lastMessage: {'text': 'Te paso mi tarjeta', 'sender': 'owner'},
+    );
+    expect(find.textContaining('Tú: '), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('A conversation with nothing said says so', (tester) async {
+    await openNetwork(tester, status: 'accepted');
+    expect(find.text('Sin mensajes todavía'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Requests are kept apart from conversations', (tester) async {
+    await openNetwork(tester, status: 'pending');
+    expect(find.text('Solicitudes'), findsOneWidget);
+    expect(find.text('Quiere conectar contigo'), findsOneWidget);
+    // An empty conversation list must still invite, not vanish.
+    expect(
+      find.text('Cuando aceptes una conexión, la conversación aparecerá aquí.'),
+      findsOneWidget,
+    );
+    await captureSocial(tester, 'network-request');
     expect(tester.takeException(), isNull);
   });
 

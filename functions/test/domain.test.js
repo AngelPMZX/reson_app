@@ -1,7 +1,14 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { snapshot, vcard, connectionId, requestOutcome, respondOutcome } = require('../domain');
+const {
+  snapshot,
+  vcard,
+  connectionId,
+  requestOutcome,
+  respondOutcome,
+  preview,
+} = require('../domain');
 const render = require('../render');
 const c = {
   label: 'Work',
@@ -99,4 +106,20 @@ test('accepting twice is idempotent and a block is never answered away', () => {
     respondOutcome({ status: 'blocked', recipient: 'bob' }, 'bob', 'accept'),
     'answered',
   );
+});
+
+test('a message preview is one short line', () => {
+  assert.equal(preview('Hola María'), 'Hola María');
+  assert.equal(preview('  Hola \n\n  María  '), 'Hola María');
+  assert.equal(preview(''), '');
+  assert.equal(preview(null), '');
+});
+
+test('a long message is cut, never stretched across the row', () => {
+  const long = 'a'.repeat(300);
+  const cut = preview(long);
+  assert.equal(cut.length, 120);
+  assert.ok(cut.endsWith('…'));
+  assert.equal(preview('b'.repeat(120)).length, 120);
+  assert.ok(!preview('b'.repeat(120)).endsWith('…'));
 });

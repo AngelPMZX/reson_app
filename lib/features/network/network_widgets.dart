@@ -1,4 +1,5 @@
 import '../../core/theme/reson_chrome.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/reson_motion.dart';
@@ -7,6 +8,19 @@ import 'network_service.dart';
 
 String tr(BuildContext context, String es, String en) =>
     Localizations.localeOf(context).languageCode == 'es' ? es : en;
+
+/// How long ago, in as few characters as a list row can spare.
+///
+/// Days are kept relative for a week, which is the span where "3 d" means
+/// more than a date does; past that a date says it better.
+String shortMoment(BuildContext context, DateTime at) {
+  final gap = DateTime.now().difference(at);
+  if (gap.inMinutes < 1) return AppLocalizations.of(context)!.timeNow;
+  if (gap.inHours < 1) return '${gap.inMinutes} min';
+  if (gap.inDays < 1) return '${gap.inHours} h';
+  if (gap.inDays < 7) return '${gap.inDays} d';
+  return '${at.day}/${at.month}';
+}
 
 /// Resolves a backend failure into the reader's language.
 ///
@@ -54,7 +68,7 @@ class NetworkShell extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(
                       top: ResonSpace.md,
-                      bottom: 20,
+                      bottom: ResonSpace.xl,
                     ),
                     child: Text(
                       subtitle!,

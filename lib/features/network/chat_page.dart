@@ -23,6 +23,27 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   String? error, lastBody, lastId;
 
   @override
+  void initState() {
+    super.initState();
+    _markRead();
+  }
+
+  /// Clears the unread mark the network list reads.
+  ///
+  /// Opening the thread is the only thing that counts as reading it, and a
+  /// failure here is not worth telling anyone about: the worst case is a dot
+  /// that stays on until the next visit.
+  Future<void> _markRead() async {
+    try {
+      await ref.read(networkServiceProvider).act('markRead', {
+        'connectionId': widget.connectionId,
+      });
+    } catch (_) {
+      /* An unread mark is not worth an error message. */
+    }
+  }
+
+  @override
   void dispose() {
     text.dispose();
     super.dispose();

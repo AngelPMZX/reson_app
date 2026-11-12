@@ -13,6 +13,7 @@ import '../features/cards/presentation/cards_page.dart';
 import '../features/cards/presentation/card_editor_page.dart';
 import '../features/auth/presentation/auth_page.dart';
 import '../features/auth/presentation/intro_page.dart';
+import '../features/settings/settings_page.dart';
 import '../features/auth/presentation/verification_page.dart';
 import '../l10n/generated/app_localizations.dart';
 
@@ -57,6 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           !path.startsWith('/chat/') &&
           path != '/home' &&
           path != '/profile' &&
+          path != '/settings' &&
           !path.startsWith('/cards/')) {
         return '/home';
       }
@@ -77,6 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => ShareCardPage(cardId: s.pathParameters['id']!),
       ),
       GoRoute(path: '/profile', builder: (_, state) => const ProfilePage()),
+      GoRoute(path: '/settings', builder: (_, state) => const SettingsPage()),
       GoRoute(path: '/session', builder: (_, state) => const _SessionPage()),
       GoRoute(
         path: '/verify-email',

@@ -1465,6 +1465,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add entry'**
   String get addCareerItem;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @settingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How Reson looks and sounds on this device.'**
+  String get settingsSubtitle;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsAppearanceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a side, or let Reson follow your device.'**
+  String get settingsAppearanceNote;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLanguageNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your public card shows in the language of whoever opens it.'**
+  String get settingsLanguageNote;
+
+  /// No description provided for @settingsFollowSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsFollowSystem;
+
+  /// No description provided for @settingsLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsLight;
+
+  /// No description provided for @settingsDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsDark;
+
+  /// No description provided for @settingsSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get settingsSound;
+
+  /// No description provided for @settingsAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsAccount;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get openSettings;
+
+  /// No description provided for @networkRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get networkRequests;
+
+  /// No description provided for @networkConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversations'**
+  String get networkConversations;
+
+  /// No description provided for @networkPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get networkPaused;
+
+  /// No description provided for @networkWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a reply'**
+  String get networkWaiting;
+
+  /// No description provided for @networkNoConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'When you accept a connection, the conversation shows up here.'**
+  String get networkNoConversations;
+
+  /// No description provided for @networkNoMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get networkNoMessages;
+
+  /// No description provided for @networkYouPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'You: '**
+  String get networkYouPrefix;
+
+  /// No description provided for @timeNow.
+  ///
+  /// In en, this message translates to:
+  /// **'now'**
+  String get timeNow;
+
+  /// No description provided for @connectionSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound when accepting a connection'**
+  String get connectionSound;
+
+  /// No description provided for @connectionSoundNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A soft Reson chime. You can turn it off at any time.'**
+  String get connectionSoundNote;
 }
 
 class _AppLocalizationsDelegate

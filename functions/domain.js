@@ -143,6 +143,18 @@ function respondOutcome(existing, uid, decision) {
   return existing.status === 'declined' ? 'accept' : 'answered';
 }
 
+/// A one-line trace of a message, for the network list.
+///
+/// Newlines are collapsed so a multi-line message cannot stretch a row, and
+/// the text is cut well short of the 2000 a message may carry: the list needs
+/// enough to recognise the thread, not to read it.
+function preview(text, max = 120) {
+  const line = String(text ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return line.length <= max ? line : line.slice(0, max - 1).trimEnd() + '…';
+}
+
 module.exports = {
   fields,
   safeUrl,
@@ -152,4 +164,5 @@ module.exports = {
   vcard,
   requestOutcome,
   respondOutcome,
+  preview,
 };

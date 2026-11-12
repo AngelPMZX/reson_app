@@ -738,4 +738,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addCareerItem => 'Add entry';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get settingsSubtitle => 'How Reson looks and sounds on this device.';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceNote =>
+      'Pick a side, or let Reson follow your device.';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLanguageNote =>
+      'Your public card shows in the language of whoever opens it.';
+
+  @override
+  String get settingsFollowSystem => 'System';
+
+  @override
+  String get settingsLight => 'Light';
+
+  @override
+  String get settingsDark => 'Dark';
+
+  @override
+  String get settingsSound => 'Sound';
+
+  @override
+  String get settingsAccount => 'Account';
+
+  @override
+  String get openSettings => 'Settings';
+
+  @override
+  String get networkRequests => 'Requests';
+
+  @override
+  String get networkConversations => 'Conversations';
+
+  @override
+  String get networkPaused => 'Paused';
+
+  @override
+  String get networkWaiting => 'Waiting for a reply';
+
+  @override
+  String get networkNoConversations =>
+      'When you accept a connection, the conversation shows up here.';
+
+  @override
+  String get networkNoMessages => 'No messages yet';
+
+  @override
+  String get networkYouPrefix => 'You: ';
+
+  @override
+  String get timeNow => 'now';
+
+  @override
+  String get connectionSound => 'Sound when accepting a connection';
+
+  @override
+  String get connectionSoundNote =>
+      'A soft Reson chime. You can turn it off at any time.';
 }
