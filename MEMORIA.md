@@ -45,6 +45,7 @@ Fuente de verdad: `pubspec.yaml`, `pubspec.lock` y los respectivos `package-lock
 | audioplayers | 6.5.1; sonido opcional de conexión |
 | qr_flutter | 4.1.0 |
 | mobile_scanner | 7.5.0; lectura de QR, requiere permiso de cámara |
+| share_plus | 13.3.1; descarga del export en web, compartir en móvil |
 | shared_preferences | 2.5.5; preferencias locales |
 | url_launcher | 6.3.2 |
 | flutter_lints | 6.0.0 |
@@ -311,6 +312,23 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### Borrar la cuenta y llevarse los datos (12 de noviembre de 2026)
+
+Bloqueaba las tiendas: Google y Apple rechazan una app con cuentas que no se pueden borrar desde dentro. No existía nada.
+
+**`deleteAccount`** (callable propia, 9 minutos de margen) borra, en este orden: las tarjetas publicadas y las copias públicas de sus fotos, las conversaciones con todos sus mensajes, el bloqueo que la otra parte tuviera contra esta cuenta, las cinco subcolecciones del usuario, su documento, la entrada del directorio, su límite de frecuencia, los reportes que presentó, las fotos privadas de Storage y por último la cuenta de Auth.
+
+- **La cuenta va al final a propósito**: si algo falla antes, el usuario sigue pudiendo entrar y reintentar.
+- **Es idempotente**: si la cuenta de Auth ya no existe se considera hecho, no un fallo; reintentar no rompe.
+- **Exige la palabra `DELETE`** en la llamada, y la interfaz pide escribir «ELIMINAR» antes de habilitar el botón.
+- **Las conversaciones se borran enteras**, con los mensajes de ambos. Un hilo con una cuenta que ya no existe no es un hilo; está documentado como decisión, no como descuido.
+
+**`exportAccount`** devuelve perfil, tarjetas, publicaciones, guardadas, bloqueos y conversaciones con hasta 2000 mensajes cada una. `ownedBy()` es la única definición de «tus datos», compartida por exportar y borrar, **para que no puedan discrepar**.
+
+La prueba `functions/test/account.test.js` comprueba las diez rutas una por una, que lo de la otra persona sobrevive intacto, y que repetir el borrado no falla. **Requiere el emulador de Auth**, que se añadió a `firebase.emulators.json` (puerto 9099): sin él el admin intenta credenciales reales de Google y falla.
+
+En Flutter, `saveExport` vive tras `exportSinkProvider` porque compartir es un plugin de plataforma y una prueba no tiene plataforma. Usa `share_plus 13.3.1`: descarga en web, hoja de compartir en móvil.
+
 ### Escanear un QR (12 de noviembre de 2026)
 
 La app dibujaba códigos QR y **no podía leer ninguno**. El gesto central del producto —que te enseñen una tarjeta y la apuntes— obligaba a salir a la cámara del sistema y acababa en el navegador, nunca en la app.
@@ -483,8 +501,8 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **145 pruebas Flutter** (153 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
-- **35 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
+- **149 pruebas Flutter** (157 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **36 pruebas de backend y reglas con emulador** (Firestore **y Auth**), incluidas la social y la de borrado de cuenta completas, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
 **Java para el emulador: no hace falta instalarlo.** Android Studio trae OpenJDK 21 en `C:\Program Files\Android\Android Studio\jbr`. Basta ponerlo en PATH para el comando; la nota antigua sobre un JRE en `.tools` ya no aplica:
@@ -507,8 +525,10 @@ flutter build web --release
 Pruebas de backend y reglas (Node compatible y Java 21 en PATH):
 
 ```powershell
-.\tools\firestore-tests\node_modules\.bin\firebase.cmd emulators:exec --only firestore --project demo-reson --config firebase.emulators.json 'node --test tools/firestore-tests/rules.test.cjs functions/test/*.test.js'
+.\tools\firestore-tests\node_modules\.bin\firebase.cmd emulators:exec --only firestore,auth --project demo-reson --config firebase.emulators.json 'node --test tools/firestore-tests/rules.test.cjs functions/test/*.test.js'
 ```
+
+**`--only firestore,auth`**, no solo firestore: la prueba de borrado de cuenta elimina el usuario de Auth, y sin su emulador el SDK admin busca credenciales reales de Google y falla.
 
 `firebase.emulators.json` usa Firestore 127.0.0.1:8085; `firebase.json` contiene configuración por defecto 8080. Usar el archivo de pruebas explícito. El JRE local en `.tools` no se sube a Git. Ejecutar solo npm test en functions omite integración si falta FIRESTORE_EMULATOR_HOST.
 
@@ -576,7 +596,7 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 - Configurar firma de producción, Play Console/App Store Connect, iconos/splash finales, fichas y versiones de release.
 - Notificaciones push con FCM, permiso contextual, manejo foreground/background, tokens por dispositivo, baja de tokens y preferencias del usuario.
 - Universal Links/App Links para que enlaces abran app instalada conservando fallback web.
-- Privacidad/términos/soporte, eliminación de cuenta y datos, retención de mensajes y archivos, exportación de datos; no están implementados como flujo completo.
+- **Eliminación de cuenta y exportación de datos ya existen** (sección 11). Siguen pendientes: textos de privacidad y términos, soporte, y política de retención de mensajes y archivos.
 - Proceso de moderación y revisión de reportes: `reports/` se escribe pero **nadie lo lee**; no hay consola ni respuesta automática. El desbloqueo por parte del usuario ya existe (sección 10); lo que falta es la moderación del lado del equipo. Evaluar App Check y controles adicionales; no afirmar que están habilitados.
 - Monitorización, alertas de errores y presupuesto/cuotas Blaze. Límites de instancias no son un límite monetario absoluto.
 

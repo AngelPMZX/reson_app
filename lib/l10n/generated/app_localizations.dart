@@ -2359,6 +2359,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan'**
   String get scanAction;
+
+  /// No description provided for @accountDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data'**
+  String get accountDataTitle;
+
+  /// No description provided for @accountDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Download everything Reson keeps about you, or delete it for good.'**
+  String get accountDataBody;
+
+  /// No description provided for @accountExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Download my data'**
+  String get accountExport;
+
+  /// No description provided for @accountExportDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Data downloaded.'**
+  String get accountExportDone;
+
+  /// No description provided for @accountDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get accountDelete;
+
+  /// No description provided for @accountDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get accountDeleteTitle;
+
+  /// No description provided for @accountDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile, your cards, the ones you saved, your conversations and your publications will be erased. Anyone holding a link of yours will stop seeing it. This cannot be undone.'**
+  String get accountDeleteBody;
+
+  /// No description provided for @accountDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm'**
+  String get accountDeleteConfirm;
+
+  /// No description provided for @accountDeleteWord.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get accountDeleteWord;
+
+  /// No description provided for @accountDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get accountDeleteAction;
 }
 
 class _AppLocalizationsDelegate

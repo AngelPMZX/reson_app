@@ -12,6 +12,7 @@ import 'package:reson/features/cards/domain/digital_card.dart';
 import 'package:reson/features/cards/application/cards_providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:reson/features/network/network_service.dart';
+import 'package:reson/features/settings/export_file.dart';
 
 class TestAuthRepository implements AuthRepository {
   int googleCalls = 0;
@@ -151,6 +152,7 @@ Future<ProviderContainer> launch(
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? directory,
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? publications,
   NetworkService? networkService,
+  Future<void> Function(String)? exportSink,
 }) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = size;
@@ -185,6 +187,7 @@ Future<ProviderContainer> launch(
       discoverableProvider.overrideWith((ref, uid) => Stream.value(null)),
       if (networkService != null)
         networkServiceProvider.overrideWithValue(networkService),
+      if (exportSink != null) exportSinkProvider.overrideWithValue(exportSink),
     ],
   );
   container.read(localeProvider.notifier).set(Locale(locale));

@@ -2,6 +2,7 @@
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const { getStorage } = require('firebase-admin/storage');
+const { getAuth } = require('firebase-admin/auth');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 const { randomBytes } = require('node:crypto');
 const {
@@ -468,3 +469,110 @@ exports.sharedCard = onRequest({ ...options, invoker: 'public' }, async (req, re
 });
 // Public lookup is deliberately independent of private profile documents.
 exports.getSharedCard = onCall(options, async req => exposed(await published(req.data?.publicId)));
+
+/// Deletes every document of a query, a page at a time.
+async function purge(query) {
+  for (;;) {
+    const page = await query.limit(300).get();
+    if (page.empty) return;
+    const batch = db.batch();
+    for (const d of page.docs) batch.delete(d.ref);
+    await batch.commit();
+    if (page.size < 300) return;
+  }
+}
+
+/// Everything one account owns, so it can be handed over or taken away.
+///
+/// Gathered in one place because an export and a deletion must agree on what
+/// "your data" is: anything listed here is both downloadable and removable.
+async function ownedBy(uid) {
+  const user = db.doc('users/' + uid);
+  const [cards, identity, publications, received, blocks, connections] = await Promise.all([
+    user.collection('cards').get(),
+    user.collection('settings').get(),
+    user.collection('publications').get(),
+    user.collection('received').get(),
+    user.collection('blocks').get(),
+    db.collection('connections').where('members', 'array-contains', uid).get(),
+  ]);
+  return { user, cards, identity, publications, received, blocks, connections };
+}
+
+exports.exportAccount = onCall({ ...options, timeoutSeconds: 120 }, async req => {
+  const uid = verified(req);
+  const owned = await ownedBy(uid);
+  const strip = d => ({ id: d.id, ...d.data() });
+  // Conversations are shared, so an export carries what was said to you and
+  // by you, which is the part that is yours to keep.
+  const conversations = [];
+  for (const c of owned.connections.docs) {
+    const messages = await c.ref.collection('messages').orderBy('createdAt').limit(2000).get();
+    conversations.push({ ...strip(c), messages: messages.docs.map(strip) });
+  }
+  return {
+    exportedAt: new Date().toISOString(),
+    account: { uid, email: req.auth.token.email ?? '' },
+    profile: owned.identity.docs.map(strip),
+    cards: owned.cards.docs.map(strip),
+    publications: owned.publications.docs.map(strip),
+    savedCards: owned.received.docs.map(strip),
+    blocked: owned.blocks.docs.map(d => d.id),
+    conversations,
+  };
+});
+
+exports.deleteAccount = onCall({ ...options, timeoutSeconds: 540 }, async req => {
+  const uid = verified(req);
+  // A destructive action asks to be meant. The client sends the word back.
+  if (req.data?.confirm !== 'DELETE') fail('failed-precondition', 'Confirmation required');
+  const owned = await ownedBy(uid);
+
+  // 1. Published cards stop existing for anyone holding their link, and the
+  //    public copies of their photos go with them.
+  for (const pub of owned.publications.docs) {
+    const publicId = pub.data().id;
+    if (!publicId) continue;
+    const target = db.doc('publicCards/' + publicId);
+    const photo = (await target.get()).data()?.photoPath;
+    if (photo)
+      await bucket
+        .file(photo)
+        .delete({ ignoreNotFound: true })
+        .catch(() => {});
+    await target.delete();
+  }
+
+  // 2. Conversations are deleted with their messages: a thread with an
+  //    account that no longer exists is not a thread. The other member's
+  //    block against this account goes too, since it can never apply again.
+  for (const c of owned.connections.docs) {
+    await purge(c.ref.collection('messages'));
+    const other = (c.data().members ?? []).find(m => m !== uid);
+    if (other) await db.doc(`users/${other}/blocks/${uid}`).delete();
+    await c.ref.delete();
+  }
+
+  // 3. Everything filed under the account itself.
+  for (const name of ['cards', 'settings', 'publications', 'received', 'blocks'])
+    await purge(owned.user.collection(name));
+  await Promise.all([
+    db.doc('directory/' + uid).delete(),
+    db.doc('socialLimits/' + uid).delete(),
+    owned.user.delete(),
+  ]);
+  await purge(db.collection('reports').where('reporter', '==', uid));
+
+  // 4. Private photos, then the sign-in itself. The account goes last so a
+  //    failure before this point leaves the user able to try again.
+  await bucket.deleteFiles({ prefix: `users/${uid}/`, force: true }).catch(() => {});
+  try {
+    await getAuth().deleteUser(uid);
+  } catch (error) {
+    // A sign-in that is already gone means the job is done, not that it
+    // failed: everything above has been deleted by this point, and reporting
+    // failure would invite a retry that finds nothing left to remove.
+    if (error?.code !== 'auth/user-not-found') throw error;
+  }
+  return { ok: true };
+});

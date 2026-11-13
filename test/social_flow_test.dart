@@ -28,6 +28,18 @@ class SocialDoc extends Fake
 class SocialService extends NetworkService {
   SocialService({this.card});
 
+  int deletions = 0;
+  int exports = 0;
+
+  @override
+  Future<void> deleteAccount() async => deletions++;
+
+  @override
+  Future<Map<String, dynamic>> exportAccount() async {
+    exports++;
+    return {'account': {}, 'cards': []};
+  }
+
   /// Overrides what a public card looks like, for screens that present the
   /// person behind it rather than just the credential.
   final Map<String, dynamic>? card;

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../../core/firebase/firebase_bootstrap.dart';
 import '../network/network_service.dart';
 import '../network/network_widgets.dart';
+import 'export_file.dart';
 
 /// Everything that is a preference rather than a piece of identity.
 ///
@@ -132,6 +135,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     title: s.discoverOptInTitle,
                     note: s.discoverOptInBody,
                     child: const _Discoverable(),
+                  ),
+                  _Section(
+                    title: s.accountDataTitle,
+                    note: s.accountDataBody,
+                    child: const _AccountData(),
                   ),
                   _Section(
                     title: s.settingsAccount,
@@ -333,6 +341,177 @@ class _DiscoverableState extends ConsumerState<_Discoverable> {
                 : (v) => v == null ? null : _set(enabled: true, publicId: v),
           ),
         ],
+      ],
+    );
+  }
+}
+
+/// Taking your data with you, or taking it away.
+///
+/// Both store rules and plain decency require an account to be erasable from
+/// inside the app. Deletion asks for the word back, because every other
+/// control here is reversible and this one is not.
+class _AccountData extends ConsumerStatefulWidget {
+  const _AccountData();
+  @override
+  ConsumerState<_AccountData> createState() => _AccountDataState();
+}
+
+class _AccountDataState extends ConsumerState<_AccountData> {
+  bool busy = false;
+  String? message;
+  bool failed = false;
+
+  Future<void> _export() async {
+    final s = AppLocalizations.of(context)!;
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      final data = await ref.read(networkServiceProvider).exportAccount();
+      await ref.read(exportSinkProvider)(
+        const JsonEncoder.withIndent('  ').convert(data),
+      );
+      if (mounted) {
+        setState(() {
+          message = s.accountExportDone;
+          failed = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          message = networkErrorText(context, e);
+          failed = true;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final s = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _DeleteDialog(word: s.accountDeleteWord),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() {
+      busy = true;
+      message = null;
+    });
+    try {
+      await ref.read(networkServiceProvider).deleteAccount();
+      // The session outlives the account for a moment, so it is closed here
+      // rather than leaving the app signed in to something that is gone.
+      await (await ref.read(authRepositoryProvider.future))?.signOut();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          message = networkErrorText(context, e);
+          failed = true;
+          busy = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (busy) const LinearProgressIndicator(),
+        if (message != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: ResonSpace.sm),
+            child: Text(
+              message!,
+              style: TextStyle(
+                color: failed ? scheme.error : scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            key: const Key('exportAccount'),
+            onPressed: busy ? null : _export,
+            icon: const Icon(Icons.download_outlined),
+            label: Text(s.accountExport),
+          ),
+        ),
+        const SizedBox(height: ResonSpace.md),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const Key('deleteAccount'),
+            style: TextButton.styleFrom(foregroundColor: scheme.error),
+            onPressed: busy ? null : _delete,
+            icon: const Icon(Icons.delete_outline),
+            label: Text(s.accountDelete),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Deletion is confirmed by typing the word, not by finding a button.
+class _DeleteDialog extends StatefulWidget {
+  const _DeleteDialog({required this.word});
+  final String word;
+  @override
+  State<_DeleteDialog> createState() => _DeleteDialogState();
+}
+
+class _DeleteDialogState extends State<_DeleteDialog> {
+  final _typed = TextEditingController();
+
+  @override
+  void dispose() {
+    _typed.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    final ready = _typed.text.trim().toUpperCase() == widget.word;
+    return AlertDialog(
+      title: Text(s.accountDeleteTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.accountDeleteBody),
+          const SizedBox(height: ResonSpace.lg),
+          TextField(
+            key: const Key('deleteConfirm'),
+            controller: _typed,
+            autocorrect: false,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(labelText: s.accountDeleteConfirm),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(s.cancel),
+        ),
+        FilledButton(
+          key: const Key('deleteConfirmAction'),
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+          onPressed: ready ? () => Navigator.pop(context, true) : null,
+          child: Text(s.accountDeleteAction),
+        ),
       ],
     );
   }

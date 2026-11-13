@@ -376,5 +376,15 @@
   "scanNoCamera": "Este dispositivo no tiene cámara disponible.",
   "scanOpenSettings": "Abrir ajustes del sistema",
   "scanRetry": "Reintentar",
-  "scanAction": "Escanear"
+  "scanAction": "Escanear",
+  "accountDataTitle": "Tus datos",
+  "accountDataBody": "Descarga todo lo que Reson guarda de ti, o bórralo para siempre.",
+  "accountExport": "Descargar mis datos",
+  "accountExportDone": "Datos descargados.",
+  "accountDelete": "Eliminar mi cuenta",
+  "accountDeleteTitle": "¿Eliminar tu cuenta?",
+  "accountDeleteBody": "Se borrarán tu perfil, tus tarjetas, las que guardaste, tus conversaciones y tus publicaciones. Quien tenga un enlace tuyo dejará de verlo. Esto no se puede deshacer.",
+  "accountDeleteConfirm": "Escribe ELIMINAR para confirmar",
+  "accountDeleteWord": "ELIMINAR",
+  "accountDeleteAction": "Eliminar definitivamente"
 }

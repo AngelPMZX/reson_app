@@ -21,6 +21,28 @@ class NetworkService {
     return Map<String, dynamic>.from(result.data as Map);
   }
 
+  /// Everything the account owns, as the backend assembles it.
+  Future<Map<String, dynamic>> exportAccount() async {
+    final result = await FirebaseFunctions.instance
+        .httpsCallable(
+          'exportAccount',
+          options: HttpsCallableOptions(timeout: const Duration(minutes: 2)),
+        )
+        .call();
+    return Map<String, dynamic>.from(result.data as Map);
+  }
+
+  /// Erases the account. The word is sent back so this cannot be stumbled
+  /// into by a stray call.
+  Future<void> deleteAccount() async {
+    await FirebaseFunctions.instance
+        .httpsCallable(
+          'deleteAccount',
+          options: HttpsCallableOptions(timeout: const Duration(minutes: 9)),
+        )
+        .call({'confirm': 'DELETE'});
+  }
+
   Future<Map<String, dynamic>> shared(String id) async {
     final result = await FirebaseFunctions.instance
         .httpsCallable('getSharedCard')

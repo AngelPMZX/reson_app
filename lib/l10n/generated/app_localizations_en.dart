@@ -1214,4 +1214,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanAction => 'Scan';
+
+  @override
+  String get accountDataTitle => 'Your data';
+
+  @override
+  String get accountDataBody =>
+      'Download everything Reson keeps about you, or delete it for good.';
+
+  @override
+  String get accountExport => 'Download my data';
+
+  @override
+  String get accountExportDone => 'Data downloaded.';
+
+  @override
+  String get accountDelete => 'Delete my account';
+
+  @override
+  String get accountDeleteTitle => 'Delete your account?';
+
+  @override
+  String get accountDeleteBody =>
+      'Your profile, your cards, the ones you saved, your conversations and your publications will be erased. Anyone holding a link of yours will stop seeing it. This cannot be undone.';
+
+  @override
+  String get accountDeleteConfirm => 'Type DELETE to confirm';
+
+  @override
+  String get accountDeleteWord => 'DELETE';
+
+  @override
+  String get accountDeleteAction => 'Delete permanently';
 }
