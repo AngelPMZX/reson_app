@@ -27,6 +27,7 @@ dependencies:
   url_launcher: 6.3.2
   mobile_scanner: 7.5.0
   share_plus: 13.3.1
+  firebase_messaging: 16.7.0
 
 # Temporary compatibility fix for Dart 3.11; remove after an upstream fix
 # or a Flutter upgrade. https://github.com/firebase/flutterfire/issues/18611

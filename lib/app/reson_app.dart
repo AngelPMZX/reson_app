@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/firebase/firebase_bootstrap.dart';
+import '../core/firebase/push_registration.dart';
 import '../core/theme/reson_theme.dart';
 import '../features/cards/presentation/cards_page.dart';
 import '../features/cards/presentation/card_editor_page.dart';
@@ -172,6 +173,8 @@ class ResonApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Hands this device's push address over once the session is verified.
+    ref.watch(pushSyncProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,

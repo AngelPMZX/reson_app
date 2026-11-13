@@ -3,8 +3,9 @@ const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestore');
 const { getStorage } = require('firebase-admin/storage');
 const { getAuth } = require('firebase-admin/auth');
+const { getMessaging } = require('firebase-admin/messaging');
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
-const { randomBytes } = require('node:crypto');
+const { randomBytes, createHash } = require('node:crypto');
 const {
   snapshot,
   connectionId,
@@ -141,6 +142,63 @@ async function publish(uid, data) {
       .catch(() => {});
   return { id: reservation.id, url: origin + '/c/' + reservation.id };
 }
+/// What a push says, in the reader's language.
+///
+/// The device registers the language it is showing, because a notification is
+/// built on the server where there is no UI to ask.
+const pushCopy = {
+  es: {
+    message: name => ({ title: name, body: 'Te escribió un mensaje.' }),
+    request: name => ({ title: name, body: 'Quiere conectar contigo.' }),
+    accepted: name => ({ title: name, body: 'Aceptó tu solicitud. Ya pueden conversar.' }),
+  },
+  en: {
+    message: name => ({ title: name, body: 'Sent you a message.' }),
+    request: name => ({ title: name, body: 'Wants to connect with you.' }),
+    accepted: name => ({ title: name, body: 'Accepted your request. You can talk now.' }),
+  },
+};
+
+/// Sends a push to every device of [uid], and forgets the ones that are gone.
+///
+/// Never throws: a notification that does not arrive must not fail the action
+/// that earned it. Sending a message is the point; telling about it is not.
+async function notify(uid, kind, name, data = {}) {
+  try {
+    const devices = await db.collection(`users/${uid}/devices`).get();
+    if (devices.empty) return;
+    const byLanguage = new Map();
+    for (const d of devices.docs) {
+      const language = pushCopy[d.data().language] ? d.data().language : 'es';
+      if (!byLanguage.has(language)) byLanguage.set(language, []);
+      byLanguage.get(language).push(d);
+    }
+    for (const [language, group] of byLanguage) {
+      const copy = pushCopy[language][kind](name);
+      const result = await getMessaging().sendEachForMulticast({
+        tokens: group.map(d => d.data().token),
+        notification: copy,
+        data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])),
+        android: { priority: 'high', notification: { tag: kind } },
+      });
+      await Promise.all(
+        result.responses.map((r, i) => {
+          const code = r.error?.code ?? '';
+          // A token dies when the app is uninstalled or its data cleared.
+          // Keeping it means paying to send into the void forever.
+          const dead =
+            code === 'messaging/registration-token-not-registered' ||
+            code === 'messaging/invalid-registration-token' ||
+            code === 'messaging/invalid-argument';
+          return dead ? group[i].ref.delete() : Promise.resolve();
+        }),
+      );
+    }
+  } catch {
+    /* A push is best effort; the action it follows has already happened. */
+  }
+}
+
 async function social(uid, data) {
   const action = data.action;
   if (action === 'publish') return publish(uid, data);
@@ -251,6 +309,8 @@ async function social(uid, data) {
     const targetId = id(data.publicId),
       ownId = id(data.ownPublicId);
     let result;
+    let invited = '';
+    let asker = '';
     await db.runTransaction(async t => {
       const target = (await t.get(db.doc('publicCards/' + targetId))).data(),
         own = (await t.get(db.doc('publicCards/' + ownId))).data();
@@ -295,13 +355,18 @@ async function social(uid, data) {
         lastMessageAt: existing?.lastMessageAt ?? Timestamp.fromMillis(0),
       });
       result = { id: key, status: 'pending' };
+      invited = other;
+      asker = own.snapshot.name;
     });
+    if (invited) await notify(invited, 'request', asker, { connectionId: result.id });
     return result;
   }
   if (action === 'respond') {
     const ref = db.doc('connections/' + id(data.connectionId));
     if (!['accept', 'decline'].includes(data.decision))
       fail('invalid-argument', 'Invalid decision');
+    let requester = '';
+    let accepter = '';
     await db.runTransaction(async t => {
       const d = (await t.get(ref)).data();
       const outcome = respondOutcome(d, uid, data.decision);
@@ -321,7 +386,18 @@ async function social(uid, data) {
         respondedAt: now(),
         updatedAt: now(),
       });
+      // Only an acceptance is news worth a notification. A refusal is told
+      // by silence, which is kinder than a push saying no.
+      if (accept) {
+        requester = other;
+        accepter = d.names?.[uid] ?? '';
+      }
     });
+    if (requester) {
+      await notify(requester, 'accepted', accepter, {
+        connectionId: id(data.connectionId),
+      });
+    }
     return { ok: true };
   }
   if (action === 'message') {
@@ -329,6 +405,8 @@ async function social(uid, data) {
     if (!text || text.length > 2000) fail('invalid-argument', 'Message must be 1–2000 characters');
     const ref = db.doc('connections/' + id(data.connectionId)),
       message = ref.collection('messages').doc(id(data.messageId));
+    let recipient = '';
+    let sender = '';
     await db.runTransaction(async t => {
       const d = (await t.get(ref)).data();
       if (!d || !d.members.includes(uid) || d.status !== 'accepted')
@@ -355,7 +433,25 @@ async function social(uid, data) {
         updatedAt: now(),
         lastMessage: { text: preview(text), sender: uid },
       });
+      recipient = other;
+      sender = d.names?.[uid] ?? '';
     });
+    // Outside the transaction: a push is not part of the write, and a slow
+    // network must not hold a Firestore lock open.
+    if (recipient) {
+      await notify(recipient, 'message', sender, { connectionId: ref.id });
+    }
+    return { ok: true };
+  }
+  if (action === 'registerDevice') {
+    // The client cannot write here: devices are addresses, and an address
+    // written by anyone is a way to send somebody else's notifications.
+    const token = String(data.token ?? '');
+    if (!token || token.length > 4096) fail('invalid-argument', 'Invalid token');
+    const language = data.language === 'en' ? 'en' : 'es';
+    await db
+      .doc(`users/${uid}/devices/${createHash('sha256').update(token).digest('hex')}`)
+      .set({ token, language, platform: String(data.platform ?? ''), updatedAt: now() });
     return { ok: true };
   }
   if (action === 'markRead') {
@@ -554,7 +650,7 @@ exports.deleteAccount = onCall({ ...options, timeoutSeconds: 540 }, async req =>
   }
 
   // 3. Everything filed under the account itself.
-  for (const name of ['cards', 'settings', 'publications', 'received', 'blocks'])
+  for (const name of ['cards', 'settings', 'publications', 'received', 'blocks', 'devices'])
     await purge(owned.user.collection(name));
   await Promise.all([
     db.doc('directory/' + uid).delete(),

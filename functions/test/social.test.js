@@ -87,7 +87,14 @@ test('publish → save → request → accept → chat → block → revoke', { 
   await assert.rejects(() => call('alice', 'request', { publicId: b.id, ownPublicId: a.id }));
   await call('bob', 'respond', { connectionId: request.id, decision: 'accept' });
   await call('alice', 'message', { connectionId: request.id, messageId: 'third', text: 'again' });
+  // Bob has a device registered, so this send also tries to notify. A push
+  // that cannot go out must not fail the message that earned it.
   assert.equal((await db.collection('connections/' + request.id + '/messages').get()).size, 2);
+  // The connection throttles to one message per 700ms, so this waits it out
+  // rather than measuring the throttle by accident.
+  await new Promise(r => setTimeout(r, 800));
+  await call('alice', 'message', { connectionId: request.id, messageId: 'fourth', text: 'ping' });
+  assert.equal((await db.collection('connections/' + request.id + '/messages').get()).size, 3);
   // Being findable is opt in: publishing a card does not list anybody.
   assert.ok(!(await db.doc('directory/alice').get()).exists);
   await assert.rejects(() => call('alice', 'setDiscoverable', { enabled: true, publicId: b.id }));

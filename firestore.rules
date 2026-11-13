@@ -107,6 +107,10 @@ service cloud.firestore {
       match /publications/{cardId} { allow read: if owner(uid); allow write: if false; }
       match /received/{publicId} { allow read: if owner(uid); allow write: if false; }
       match /blocks/{otherId} { allow read: if owner(uid); allow write: if false; }
+      // Push addresses. Readable by their owner, written only by the backend:
+      // a device token anybody could write is a way to receive somebody
+      // else's notifications.
+      match /devices/{deviceId} { allow read: if owner(uid); allow write: if false; }
 
       match /settings/identity {
         allow read: if owner(uid);

@@ -12,6 +12,7 @@ import 'package:reson/features/cards/domain/digital_card.dart';
 import 'package:reson/features/cards/application/cards_providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:reson/features/network/network_service.dart';
+import 'package:reson/core/firebase/push_registration.dart';
 import 'package:reson/features/settings/export_file.dart';
 
 class TestAuthRepository implements AuthRepository {
@@ -153,6 +154,7 @@ Future<ProviderContainer> launch(
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? publications,
   NetworkService? networkService,
   Future<void> Function(String)? exportSink,
+  PushRegistrar? pushRegistrar,
 }) async {
   SharedPreferences.setMockInitialValues({});
   tester.view.physicalSize = size;
@@ -188,6 +190,12 @@ Future<ProviderContainer> launch(
       if (networkService != null)
         networkServiceProvider.overrideWithValue(networkService),
       if (exportSink != null) exportSinkProvider.overrideWithValue(exportSink),
+      // Messaging is a platform plugin and a test has no platform. Set on
+      // the container, not a nested scope: pushSyncProvider is not itself
+      // overridden, so it is created in the root and reads from there.
+      pushRegistrarProvider.overrideWithValue(
+        pushRegistrar ?? (service, language) async {},
+      ),
     ],
   );
   container.read(localeProvider.notifier).set(Locale(locale));

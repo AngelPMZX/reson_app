@@ -4,7 +4,7 @@ Actualizada: **11 de noviembre de 2026**. Referencia de continuidad para el prop
 
 ## 1. Qué estamos construyendo
 
-**Reson**, de **TheDarkingStudios**, es una aplicación principalmente móvil de identidad profesional, tarjetas digitales y networking. La dirección del producto es una red profesional propia, inspirada en la utilidad de LinkedIn, centrada en intercambiar tarjetas y conectar personas. Una cuenta puede representar varias facetas: trabajo, freelance y personal.
+**Reson**, de **TheDarkingStudios**, es una aplicación principalmente móvil de identidad profesional, tarjetas digitales y networking. **Desde el 12/11/2026 el objetivo es Android; iOS queda fuera por ahora** por decisión del propietario, lo que desbloqueó el push y evita necesitar claves de Apple. El código iOS sigue en el repositorio y no se ha borrado. La dirección del producto es una red profesional propia, inspirada en la utilidad de LinkedIn, centrada en intercambiar tarjetas y conectar personas. Una cuenta puede representar varias facetas: trabajo, freelance y personal.
 
 El usuario quiere código mantenible, arquitectura escalable, una experiencia elegante y animaciones cuidadas. Prefiere implementar las ideas directamente y probarlas; no quedarse solamente en propuestas. Español e inglés desde el inicio. La web permite desarrollar en Windows, probar en Chrome y compartir tarjetas con visitantes que no tienen la app.
 
@@ -46,6 +46,7 @@ Fuente de verdad: `pubspec.yaml`, `pubspec.lock` y los respectivos `package-lock
 | qr_flutter | 4.1.0 |
 | mobile_scanner | 7.5.0; lectura de QR, requiere permiso de cámara |
 | share_plus | 13.3.1; descarga del export en web, compartir en móvil |
+| firebase_messaging | 16.7.0; push, **solo Android** |
 | shared_preferences | 2.5.5; preferencias locales |
 | url_launcher | 6.3.2 |
 | flutter_lints | 6.0.0 |
@@ -183,6 +184,7 @@ Información profesional: sector, especialidad, modalidad, ubicación, LinkedIn,
 | `directory/{uid}` | Entrada del buscador; solo de quien lo activó. Lectura: cuenta verificada. Escritura: servidor |
 | `reports/{connectionId_uid}` | Reportes para administración; no lectura pública |
 | `socialLimits/{uid}` | Límite de frecuencia backend |
+| `users/{uid}/devices/{hash}` | Tokens de push y su idioma; dueño lee, servidor escribe |
 
 Tarjeta privada: `ownerId`, `label`, `kind`, `layout`, `bio`, `professional`, `photoPath`, `visibleFields`, `identity {displayName, jobTitle, company}`, `contact {email, phone, website}`, `theme {primaryHex}`, `schemaVersion: 1`, `createdAt`, `updatedAt`.
 
@@ -311,6 +313,25 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 **`ResonNotice`** (en `reson_motion.dart`) unifica vacío, error y «nada aún», con icono, título, cuerpo y acción opcionales. Antes cada pantalla improvisaba: un `Text` centrado, un `Text` en rojo de error, un spinner. La carga usa `ResonSkeleton`/`ResonCardSkeleton`, no `LinearProgressIndicator`.
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
+
+### Notificaciones push, solo Android (12 de noviembre de 2026)
+
+**Decisión del propietario: iOS queda fuera por ahora, Android solamente.** Eso desbloqueó el push, que estaba parado únicamente por la clave APNs de Apple. FCM en Android no necesita nada que no estuviera ya en el proyecto.
+
+**No hay disparadores nuevos.** Mensaje, solicitud y aceptación pasan todos por `socialAction`, así que el aviso se envía desde ahí mismo. Una función menos que desplegar y que razonar.
+
+- `notify(uid, kind, name, data)` **nunca lanza**: un aviso que no llega no puede tumbar la acción que lo provocó. Mandar el mensaje es el objetivo; contarlo no. Hay prueba de que enviar sigue funcionando con un dispositivo registrado cuyo envío falla.
+- Agrupa por idioma: el dispositivo **registra en qué idioma lo estás viendo**, porque el texto se compone en el servidor, donde no hay interfaz a la que preguntar. Cambiar de idioma en la app vuelve a registrar.
+- **Poda los tokens muertos** al enviar. Un token muere al desinstalar o borrar datos, y conservarlo es pagar por enviar al vacío para siempre.
+- **Un rechazo no notifica.** Solo mensaje, solicitud y aceptación. Que te hayan dicho que no se cuenta con el silencio.
+- `users/{uid}/devices/{sha256(token)}`: el id es el hash del token, así que registrar el mismo dispositivo dos veces es un dispositivo. **Lo escribe solo el backend**; una dirección de envío que cualquiera pudiera escribir es una forma de recibir las notificaciones de otro. Las reglas lo fijan.
+- El borrado de cuenta se lleva también `devices`.
+
+En Flutter, `registerForPush` **solo actúa en Android**: iOS no tiene clave y la web necesita una VAPID, así que pedir permiso ahí gastaría un aviso que nada puede cumplir. Vive tras `pushRegistrarProvider` para poder probarlo. `pushSyncProvider` se reconstruye con la sesión y con el idioma, que son justo las dos cosas que un aviso necesita acertar.
+
+Android pide `POST_NOTIFICATIONS` en el manifiesto; en Android 13 y posteriores también se pregunta en ejecución.
+
+**Sin probar en un dispositivo real**, como el escáner: no hay forma de recibir un push en una prueba de widget ni en Chrome sobre Windows. Lo verificable está verificado —registro, idioma, poda, que el envío no rompa nada— pero la entrega en sí necesita un teléfono.
 
 ### Lo que estaba a medias, cerrado (12 de noviembre de 2026)
 
@@ -511,7 +532,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **152 pruebas Flutter** (160 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **155 pruebas Flutter** (163 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **36 pruebas de backend y reglas con emulador** (Firestore **y Auth**), incluidas la social y la de borrado de cuenta completas, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
@@ -604,7 +625,7 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 - **Probar el escáner de QR en un teléfono real**: es lo único entregado sin verificación propia (sección 10).
 - Completar OAuth Google Android/iOS y validar dispositivos reales, cámara/galería, teclado, accesibilidad, tamaños, audio y deep links.
 - Configurar firma de producción, Play Console/App Store Connect, iconos/splash finales, fichas y versiones de release.
-- Notificaciones push con FCM, permiso contextual, manejo foreground/background, tokens por dispositivo, baja de tokens y preferencias del usuario.
+- **Push en Android ya existe** (sección 11). Falta: probarlo en un teléfono, decidir el comportamiento en primer plano, y dar al usuario preferencias sobre qué avisos quiere. iOS queda fuera por decisión de producto.
 - Universal Links/App Links para que enlaces abran app instalada conservando fallback web.
 - **Eliminación de cuenta y exportación de datos ya existen** (sección 11). Siguen pendientes: textos de privacidad y términos, soporte, y política de retención de mensajes y archivos.
 - Consola de moderación: `reports/` se escribe y **nadie lo lee** desde la app; hoy se consultan en Firebase Console. Hacerla exige antes un rol de administrador por claims. El desbloqueo por parte del usuario ya existe (sección 10); lo que falta es la moderación del lado del equipo. Evaluar App Check y controles adicionales; no afirmar que están habilitados.
