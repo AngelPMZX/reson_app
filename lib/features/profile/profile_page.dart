@@ -101,11 +101,14 @@ class _Profile extends ConsumerWidget {
                       ResonSpace.xl,
                       ResonSpace.lg,
                     ),
+                    // Labelled, not a bare icon. Signing out lives inside
+                    // settings, and a tune glyph with only a tooltip reads as
+                    // decoration on a phone, where nothing shows a tooltip.
                     child: ResonHeader(
-                      leading: IconButton(
-                        tooltip: s.settings,
-                        icon: const Icon(Icons.tune),
+                      leading: TextButton.icon(
                         onPressed: () => context.go('/settings'),
+                        icon: const Icon(Icons.tune),
+                        label: Text(s.settings),
                       ),
                     ),
                   ),

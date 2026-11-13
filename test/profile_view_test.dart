@@ -148,6 +148,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Signing out is reachable and labelled, not a bare glyph', (
+    tester,
+  ) async {
+    await openProfile(tester, profile: _filled());
+    // It used to be a tune icon with only a tooltip, which shows nothing on a
+    // phone, so the way out of the account looked like decoration.
+    final settings = find.widgetWithText(TextButton, 'Ajustes');
+    expect(settings, findsOneWidget);
+    await tester.tap(settings);
+    await tester.pumpAndSettle();
+    final logout = find.text('Cerrar sesión');
+    await tester.ensureVisible(logout);
+    expect(logout, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final width in [320.0, 390.0, 900.0]) {
     testWidgets('The profile fits $width', (tester) async {
       await openProfile(tester, profile: _filled(), size: Size(width, 1400));
