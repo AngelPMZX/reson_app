@@ -1270,4 +1270,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatSent => 'Enviado';
+
+  @override
+  String get chatReply => 'Responder';
+
+  @override
+  String get chatEdit => 'Editar';
+
+  @override
+  String get chatDelete => 'Eliminar';
+
+  @override
+  String get chatEdited => 'editado';
+
+  @override
+  String get chatDeleted => 'Mensaje eliminado';
+
+  @override
+  String get chatReplyingTo => 'Respondiendo a';
+
+  @override
+  String get chatCancelReply => 'Cancelar respuesta';
+
+  @override
+  String get chatEditing => 'Editando un mensaje';
+
+  @override
+  String get chatSave => 'Guardar';
+
+  @override
+  String get chatCopy => 'Copiar texto';
+
+  @override
+  String get chatCopied => 'Texto copiado';
+
+  @override
+  String get chatAttach => 'Adjuntar una foto';
+
+  @override
+  String get chatPhoto => 'Foto';
+
+  @override
+  String get chatAttachment => 'Foto adjunta';
+
+  @override
+  String get chatRemoveAttachment => 'Quitar la foto';
+
+  @override
+  String get chatImageUnavailable => 'No se pudo cargar la foto';
+
+  @override
+  String get chatToday => 'Hoy';
+
+  @override
+  String get chatYesterday => 'Ayer';
 }

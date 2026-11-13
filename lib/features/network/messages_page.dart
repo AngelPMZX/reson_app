@@ -158,12 +158,15 @@ class ConversationRow extends StatelessWidget {
     final d = doc.data();
     final other = otherMember(d, uid);
     final name = memberName(d, other);
-    final last = d['lastMessage'] as Map<String, dynamic>?;
     final at = d['lastMessageAt'] as Timestamp?;
     final unread = connectionIsUnread(d, uid);
-    final body = last == null
-        ? s.networkNoMessages
-        : '${last['sender'] == uid ? s.networkYouPrefix : ''}${last['text']}';
+    final body = lastMessageBody(
+      d,
+      uid,
+      none: s.networkNoMessages,
+      youPrefix: s.networkYouPrefix,
+      photo: s.chatPhoto,
+    );
     return ResonPress(
       child: Material(
         color: Colors.transparent,
@@ -178,17 +181,7 @@ class ConversationRow extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: scheme.primaryContainer,
-                  foregroundColor: scheme.onPrimaryContainer,
-                  child: Text(
-                    name.characters.firstOrNull ?? 'R',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: scheme.onPrimaryContainer,
-                    ),
-                  ),
-                ),
+                ResonAvatar(name: name, radius: 28),
                 const SizedBox(width: ResonSpace.md),
                 Expanded(
                   child: Column(

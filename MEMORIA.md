@@ -225,7 +225,7 @@ En la UI, `blockedProvider` lee la colección de bloqueos propia para ofrecer «
 
 Chat de texto en tiempo real, habilitado tras aceptación. Mensajes de 1 a 2000 caracteres, ID cliente reutilizado en reintentos para evitar duplicados. Lectura descendente con 50 mensajes inicialmente y botón para aumentar el límite. Conexiones se filtran por membresía; escritura exclusivamente por callable. Límites: 40 acciones sociales/minuto/usuario y mínimo de 700 ms entre mensajes de la conexión. Errores conservan el borrador.
 
-Bloquear detiene mensajes y nuevas solicitudes. Reportar registra motivo para revisión administrativa. No existe aún UI de desbloqueo, consola de moderación ni respuesta automática a reportes. El chat no ofrece todavía adjuntos, indicadores de escritura, leído/no leído, push o cifrado de extremo a extremo.
+Bloquear detiene mensajes y nuevas solicitudes. Reportar registra motivo para revisión administrativa. No existe aún consola de moderación ni respuesta automática a reportes. El chat no ofrece todavía indicadores de escritura ni cifrado de extremo a extremo.
 
 **Listas acotadas (11/11/2026).** Conexiones y recibidas se traían enteras y se ordenaban en el dispositivo: abrir Mi red costaba una lectura por cada contacto acumulado. Ahora piden **25 por página** (`networkPageSize`) y la pantalla ofrece «Ver más» (`NetworkMore`) cuando la página vuelve llena, para que acotar no esconda datos. El orden de conexiones pasó al servidor, lo que **exige el índice compuesto** de `firestore.indexes.json` — ver sección 14; sin desplegarlo, Mi red falla.
 
@@ -266,6 +266,45 @@ El propietario reportó que los mensajes «parecían no funcionar». **No había
 El ajuste de sonido se fue a `/settings`; estaba por encima de las solicitudes de otras personas.
 
 Mi red muestra solicitudes, estados y tarjetas recibidas. Al aceptar hay una animación y diálogo de éxito; sonido original opcional (`assets/sounds/connected.wav`, 0.65 s), desactivado por defecto y almacenado como `connectionSound`. El navegador puede impedir reproducir audio; eso no invalida la conexión.
+
+### Un mensaje se responde, se corrige, se retira y lleva fotos (12 de noviembre de 2026)
+
+Hasta aquí un mensaje era inmutable y solo texto: lo escribías y ahí se quedaba, erratas incluidas.
+
+**Mantener pulsada una burbuja** abre sus acciones. Cualquiera se responde y se copia; las propias además se corrigen y se retiran. El texto dejó de ser `SelectableText`: su gesto de selección ganaba la arena y se comía la pulsación larga, así que copiar vive ahora en ese menú, como en WhatsApp.
+
+- **Responder** guarda una **copia** de lo citado (`replyTo {id, sender, text}`, recortada a 90 caracteres) dentro de la respuesta. Así la cita sobrevive a que retiren el mensaje original. La cita se resuelve **fuera de la transacción**: si falta o está borrado, simplemente no es una respuesta.
+- **Editar** exige ser el autor y que el mensaje siga existiendo; marca `editedAt` y la burbuja dice «editado».
+- **Borrar** conserva la fila —una respuesta que apunta a ella debe seguir teniendo sentido— pero vacía `text`, borra `replyTo` e `image`. La burbuja dice «Mensaje eliminado».
+- Si lo editado o borrado era el último, `lastMessage` de la conexión sigue el cambio: se actualiza o se borra.
+
+El redactor **dice qué va a hacer**. Una franja sobre el campo muestra a quién respondes, qué editas o qué foto llevas, con su botón de cancelar; el botón de enviar cambia a ✓ cuando guarda una corrección. Sin eso, responder se veía exactamente igual que escribir algo nuevo.
+
+**Adjuntos.** Una foto es un mensaje por sí sola; el texto que la acompañe es un pie.
+
+- Los bytes suben **primero** a `connections/{connectionId}/{messageId}` y el mensaje los **nombra** después. El backend solo acepta una ruta que sea la del propio mensaje, así que nadie apunta un mensaje a la foto de otro. Una subida fallida no deja mensaje colgando de nada.
+- Las reglas de Storage consultan Firestore (`firestore.get(...).data.members`) para dejar leer y crear solo a los dos miembros. Nunca `update`, `delete` ni `list`: retirar un adjunto es cosa del backend, junto con el mensaje que lo nombraba.
+- Las fotos se leen por **bytes**, a través de `chatImageProvider`, no por URL de descarga: una URL de Storage lleva su propio token y le daría la foto a cualquiera con el enlace, que es justo lo que las reglas evitan.
+- La lista de Mensajes no puede previsualizar lo que no tiene palabras: la conexión guarda `lastMessage.image = true` y `lastMessageBody()` pone «Foto» en el idioma de quien lee. Un pie de foto gana a ese respaldo.
+- Borrar un mensaje con foto **borra el objeto del bucket**, y borrar la cuenta ahora arrastra también `connections/{id}/` —vivía fuera de `users/{uid}/`, así que antes habría quedado huérfano.
+- La notificación distingue: `photo` en vez de `message` cuando no hay palabras.
+
+**El id del borrador se acuña en el dispositivo** (`draftId()`, 20 caracteres del mismo alfabeto que un id de Firestore). Antes se le pedía a `FirebaseFirestore.instance`, lo que ataba enviar un mensaje a tener backend delante: en una prueba, enviar fallaba en silencio.
+
+### El chat pasa página y agrupa (12 de noviembre de 2026)
+
+Cada burbuja repetía la fecha completa («11/11 · 09:30») aunque el hilo entero fuera del mismo día.
+
+- **Separadores de día**: «Hoy», «Ayer» o el día con su mes (`DateFormat.MMMMd` en el idioma activo). La fecha se escribe una vez por jornada.
+- La burbuja ya solo lleva **la hora**, con `DateFormat.jm`, que además respeta el formato de 12 o 24 horas del idioma.
+- **Secuencias**: mensajes seguidos de la misma persona a menos de cinco minutos se pegan (margen `xs` en vez de `sm`) y redondean menos la esquina que mira al de arriba, así un turno de conversación se lee como un bloque.
+- El botón de adjuntar es `filledTonal`, para que el redactor se lea como un campo con un extremo redondo a cada lado.
+
+### Cada persona tiene su tono (12 de noviembre de 2026)
+
+Todas las filas llevaban el mismo círculo rosa pálido: una lista de personas era una columna de formas idénticas. `ResonAvatar` (`lib/core/theme/reson_chrome.dart`) reemplaza los cinco `CircleAvatar` sueltos de Mi red, Mensajes, Buscador y la cabecera del chat.
+
+El tono sale **del nombre** (`shadeFor`, hash estable), así coincide en todos los dispositivos y sesiones sin guardar nada, y se queda dentro de los rojos de la marca —carmín, vino, rojo brillante—, nunca en tonos que el producto no tiene. Una conexión en pausa sigue en gris: es una persona, pero no es novedad.
 
 ## 11. Diseño vigente
 
@@ -545,7 +584,7 @@ $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 
 La prueba `publish → save → request → accept → chat → block → revoke` cubre ahora también el desbloqueo y la reconexión: que solo desbloquee quien bloqueó, que el bloqueo se borre, que el estado pase a `declined`, que el solicitante siga esperando la cuarentena y que el destinatario pueda aceptar en el acto.
 
-Entrega anterior: 80 pruebas Flutter y 17 backend/reglas. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
+Entrega del 12/11/2026: **180 pruebas Flutter** y **26 de backend** (25 con emulador más las de reglas), `flutter analyze` limpio y `flutter build apk --debug` correcto. Entrega anterior: 80 pruebas Flutter y 17 backend/reglas. Las tres pruebas sociales de captura también pasaron. Se revisaron visualmente inicio publicado, página pública, Mi red y diálogo de conexión. Se comprobó Firebase real con cuentas temporales, posteriormente eliminadas: redacción de datos, foto/vCard, guardar, pedir/aceptar conexión, idempotencia, denegación de acceso ajeno, bloqueo y revocación. No equivale a pruebas nativas Android/iOS.
 
 ```powershell
 flutter analyze
@@ -573,6 +612,8 @@ Desplegar tras revisar cambios y pruebas. **`firestore:indexes` ya se desplegó 
 
 Para solo frontend, construir web y usar `--only hosting`. Subir un commit no despliega Firebase. No hay CI/CD configurado que lo haga automáticamente. Conservar sincronizados esquema, reglas y backend al cambiar campos.
 
+**Las pruebas de widget que dibujan imágenes tienen que limpiar la caché** (`imageCache.clear()` y `clearLiveImages()` en `tearDown`): una foto decodificada sobrevive al árbol que la pidió y el fotograma le llega al siguiente widget ya desmontado, lo que aparece como un desbordamiento de `RenderFlex` **DEFUNCT** en una prueba que sola pasa. Y los bytes de prueba tienen que ser una imagen de verdad: con un PNG inválido, Flutter mete un `ErrorWidget` enorme y el fallo se disfraza de problema de maquetación. Ver `test/chat_attachment_test.dart`.
+
 Las capturas de diseño salen con `flutter test test/card_design_test.dart --dart-define=RESON_SCREENSHOTS=true --dart-define=RESON_FONT_DIR=C:/flutter-sdk/flutter/bin/cache/artifacts/material_fonts` y aterrizan en `build/design-preview/`. Sin `RESON_FONT_DIR` el texto sale en cajas. Comparar sus hashes antes y después es la forma de demostrar que un refactor visual no cambió ni un píxel.
 
 Los logs y capturas de esta sesión viven en `build/` (ignorados): social-final-tests.log, social-backend-tests.log, social-hosted-smoke.log, social-final-build.log, social-hosting.log y design-preview/. No existen necesariamente tras clonar; se regeneran.
@@ -598,13 +639,13 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 
 **Las capturas de diseño viven en `build/design-preview/`, que está en `.gitignore`**: no viajan en los commits y hay que regenerarlas con el comando de la sección 14. Sin `RESON_FONT_DIR` el texto sale en cajas.
 
-**Ahora mismo, antes que nada:** el código está en `main` pero **no desplegado**. Falta `functions`, `firestore:rules`, `storage` y `hosting`; el índice sí está. Hasta que se despliegue, `unblock` y `markRead` no existen en el backend real y la app publicada sigue siendo la anterior. La interfaz aguanta mientras tanto —una conexión sin `lastMessage` dice «Sin mensajes todavía» y `markRead` falla en silencio— pero nadie verá vistas previas ni no leídos hasta desplegar Functions. Ver sección 14.
+**Desplegar es parte del trabajo, no un extra.** El lote del 12/11/2026 toca `functions` (responder, editar, borrar, adjuntos), `storage:rules` (la regla nueva de `connections/{id}/{messageId}`) y `hosting` (`.well-known/assetlinks.json` para App Links). **Sin desplegar las reglas de Storage, enviar una foto falla en el dispositivo**: los bytes suben antes que el mensaje, así que el fallo es visible de inmediato. Ver sección 14.
 
 **Diagnóstico del 12/11/2026 sobre lo que le falta al producto**, por tamaño del hueco:
 
 - ~~No se puede encontrar a nadie~~ **resuelto el 12/11/2026** con el buscador opt-in (sección 10).
 - ~~No existe «persona», solo «tarjeta»~~ **resuelto el 12/11/2026** (sección 11). Lo que sigue en pie: la instantánea guardada envejece, y `refreshSaved` existe pero **no se llama desde ninguna pantalla todavía**.
-- **El chat es solo texto.** Sin adjuntos ni imágenes, sin responder a un mensaje, sin editar ni borrar, sin indicador de escribiendo. Los acuses de lectura **ya tienen los datos** (`reads`) y no se muestran: es decisión de producto, no olvido.
+- ~~El chat es solo texto~~ **resuelto el 12/11/2026** (sección 10): fotos, responder, copiar, editar, borrar, acuses de lectura, separadores de día y agrupado de secuencias. Queda el **indicador de escribiendo**, que necesita un canal aparte, y el **cursor real** de la lista de mensajes.
 - **Nada avisa de nada** sin push: la app solo existe cuando se abre.
 - **Nadie sabe si su tarjeta funciona**: no hay métricas de aperturas ni de contactos guardados. Para quien reparte tarjetas en un evento, eso es la mitad del valor.
 - **Falta lo legal**: borrar cuenta, exportar datos, términos y privacidad. Bloquea las tiendas.

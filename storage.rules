@@ -21,5 +21,24 @@ service firebase.storage {
       // Immutable assets: replacement creates a new object.
       allow update, delete, list: if false;
     }
+    // A picture sent in a conversation, named after the message that carries
+    // it. It lives beside the thread rather than under one account, because
+    // both members have to be able to read it for as long as the thread
+    // exists -- including after the sender deletes their own photos.
+    match /connections/{connectionId}/{messageId} {
+      function member() {
+        return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.uid in
+            firestore.get(/databases/(default)/documents/connections/$(connectionId)).data.members;
+      }
+      allow get: if member();
+      allow create: if member()
+        && request.resource.size > 0 && request.resource.size <= 3 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp)');
+      // Only the backend withdraws an attachment, and only together with the
+      // message that named it.
+      allow update, delete, list: if false;
+    }
   }
 }

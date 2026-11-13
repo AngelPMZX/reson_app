@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/generated/app_localizations.dart';
+import 'reson_palette.dart';
 import 'reson_surfaces.dart';
 import 'reson_theme.dart';
 
@@ -158,4 +159,60 @@ class ResonWordmark extends StatelessWidget {
       ],
     ],
   );
+}
+
+/// Who somebody is, at a glance.
+///
+/// Every row used to carry the same pale pink circle, which made a list of
+/// people a column of identical shapes. The shade is picked from the name,
+/// so it is the same on every device and in every session without anything
+/// being stored, and it stays inside the brand's reds rather than reaching
+/// for hues the product does not own.
+class ResonAvatar extends StatelessWidget {
+  const ResonAvatar({
+    super.key,
+    required this.name,
+    this.radius = 20,
+    this.muted = false,
+  });
+
+  final String name;
+  final double radius;
+
+  /// A connection that is blocked or declined. It is still a person, but it
+  /// is not news, so it steps back to grey.
+  final bool muted;
+
+  static const _shades = [
+    ResonPalette.carmine,
+    ResonPalette.wine,
+    ResonPalette.brightRed,
+  ];
+
+  /// A stable shade for [name]. Pure, so it can be asserted on directly.
+  static Color shadeFor(String name) {
+    var hash = 0;
+    for (final unit in name.codeUnits) {
+      hash = (hash * 31 + unit) & 0x7fffffff;
+    }
+    return _shades[hash % _shades.length];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: muted ? scheme.surfaceContainerHighest : shadeFor(name),
+      foregroundColor: muted ? scheme.onSurfaceVariant : Colors.white,
+      child: Text(
+        name.characters.firstOrNull ?? 'R',
+        style: TextStyle(
+          fontSize: radius * 0.8,
+          fontWeight: FontWeight.w600,
+          color: muted ? scheme.onSurfaceVariant : Colors.white,
+        ),
+      ),
+    );
+  }
 }

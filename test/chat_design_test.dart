@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reson/app/reson_app.dart';
 import 'package:reson/core/theme/reson_theme.dart';
+import 'package:reson/features/network/chat_media.dart';
 import 'package:reson/features/network/network_service.dart';
 import 'auth_flow_test.dart' as support;
 import 'social_flow_test.dart' show SocialDoc, SocialService;
@@ -37,6 +38,9 @@ Future<SocialService> openChat(
   Size size = const Size(390, 900),
   bool dark = false,
   DateTime? theyReadAt,
+  ChatImagePicker? picker,
+  ChatMedia? media,
+  Map<String, Uint8List> images = const {},
 }) async {
   final auth = verified.session();
   addTearDown(auth.dispose);
@@ -54,6 +58,14 @@ Future<SocialService> openChat(
       child: ProviderScope(
         overrides: [
           networkServiceProvider.overrideWithValue(service),
+          // The gallery and the bucket are platform plugins; a test has
+          // neither, so both are handed in.
+          if (picker != null) chatImagePickerProvider.overrideWithValue(picker),
+          if (media != null) chatMediaProvider.overrideWithValue(media),
+          for (final entry in images.entries)
+            chatImageProvider(
+              entry.key,
+            ).overrideWith((ref) => Future.value(entry.value)),
           connectionProvider('chat').overrideWith(
             (ref) => Stream.value(
               _ConnectionDoc({

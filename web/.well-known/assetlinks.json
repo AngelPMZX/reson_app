@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.thedarkingstudios.reson",
+      "sha256_cert_fingerprints": [
+        "0D:53:66:FD:3A:52:4C:EF:C8:99:F4:86:B7:7A:68:AF:AF:FE:F6:A7:B5:9E:0B:FC:C9:4B:0F:D2:44:A7:D1:7B"
+      ]
+    }
+  }
+]

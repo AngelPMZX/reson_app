@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/generated/app_localizations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/theme/reson_chrome.dart';
 import '../../core/theme/reson_skeleton.dart';
 import '../../core/theme/reson_surfaces.dart';
 import '../../core/theme/reson_motion.dart';
@@ -342,7 +343,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: _Avatar(name: memberName(d, other)),
+            leading: ResonAvatar(name: memberName(d, other)),
             title: Text(memberName(d, other)),
             subtitle: Text(
               mine
@@ -389,7 +390,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
       child: ResonPanel(
         child: Row(
           children: [
-            _Avatar(name: memberName(d, other)),
+            ResonAvatar(name: memberName(d, other)),
             const SizedBox(width: ResonSpace.md),
             Expanded(
               child: Column(
@@ -449,7 +450,7 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           children: [
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: _Avatar(name: memberName(d, other), muted: true),
+              leading: ResonAvatar(name: memberName(d, other), muted: true),
               title: Text(memberName(d, other)),
               subtitle: Text(
                 isBlocked
@@ -518,25 +519,6 @@ class _Tabs extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.name, this.muted = false});
-  final String name;
-  final bool muted;
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return CircleAvatar(
-      backgroundColor: muted
-          ? scheme.surfaceContainerHighest
-          : scheme.primaryContainer,
-      foregroundColor: muted
-          ? scheme.onSurfaceVariant
-          : scheme.onPrimaryContainer,
-      child: Text(name.characters.firstOrNull ?? 'R'),
     );
   }
 }

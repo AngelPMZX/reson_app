@@ -306,6 +306,25 @@ String otherMember(Map<String, dynamic> d, String? uid) =>
 String memberName(Map<String, dynamic> d, String member) =>
     (d['names'] as Map?)?[member] as String? ?? 'Reson';
 
+/// What a conversation row says it last held.
+///
+/// A picture carries no words, so the row borrows the reader's language
+/// instead of showing the empty text the backend stored. A caption wins over
+/// the fallback: if something was written beside the photo, that is the news.
+String lastMessageBody(
+  Map<String, dynamic> d,
+  String? uid, {
+  required String none,
+  required String youPrefix,
+  required String photo,
+}) {
+  final last = d['lastMessage'] as Map<String, dynamic>?;
+  if (last == null) return none;
+  final text = last['text'] as String? ?? '';
+  final body = text.isEmpty && last['image'] == true ? photo : text;
+  return '${last['sender'] == uid ? youPrefix : ''}$body';
+}
+
 /// Whether this connection has something the account has not read.
 ///
 /// Unread is derived rather than stored: there is a last message, somebody

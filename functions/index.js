@@ -151,11 +151,13 @@ const pushCopy = {
     message: name => ({ title: name, body: 'Te escribió un mensaje.' }),
     request: name => ({ title: name, body: 'Quiere conectar contigo.' }),
     accepted: name => ({ title: name, body: 'Aceptó tu solicitud. Ya pueden conversar.' }),
+    photo: name => ({ title: name, body: 'Te envió una foto.' }),
   },
   en: {
     message: name => ({ title: name, body: 'Sent you a message.' }),
     request: name => ({ title: name, body: 'Wants to connect with you.' }),
     accepted: name => ({ title: name, body: 'Accepted your request. You can talk now.' }),
+    photo: name => ({ title: name, body: 'Sent you a photo.' }),
   },
 };
 
@@ -402,11 +404,33 @@ async function social(uid, data) {
   }
   if (action === 'message') {
     const text = typeof data.text === 'string' ? data.text.trim() : '';
-    if (!text || text.length > 2000) fail('invalid-argument', 'Message must be 1–2000 characters');
+    if (text.length > 2000) fail('invalid-argument', 'Message must be 1–2000 characters');
     const ref = db.doc('connections/' + id(data.connectionId)),
       message = ref.collection('messages').doc(id(data.messageId));
+    // An attachment is named, never uploaded here: Storage already holds the
+    // bytes and its rules already proved the uploader is a member. What is
+    // checked is that the path is this very message's own object, so nobody
+    // can point a message at somebody else's picture.
+    const image = typeof data.image === 'string' ? data.image : '';
+    if (image && image !== `connections/${ref.id}/${message.id}`)
+      fail('invalid-argument', 'Invalid attachment');
+    if (!text && !image) fail('invalid-argument', 'Message must be 1–2000 characters');
     let recipient = '';
     let sender = '';
+    // What is being answered, resolved before the transaction so a missing
+    // or foreign message simply means this is not a reply.
+    let replyTo = null;
+    if (data.replyTo) {
+      const quoted = await db
+        .doc('connections/' + id(data.connectionId))
+        .collection('messages')
+        .doc(id(data.replyTo))
+        .get();
+      const q = quoted.data();
+      if (q && !q.deleted) {
+        replyTo = { id: quoted.id, sender: q.sender, text: preview(q.text, 90) };
+      }
+    }
     await db.runTransaction(async t => {
       const d = (await t.get(ref)).data();
       if (!d || !d.members.includes(uid) || d.status !== 'accepted')
@@ -424,14 +448,25 @@ async function social(uid, data) {
         return;
       }
       if (Date.now() - d.lastMessageAt.toMillis() < 700) fail('resource-exhausted', 'Please wait');
-      t.create(message, { sender: uid, text, createdAt: now() });
+      t.create(message, {
+        sender: uid,
+        text,
+        createdAt: now(),
+        ...(image ? { image } : {}),
+        // A reply carries a copy of what it answers, so the thread can show
+        // the quote without reading a message that may since have gone.
+        ...(replyTo ? { replyTo } : {}),
+      });
       // The network list reads this instead of opening every conversation to
       // find out whether anything was said. Without it a thread with fifty
       // messages looks exactly like an empty one.
       t.update(ref, {
         lastMessageAt: now(),
         updatedAt: now(),
-        lastMessage: { text: preview(text), sender: uid },
+        // A picture has no words to preview, so the list is told there is
+        // one and says so in the reader's own language.
+        lastMessage: { text: preview(text), sender: uid, ...(image ? { image: true } : {}) },
+        lastMessageId: message.id,
       });
       recipient = other;
       sender = d.names?.[uid] ?? '';
@@ -439,7 +474,7 @@ async function social(uid, data) {
     // Outside the transaction: a push is not part of the write, and a slow
     // network must not hold a Firestore lock open.
     if (recipient) {
-      await notify(recipient, 'message', sender, { connectionId: ref.id });
+      await notify(recipient, text ? 'message' : 'photo', sender, { connectionId: ref.id });
     }
     return { ok: true };
   }
@@ -463,6 +498,53 @@ async function social(uid, data) {
       // reading a thread does not reorder somebody else's list.
       t.update(ref, { [`reads.${uid}`]: now() });
     });
+    return { ok: true };
+  }
+  if (action === 'editMessage' || action === 'deleteMessage') {
+    const ref = db.doc('connections/' + id(data.connectionId));
+    const message = ref.collection('messages').doc(id(data.messageId));
+    const editing = action === 'editMessage';
+    const text = editing && typeof data.text === 'string' ? data.text.trim() : '';
+    if (editing && (!text || text.length > 2000))
+      fail('invalid-argument', 'Message must be 1–2000 characters');
+    let attachment = '';
+    await db.runTransaction(async t => {
+      const [c, m] = await Promise.all([t.get(ref), t.get(message)]);
+      const connection = c.data();
+      if (!connection?.members.includes(uid)) fail('permission-denied', 'Not a member');
+      const existing = m.data();
+      // Only your own words, and only while they still exist. Editing is not
+      // a way to put something in somebody else's mouth.
+      if (!existing || existing.sender !== uid) fail('permission-denied', 'Your own messages only');
+      if (existing.deleted) fail('failed-precondition', 'Message is gone');
+      if (editing) {
+        t.update(message, { text, editedAt: now() });
+      } else {
+        // The row stays so a reply pointing at it still makes sense; what it
+        // said does not.
+        attachment = typeof existing.image === 'string' ? existing.image : '';
+        t.update(message, {
+          text: '',
+          deleted: true,
+          deletedAt: now(),
+          replyTo: FieldValue.delete(),
+          image: FieldValue.delete(),
+        });
+      }
+      // The list shows the last message, so it has to follow the change.
+      if (connection.lastMessage && m.id === connection.lastMessageId) {
+        t.update(ref, {
+          lastMessage: editing ? { text: preview(text), sender: uid } : FieldValue.delete(),
+        });
+      }
+    });
+    // Withdrawing a picture has to take the bytes with it, or the message is
+    // gone while the image it carried is still sitting in the bucket.
+    if (attachment)
+      await bucket
+        .file(attachment)
+        .delete()
+        .catch(() => {});
     return { ok: true };
   }
   if (action === 'block') {
@@ -646,6 +728,10 @@ exports.deleteAccount = onCall({ ...options, timeoutSeconds: 540 }, async req =>
     await purge(c.ref.collection('messages'));
     const other = (c.data().members ?? []).find(m => m !== uid);
     if (other) await db.doc(`users/${other}/blocks/${uid}`).delete();
+    // Pictures sent in the thread live beside it in Storage, not under the
+    // account, so deleting the account alone would leave them behind. Both
+    // members' attachments go: the conversation itself is being removed.
+    await bucket.deleteFiles({ prefix: `connections/${c.id}/`, force: true }).catch(() => {});
     await c.ref.delete();
   }
 

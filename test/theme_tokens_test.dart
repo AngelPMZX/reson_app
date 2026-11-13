@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:reson/core/theme/reson_chrome.dart';
+import 'package:reson/core/theme/reson_palette.dart';
 import 'package:reson/core/theme/reson_theme.dart';
 import 'package:reson/core/theme/reson_tokens.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -165,6 +167,34 @@ void main() {
       expect(theme.textTheme.displaySmall?.color, theme.colorScheme.onSurface);
       expect(theme.textTheme.titleLarge?.color, theme.colorScheme.onSurface);
     }
+  });
+
+  group("A person's avatar", () {
+    test('wears the same shade every time it is drawn', () {
+      // Derived from the name and nothing else, so two devices and two
+      // sessions agree without anything being stored.
+      for (final name in ['María', 'Luis', 'Ana', '']) {
+        expect(ResonAvatar.shadeFor(name), ResonAvatar.shadeFor(name));
+      }
+    });
+
+    test('stays inside the brand reds', () {
+      const brand = [
+        ResonPalette.carmine,
+        ResonPalette.wine,
+        ResonPalette.brightRed,
+      ];
+      for (final name in ['María', 'Luis', 'Ana', 'Benjamín', 'Zoe', '']) {
+        expect(brand, contains(ResonAvatar.shadeFor(name)));
+      }
+    });
+
+    test('tells people in a list apart', () {
+      // The point of the shade: a column of rows must not be a column of
+      // identical circles.
+      final shades = ['María', 'Luis', 'Ana'].map(ResonAvatar.shadeFor).toSet();
+      expect(shades.length, greaterThan(1));
+    });
   });
 
   testWidgets('The type scale climbs without gaps or ties', (tester) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/theme/reson_chrome.dart';
 import '../../core/theme/reson_motion.dart';
 import '../../core/theme/reson_skeleton.dart';
 import '../../core/theme/reson_surfaces.dart';
@@ -123,12 +124,7 @@ class _Person extends StatelessWidget {
             child: ResonPanel(
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: scheme.primaryContainer,
-                    foregroundColor: scheme.onPrimaryContainer,
-                    child: Text(name.characters.firstOrNull ?? 'R'),
-                  ),
+                  ResonAvatar(name: name, radius: 26),
                   const SizedBox(width: ResonSpace.md),
                   Expanded(
                     child: Column(
