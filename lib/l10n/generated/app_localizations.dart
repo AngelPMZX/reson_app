@@ -2419,6 +2419,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete permanently'**
   String get accountDeleteAction;
+
+  /// No description provided for @walletRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Update this card'**
+  String get walletRefresh;
+
+  /// No description provided for @walletRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Card updated.'**
+  String get walletRefreshed;
+
+  /// No description provided for @walletWentAway.
+  ///
+  /// In en, this message translates to:
+  /// **'Its owner took it down.'**
+  String get walletWentAway;
+
+  /// No description provided for @chatSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get chatSeen;
+
+  /// No description provided for @chatSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get chatSent;
 }
 
 class _AppLocalizationsDelegate

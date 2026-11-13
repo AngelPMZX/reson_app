@@ -260,8 +260,36 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
         },
       );
 
-  Widget _saved(BuildContext context, AppLocalizations s) =>
-      ReceivedWallet(busy: busy, onRemove: _removeSaved);
+  Widget _saved(BuildContext context, AppLocalizations s) => ReceivedWallet(
+    busy: busy,
+    onRemove: _removeSaved,
+    onRefresh: _refreshSaved,
+  );
+
+  /// Pulls the current version of a saved card, and says when its owner has
+  /// taken it down rather than leaving a stale copy looking current.
+  Future<void> _refreshSaved(String publicId) async {
+    final s = AppLocalizations.of(context)!;
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      final result = await ref.read(networkServiceProvider).act(
+        'refreshSaved',
+        {'publicId': publicId},
+      );
+      if (!mounted) return;
+      final gone = result['active'] == false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(gone ? s.walletWentAway : s.walletRefreshed)),
+      );
+    } catch (e) {
+      if (mounted) setState(() => error = networkErrorText(context, e));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
 
   Future<void> _removeSaved(String publicId) async {
     setState(() => busy = true);

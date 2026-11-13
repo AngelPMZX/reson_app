@@ -19,10 +19,19 @@ import 'network_widgets.dart';
 /// keeping. Filters sit on top because a wallet you cannot sort through is
 /// just a pile.
 class ReceivedWallet extends ConsumerStatefulWidget {
-  const ReceivedWallet({super.key, required this.busy, required this.onRemove});
+  const ReceivedWallet({
+    super.key,
+    required this.busy,
+    required this.onRemove,
+    required this.onRefresh,
+  });
 
   final bool busy;
   final void Function(String publicId) onRemove;
+
+  /// Pulls the current version of one saved card. A saved card is a copy, so
+  /// it ages: its owner can restyle it, change jobs, or take it down.
+  final void Function(String publicId) onRefresh;
 
   @override
   ConsumerState<ReceivedWallet> createState() => _ReceivedWalletState();
@@ -137,6 +146,7 @@ class _ReceivedWalletState extends ConsumerState<ReceivedWallet> {
                         doc: d,
                         busy: widget.busy,
                         onRemove: widget.onRemove,
+                        onRefresh: widget.onRefresh,
                       ),
                     ),
                 NetworkMore(
@@ -156,11 +166,13 @@ class _WalletCard extends StatelessWidget {
     required this.doc,
     required this.busy,
     required this.onRemove,
+    required this.onRefresh,
   });
 
   final QueryDocumentSnapshot<Map<String, dynamic>> doc;
   final bool busy;
   final void Function(String publicId) onRemove;
+  final void Function(String publicId) onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -211,6 +223,11 @@ class _WalletCard extends StatelessWidget {
                 )
               else
                 const Spacer(),
+              IconButton(
+                tooltip: s.walletRefresh,
+                icon: const Icon(Icons.refresh),
+                onPressed: busy ? null : () => onRefresh(doc.id),
+              ),
               IconButton(
                 tooltip: s.walletRemove,
                 icon: const Icon(Icons.bookmark_remove_outlined),

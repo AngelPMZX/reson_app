@@ -169,6 +169,22 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('A saved card can be pulled fresh, or found to be gone', (
+    tester,
+  ) async {
+    final service = await openWallet(tester, [_saved('a', 'María Soto')]);
+    final refresh = find.byTooltip('Actualizar esta tarjeta');
+    await tester.ensureVisible(refresh);
+    await tester.tap(refresh);
+    await tester.pumpAndSettle();
+    // The backend action existed and nothing called it, so a saved copy aged
+    // with no way to bring it up to date.
+    expect(service.calls.single['action'], 'refreshSaved');
+    expect(service.calls.single['publicId'], 'a');
+    expect(find.text('Tarjeta actualizada.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Removing a card asks the backend once', (tester) async {
     final service = await openWallet(tester, [_saved('a', 'María Soto')]);
     final remove = find.byTooltip('Quitar de mi cartera');

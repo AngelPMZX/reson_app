@@ -312,6 +312,16 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### Lo que estaba a medias, cerrado (12 de noviembre de 2026)
+
+Tres cosas tenían el backend hecho y nadie las usaba.
+
+**La cartera ya puede refrescar una tarjeta.** `refreshSaved` existía, probado, sin una sola llamada desde la app: una tarjeta guardada es una copia y envejecía sin remedio. Cada tarjeta tiene ahora su botón de actualizar, y cuando su dueño la ha retirado lo dice —«Su dueño la retiró»— en vez de dejar la copia vieja pareciendo vigente. Es por tarjeta y no automático: refrescar todas al abrir serían N llamadas cada vez.
+
+**El chat muestra si lo tuyo se ha leído.** `reads` llevaba tiempo escribiéndose y no se mostraba nunca. Un check en lo que envías, doble cuando la otra persona abrió el hilo después de ese mensaje. **Solo en lo tuyo**: si algo se ha leído es noticia para quien lo mandó, no para quien lo leyó. Sin marca de lectura, nada aparece leído.
+
+**La consola de moderación no se hizo, a propósito.** `reports/` se sigue llenando y nadie lo lee. Montarla dentro de la app exige un rol de administrador —claims personalizados que alguien tiene que asignar a mano— y eso es una pieza entera, no un remate. Mientras tanto los reportes se consultan en **Firebase Console → Firestore → `reports`**. Dejarlo a medias habría sido peor que dejarlo claro.
+
 ### Borrar la cuenta y llevarse los datos (12 de noviembre de 2026)
 
 Bloqueaba las tiendas: Google y Apple rechazan una app con cuentas que no se pueden borrar desde dentro. No existía nada.
@@ -501,7 +511,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **149 pruebas Flutter** (157 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **152 pruebas Flutter** (160 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **36 pruebas de backend y reglas con emulador** (Firestore **y Auth**), incluidas la social y la de borrado de cuenta completas, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
@@ -585,7 +595,7 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 - Los estados de foco con teclado se definieron en el tema pero no hay prueba que los capture; hay que mirarlos en Chrome.
 - El **cursor real del chat**: sigue creciendo el límite y releyendo lo anterior.
 - Los no leídos se calculan por conexión, no por mensaje: no hay contador de cuántos, solo un punto. Suficiente por ahora; un contador exige contar en backend.
-- `reads` es visible para ambos miembros, así que la base ya permite acuses de lectura. La interfaz **no los muestra** y esa es una decisión de producto, no un olvido.
+- Las tarjetas guardadas se refrescan **a mano, una a una**. No hay refresco automático ni aviso de que una copia esté vieja.
 
 **Requiere decisiones de producto o acceso que no está en el repositorio:** todo lo de las dos listas siguientes.
 
@@ -597,7 +607,7 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 - Notificaciones push con FCM, permiso contextual, manejo foreground/background, tokens por dispositivo, baja de tokens y preferencias del usuario.
 - Universal Links/App Links para que enlaces abran app instalada conservando fallback web.
 - **Eliminación de cuenta y exportación de datos ya existen** (sección 11). Siguen pendientes: textos de privacidad y términos, soporte, y política de retención de mensajes y archivos.
-- Proceso de moderación y revisión de reportes: `reports/` se escribe pero **nadie lo lee**; no hay consola ni respuesta automática. El desbloqueo por parte del usuario ya existe (sección 10); lo que falta es la moderación del lado del equipo. Evaluar App Check y controles adicionales; no afirmar que están habilitados.
+- Consola de moderación: `reports/` se escribe y **nadie lo lee** desde la app; hoy se consultan en Firebase Console. Hacerla exige antes un rol de administrador por claims. El desbloqueo por parte del usuario ya existe (sección 10); lo que falta es la moderación del lado del equipo. Evaluar App Check y controles adicionales; no afirmar que están habilitados.
 - Monitorización, alertas de errores y presupuesto/cuotas Blaze. Límites de instancias no son un límite monetario absoluto.
 
 ### Escalabilidad/mantenimiento

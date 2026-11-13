@@ -386,5 +386,10 @@
   "accountDeleteBody": "Se borrarán tu perfil, tus tarjetas, las que guardaste, tus conversaciones y tus publicaciones. Quien tenga un enlace tuyo dejará de verlo. Esto no se puede deshacer.",
   "accountDeleteConfirm": "Escribe ELIMINAR para confirmar",
   "accountDeleteWord": "ELIMINAR",
-  "accountDeleteAction": "Eliminar definitivamente"
+  "accountDeleteAction": "Eliminar definitivamente",
+  "walletRefresh": "Actualizar esta tarjeta",
+  "walletRefreshed": "Tarjeta actualizada.",
+  "walletWentAway": "Su dueño la retiró.",
+  "chatSeen": "Leído",
+  "chatSent": "Enviado"
 }

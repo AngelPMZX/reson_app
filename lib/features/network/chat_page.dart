@@ -229,7 +229,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       children: [
         _header(context, d, name, other, compact: resonCompact(context)),
         const SizedBox(height: ResonSpace.lg),
-        Expanded(child: _messageList(context, uid)),
+        Expanded(
+          child: _messageList(
+            context,
+            uid,
+            // When the other member last opened the thread. Their own marker
+            // is what says whether what you sent has been seen.
+            (d['reads'] as Map?)?[other] as Timestamp?,
+          ),
+        ),
         if (error != null)
           Padding(
             padding: const EdgeInsets.only(bottom: ResonSpace.sm),
@@ -306,7 +314,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     ),
   );
 
-  Widget _messageList(BuildContext context, String? uid) {
+  Widget _messageList(BuildContext context, String? uid, Timestamp? theirRead) {
     final id = widget.connectionId;
     return ref
         .watch(messagesProvider(id))
@@ -334,17 +342,29 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                       onPressed: () =>
                           ref.read(messagesPageProvider(id).notifier).grow(),
                     )
-                  : _bubble(context, docs[i].data(), uid),
+                  : _bubble(context, docs[i].data(), uid, theirRead),
             );
           },
         );
   }
 
-  Widget _bubble(BuildContext context, Map<String, dynamic> m, String? uid) {
+  Widget _bubble(
+    BuildContext context,
+    Map<String, dynamic> m,
+    String? uid,
+    Timestamp? theirRead,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     final mine = m['sender'] == uid;
     final date = (m['createdAt'] as Timestamp?)?.toDate();
     final ink = mine ? scheme.onPrimaryContainer : scheme.onSurface;
+    // Read when their marker is at or past this message. A missing marker
+    // means they have never opened the thread, so nothing is seen.
+    final seen =
+        mine &&
+        date != null &&
+        theirRead != null &&
+        !theirRead.toDate().isBefore(date);
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -376,15 +396,32 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             if (date != null)
               Padding(
                 padding: const EdgeInsets.only(top: ResonSpace.xs),
-                child: Text(
-                  '${date.day}/${date.month} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                  // The hour is a footnote, not a second sentence: it keeps
-                  // the bubble's ink but steps well back from the message.
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: (mine ? ink : scheme.onSurfaceVariant).withValues(
-                      alpha: .62,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${date.day}/${date.month} · ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                      // The hour is a footnote, not a second sentence: it keeps
+                      // the bubble's ink but steps well back from the message.
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: (mine ? ink : scheme.onSurfaceVariant)
+                            .withValues(alpha: .62),
+                      ),
                     ),
-                  ),
+                    // Only on what you sent: whether it has been read is news
+                    // to the sender, not to the person who read it.
+                    if (mine) ...[
+                      const SizedBox(width: ResonSpace.xs + 2),
+                      Icon(
+                        seen ? Icons.done_all : Icons.done,
+                        size: 14,
+                        color: ink.withValues(alpha: seen ? .9 : .5),
+                        semanticLabel: seen
+                            ? AppLocalizations.of(context)!.chatSeen
+                            : AppLocalizations.of(context)!.chatSent,
+                      ),
+                    ],
+                  ],
                 ),
               ),
           ],

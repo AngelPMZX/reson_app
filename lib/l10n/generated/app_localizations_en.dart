@@ -1246,4 +1246,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteAction => 'Delete permanently';
+
+  @override
+  String get walletRefresh => 'Update this card';
+
+  @override
+  String get walletRefreshed => 'Card updated.';
+
+  @override
+  String get walletWentAway => 'Its owner took it down.';
+
+  @override
+  String get chatSeen => 'Read';
+
+  @override
+  String get chatSent => 'Sent';
 }

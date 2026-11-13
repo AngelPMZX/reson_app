@@ -386,5 +386,10 @@
   "accountDeleteBody": "Your profile, your cards, the ones you saved, your conversations and your publications will be erased. Anyone holding a link of yours will stop seeing it. This cannot be undone.",
   "accountDeleteConfirm": "Type DELETE to confirm",
   "accountDeleteWord": "DELETE",
-  "accountDeleteAction": "Delete permanently"
+  "accountDeleteAction": "Delete permanently",
+  "walletRefresh": "Update this card",
+  "walletRefreshed": "Card updated.",
+  "walletWentAway": "Its owner took it down.",
+  "chatSeen": "Read",
+  "chatSent": "Sent"
 }

@@ -36,6 +36,7 @@ Future<SocialService> openChat(
   String status = 'accepted',
   Size size = const Size(390, 900),
   bool dark = false,
+  DateTime? theyReadAt,
 }) async {
   final auth = verified.session();
   addTearDown(auth.dispose);
@@ -62,6 +63,8 @@ Future<SocialService> openChat(
                 'names': {'other': 'María', 'owner': 'Alex'},
                 'cards': {'other': 'shared'},
                 'status': status,
+                if (theyReadAt != null)
+                  'reads': {'other': Timestamp.fromDate(theyReadAt)},
               }),
             ),
           ),
@@ -172,6 +175,34 @@ void main() {
     await openChat(tester, messages: [], status: 'pending');
     expect(find.text('La conversación no está habilitada.'), findsOneWidget);
     expect(find.text('Ver tarjeta'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('What you sent says whether it has been read', (tester) async {
+    await openChat(
+      tester,
+      // They opened the thread at 09:40: the 09:30 message is read, the
+      // 09:42 one is not, and their own message never carries a mark.
+      theyReadAt: DateTime(2026, 11, 11, 9, 40),
+      messages: [
+        _message('owner', 'Perfecto, te paso mi tarjeta.', 42),
+        _message('other', '¿Nos vemos el jueves?', 38),
+        _message('owner', 'Hola María, un gusto saludarte.', 30),
+      ],
+    );
+    // The data for this was already stored and never shown.
+    // One of yours is read, the other is not. Theirs never carries a mark.
+    expect(find.byIcon(Icons.done_all), findsOneWidget);
+    expect(find.byIcon(Icons.done), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Nothing is read until they have opened the thread', (
+    tester,
+  ) async {
+    await openChat(tester, messages: [_message('owner', 'Hola María.', 30)]);
+    expect(find.byIcon(Icons.done_all), findsNothing);
+    expect(find.byIcon(Icons.done), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
