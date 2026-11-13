@@ -1,6 +1,18 @@
 # Memoria de Reson
 
-Actualizada: **11 de noviembre de 2026**. Referencia de continuidad para el propietario y para nuevos chats de desarrollo. Describe el estado del código al preparar el commit que incluye este archivo; no contiene contraseñas, tokens ni claves administrativas.
+Actualizada: **13 de noviembre de 2026**. Referencia de continuidad para el propietario y para nuevos chats de desarrollo. Describe el estado del código al preparar el commit que incluye este archivo; no contiene contraseñas, tokens ni claves administrativas.
+
+## 0. Dónde estamos ahora mismo
+
+**Leer esto primero al abrir una sesión nueva.**
+
+- Último commit: **`c2a5f2e`** (`Let a message be answered, corrected, withdrawn and carry a photo`), ya en `origin/main`. El árbol está limpio.
+- Verificado en ese commit: **180 pruebas Flutter**, **26 de backend** con emulador, `flutter analyze` limpio, `flutter build apk --debug` correcto.
+- **Lo que falta antes que nada: desplegar.** El lote del 12/11/2026 está en `main` pero **no en producción**. Hay que desplegar `functions`, `firestore:rules`, `storage` y `hosting` — el comando está en la sección 14. Sin las reglas de Storage, **enviar una foto falla en el teléfono**; sin Functions, responder/editar/borrar no existen en el backend real.
+- `build/web` ya se construyó con `.well-known/assetlinks.json` dentro, pero `build/` está en `.gitignore`: tras clonar hay que reconstruirlo antes de desplegar hosting.
+- Lo siguiente en la lista, por orden: **el cursor real del chat** (hoy `limit += 50` recrea el stream y relee lo anterior), **`refreshSaved` existe pero no lo llama ninguna pantalla**, terminar de pasar los `tr(context, 'es', 'en')` del módulo `network` al ARB, y probar en un teléfono real el **escáner de QR** y el **push**.
+- El propietario va a generar el logo con IA a partir de `docs/logo-prompt.md`; todavía no hay imagen. El glifo de la app se dibuja hoy con código en `ResonWordmark`.
+- Falta del propietario, no del código: la **huella SHA-256 de firma de producción** para los App Links de release. La de debug ya está en `web/.well-known/assetlinks.json`.
 
 ## 1. Qué estamos construyendo
 
@@ -8,14 +20,14 @@ Actualizada: **11 de noviembre de 2026**. Referencia de continuidad para el prop
 
 El usuario quiere código mantenible, arquitectura escalable, una experiencia elegante y animaciones cuidadas. Prefiere implementar las ideas directamente y probarlas; no quedarse solamente en propuestas. Español e inglés desde el inicio. La web permite desarrollar en Windows, probar en Chrome y compartir tarjetas con visitantes que no tienen la app.
 
-La última versión fue aceptada visualmente por el usuario. El último pedido es guardar esta memoria y hacer commit/push de toda la versión actual. No rehacer el diseño por defecto al iniciar otro chat.
+La última versión fue aceptada visualmente por el usuario. **No rehacer el diseño por defecto al iniciar otro chat**: el repolish ya se hizo y el alcance elegido fue «refinar dentro del carmín/grafito», dejando intactas la paleta, la física de la cartera, los 8 diseños de credencial y su tipografía.
 
 ## 2. Repositorio, equipos y entornos
 
 - Repositorio del proyecto: **https://github.com/AngelPMZX/reson_app**; se utiliza como repositorio privado del usuario.
 - Remoto `origin`: `https://github.com/AngelPMZX/reson_app.git`.
 - Rama actual: `main`.
-- Último commit de esta entrega: `4945c25` (`Let a refusal be undone, and settle the chrome into the system`), ya en `origin/main`. La versión vieja se sustituyó hace tiempo en `75b85ee`; no hace falta borrar ni forzar historia.
+- Último commit de esta entrega: `c2a5f2e` (`Let a message be answered, corrected, withdrawn and carry a photo`), ya en `origin/main`. La versión vieja se sustituyó hace tiempo en `75b85ee`; no hace falta borrar ni forzar historia.
 - Carpeta en esta PC: `C:\Proyectos\reson_app`.
 - Windows, PowerShell, VS Code con Flutter/Dart.
 - Flutter local: `C:\flutter-sdk\flutter`; versión usada **3.41.6**, Dart **3.11.4**.
