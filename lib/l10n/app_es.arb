@@ -367,5 +367,14 @@
   "discoverOptInNeedsCard": "Publica una tarjeta para poder aparecer en el buscador.",
   "discoverWhichCard": "Tarjeta con la que apareces",
   "discoverListed": "Apareces en el buscador",
-  "discoverSeeProfile": "Ver perfil"
+  "discoverSeeProfile": "Ver perfil",
+  "scanTitle": "Escanear un QR",
+  "scanSubtitle": "Apunta al código de la tarjeta que te enseñan.",
+  "scanAim": "Encuadra el código dentro del marco.",
+  "scanNotReson": "Ese código no es una tarjeta de Reson.",
+  "scanNoPermission": "Reson necesita la cámara para leer un código. Puedes concederle el permiso desde los ajustes del sistema.",
+  "scanNoCamera": "Este dispositivo no tiene cámara disponible.",
+  "scanOpenSettings": "Abrir ajustes del sistema",
+  "scanRetry": "Reintentar",
+  "scanAction": "Escanear"
 }

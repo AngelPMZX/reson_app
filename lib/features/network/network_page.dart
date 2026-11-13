@@ -153,13 +153,23 @@ class _NetworkPageState extends ConsumerState<NetworkPage> {
           children: [
             // Finding somebody lives one tap from the people you already
             // know, which is where you go looking for them.
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                onPressed: () => context.go('/discover'),
-                icon: const Icon(Icons.person_search_outlined),
-                label: Text(s.discoverTitle),
-              ),
+            Wrap(
+              spacing: ResonSpace.sm,
+              runSpacing: ResonSpace.sm,
+              children: [
+                // Scanning is the gesture this product is about, so it sits
+                // first and carries the weight.
+                FilledButton.icon(
+                  onPressed: () => context.go('/scan'),
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: Text(s.scanAction),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => context.go('/discover'),
+                  icon: const Icon(Icons.person_search_outlined),
+                  label: Text(s.discoverTitle),
+                ),
+              ],
             ),
             const SizedBox(height: ResonSpace.lg),
             TabBar(

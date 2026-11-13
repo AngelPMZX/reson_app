@@ -1185,4 +1185,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discoverSeeProfile => 'View profile';
+
+  @override
+  String get scanTitle => 'Scan a QR';
+
+  @override
+  String get scanSubtitle =>
+      'Point at the code on the card you are being shown.';
+
+  @override
+  String get scanAim => 'Fit the code inside the frame.';
+
+  @override
+  String get scanNotReson => 'That code is not a Reson card.';
+
+  @override
+  String get scanNoPermission =>
+      'Reson needs the camera to read a code. You can grant the permission from your system settings.';
+
+  @override
+  String get scanNoCamera => 'No camera is available on this device.';
+
+  @override
+  String get scanOpenSettings => 'Open system settings';
+
+  @override
+  String get scanRetry => 'Try again';
+
+  @override
+  String get scanAction => 'Scan';
 }

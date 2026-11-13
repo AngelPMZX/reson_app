@@ -138,6 +138,29 @@ final messagesProvider = StreamProvider.autoDispose
           .map((s) => s.docs);
     });
 
+/// The published card a scanned code points at, or null if it points nowhere.
+///
+/// A camera reads anything, so this is the gate: only Reson's own hosts and
+/// only a 32 character hex id get through. A bare id is accepted too, since
+/// some generators strip the scheme and the app writes that form itself.
+String? publicIdFromScan(String? raw) {
+  final value = (raw ?? '').trim();
+  if (value.isEmpty) return null;
+  final bare = RegExp(r'^[a-f0-9]{32}$');
+  if (bare.hasMatch(value)) return value;
+  final uri = Uri.tryParse(value);
+  if (uri == null) return null;
+  const hosts = {'reson-app.web.app', 'reson-app.firebaseapp.com'};
+  if (uri.hasScheme && !['http', 'https'].contains(uri.scheme)) return null;
+  if (uri.host.isNotEmpty && !hosts.contains(uri.host)) return null;
+  // Both the public page `/c/<id>` and the in-app `/#/receive/<id>` are valid
+  // ways to arrive, so either shape resolves to the same card.
+  final match = RegExp(
+    r'(?:/c/|/receive/)([a-f0-9]{32})',
+  ).firstMatch('${uri.path}${uri.fragment}');
+  return match?.group(1);
+}
+
 /// What a typed query becomes: one term for Firestore, the rest for here.
 ///
 /// Mirrors `searchQuery` in functions/domain.js. Only one `arrayContains` is

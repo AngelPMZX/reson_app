@@ -2305,6 +2305,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View profile'**
   String get discoverSeeProfile;
+
+  /// No description provided for @scanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a QR'**
+  String get scanTitle;
+
+  /// No description provided for @scanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Point at the code on the card you are being shown.'**
+  String get scanSubtitle;
+
+  /// No description provided for @scanAim.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit the code inside the frame.'**
+  String get scanAim;
+
+  /// No description provided for @scanNotReson.
+  ///
+  /// In en, this message translates to:
+  /// **'That code is not a Reson card.'**
+  String get scanNotReson;
+
+  /// No description provided for @scanNoPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Reson needs the camera to read a code. You can grant the permission from your system settings.'**
+  String get scanNoPermission;
+
+  /// No description provided for @scanNoCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'No camera is available on this device.'**
+  String get scanNoCamera;
+
+  /// No description provided for @scanOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open system settings'**
+  String get scanOpenSettings;
+
+  /// No description provided for @scanRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get scanRetry;
+
+  /// No description provided for @scanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get scanAction;
 }
 
 class _AppLocalizationsDelegate

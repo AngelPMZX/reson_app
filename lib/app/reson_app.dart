@@ -17,6 +17,7 @@ import '../features/auth/presentation/intro_page.dart';
 import '../features/settings/settings_page.dart';
 import '../features/network/messages_page.dart';
 import '../features/network/discover_page.dart';
+import '../features/network/scan_page.dart';
 import 'reson_shell.dart';
 import '../features/auth/presentation/verification_page.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -66,6 +67,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           path != '/profile/edit' &&
           path != '/settings' &&
           path != '/discover' &&
+          path != '/scan' &&
           !path.startsWith('/cards/')) {
         return '/home';
       }
@@ -125,6 +127,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/settings', builder: (_, state) => const SettingsPage()),
       GoRoute(path: '/discover', builder: (_, state) => const DiscoverPage()),
+      GoRoute(path: '/scan', builder: (_, state) => const ScanPage()),
       GoRoute(path: '/session', builder: (_, state) => const _SessionPage()),
       GoRoute(
         path: '/verify-email',

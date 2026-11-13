@@ -367,5 +367,14 @@
   "discoverOptInNeedsCard": "Publish a card before you can appear in search.",
   "discoverWhichCard": "Card you appear with",
   "discoverListed": "You appear in search",
-  "discoverSeeProfile": "View profile"
+  "discoverSeeProfile": "View profile",
+  "scanTitle": "Scan a QR",
+  "scanSubtitle": "Point at the code on the card you are being shown.",
+  "scanAim": "Fit the code inside the frame.",
+  "scanNotReson": "That code is not a Reson card.",
+  "scanNoPermission": "Reson needs the camera to read a code. You can grant the permission from your system settings.",
+  "scanNoCamera": "No camera is available on this device.",
+  "scanOpenSettings": "Open system settings",
+  "scanRetry": "Try again",
+  "scanAction": "Scan"
 }

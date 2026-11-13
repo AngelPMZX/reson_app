@@ -44,6 +44,7 @@ Fuente de verdad: `pubspec.yaml`, `pubspec.lock` y los respectivos `package-lock
 | image_picker | 1.2.3 |
 | audioplayers | 6.5.1; sonido opcional de conexión |
 | qr_flutter | 4.1.0 |
+| mobile_scanner | 7.5.0; lectura de QR, requiere permiso de cámara |
 | shared_preferences | 2.5.5; preferencias locales |
 | url_launcher | 6.3.2 |
 | flutter_lints | 6.0.0 |
@@ -90,6 +91,8 @@ lib/
       network_page.dart             Personas: solicitudes, conexiones, en pausa, guardadas
       messages_page.dart            Lista de conversaciones con búsqueda
       received_wallet.dart          Cartera de tarjetas recibidas con filtros
+      discover_page.dart            Buscador de personas del directorio
+      scan_page.dart                Lectura de QR con la cámara
       chat_page.dart                Conversación, paginación, bloquear, reportar
     settings/settings_page.dart     Apariencia, idioma, sonido y cerrar sesión
   l10n/                             ARB ES/EN y código generado
@@ -308,6 +311,21 @@ Sus streams pasaron a providers (`connectionProvider`, `messagesProvider`, `mess
 
 **Tema**: `filledButtonTheme` fijaba `backgroundColor: ResonPalette.carmine`, lo que (a) dejaba el modo oscuro con el carmín claro en vez de su `brightRed`, y (b) hacía `FilledButton.tonal` **indistinguible** de una acción primaria. Ahora lee `scheme.primary`. Se añadieron estados deshabilitados, `outlinedButtonTheme`, bordes de foco y error en los campos, y temas de diálogo y snackbar con los radios del sistema.
 
+### Escanear un QR (12 de noviembre de 2026)
+
+La app dibujaba códigos QR y **no podía leer ninguno**. El gesto central del producto —que te enseñen una tarjeta y la apuntes— obligaba a salir a la cámara del sistema y acababa en el navegador, nunca en la app.
+
+- **`mobile_scanner 7.5.0`**, fijado como el resto. Ruta `/scan`, con entrada desde Mi red como acción principal, junto al buscador.
+- **Toda la decisión vive en `publicIdFromScan`**, una función pura en `network_service.dart`: la cámara solo entrega cadenas. Acepta los enlaces de Reson (`/c/<id>` y `/#/receive/<id>`) en sus dos dominios, y un id pelado de 32 hex. **Rechaza todo lo demás**, incluidos los dominios parecidos tipo `reson-app.web.app.evil.com`. Hay 3 pruebas con los casos hostiles y con códigos cotidianos (wifi, vCard, teléfono).
+- Estados propios para cámara denegada, cámara ausente y código ajeno. Ninguno es un fallo.
+
+**Permisos nativos añadidos**, sin los cuales esto no funciona en un teléfono:
+
+- Android: `android.permission.CAMERA` y `uses-feature` de cámara no obligatoria.
+- iOS: **`NSCameraUsageDescription`**. Sin esa clave iOS **mata la app** al abrir la cámara, no da un error.
+
+**Nada de esto se ha probado en un dispositivo real.** Analyze, pruebas y build web pasan, pero la cámara no se puede ejercitar en Chrome sobre Windows ni en pruebas de widget. Es la primera pieza del proyecto que llega a producción sin verificación propia: **probarla en un teléfono antes de confiar en ella**. La descripción de uso de iOS está solo en español, igual que la de fotos que ya existía; traducirlas exige `InfoPlist.strings` por idioma.
+
 ### Buscador de personas, solo para quien se apunta (12 de noviembre de 2026)
 
 Era el hueco que separaba una tarjeta digital de una red: solo se podía conectar escaneando un QR o abriendo un enlace. **Decisión del propietario: encontrable solo quien lo active.**
@@ -465,7 +483,7 @@ Flags: `RESON_PREVIEW_ONLY=true` es preview sin backend real; no usarlo para val
 
 Estado al 11/11/2026, todo ejecutado y en verde:
 
-- **141 pruebas Flutter** (149 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
+- **145 pruebas Flutter** (153 con `RESON_SCREENSHOTS=true`, que habilita las de captura).
 - **35 pruebas de backend y reglas con emulador**, incluida la social de extremo a extremo completa, ninguna saltada.
 - `flutter analyze` sin incidencias, `flutter build web --release` correcta, `npm run format:check` limpio en `functions/`.
 
@@ -553,6 +571,7 @@ Las pruebas pasaron de 80 a 94 en Flutter y de 4 a 25 en backend con emulador.
 
 ### Antes de lanzamiento móvil
 
+- **Probar el escáner de QR en un teléfono real**: es lo único entregado sin verificación propia (sección 10).
 - Completar OAuth Google Android/iOS y validar dispositivos reales, cámara/galería, teclado, accesibilidad, tamaños, audio y deep links.
 - Configurar firma de producción, Play Console/App Store Connect, iconos/splash finales, fichas y versiones de release.
 - Notificaciones push con FCM, permiso contextual, manejo foreground/background, tokens por dispositivo, baja de tokens y preferencias del usuario.
